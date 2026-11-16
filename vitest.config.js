@@ -7,7 +7,7 @@ export default defineConfig({
   test: {
     environment: 'jsdom',
     setupFiles: ['./src/test/setup.js'],
-    // Valores falsos: src/lib/supabase.js lanza error si faltan, y los tests NUNCA deben tocar el proyecto real.
+    // Valores falsos: src/infrastructure/supabase/client.js lanza error si faltan, y los tests NUNCA deben tocar el proyecto real.
     env: {
       VITE_SUPABASE_URL: 'http://localhost:54321',
       VITE_SUPABASE_ANON_KEY: 'test-anon-key',

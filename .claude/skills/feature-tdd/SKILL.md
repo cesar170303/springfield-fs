@@ -21,9 +21,9 @@ Si está disponible, carga también `agent-skills:test-driven-development` (teor
 ## Flujo (en este orden)
 1. **Criterios de aceptación.** 2-5 frases en lenguaje de usuario. Ej.: "la lista muestra una fila por jugador con goles y asistencias". Si hay ambigüedad, pregunta al propietario. Contrasta con `docs/SPEC.md`.
 2. **Lista de tests y nivel.** Usa el nivel más bajo posible:
-   - Lógica pura (formateo, ordenación, filtros) → unit en `src/lib/`.
+   - Lógica pura (reglas, formateo) → unit en `src/domain/`; casos de uso → unit en `src/application/` con fakes de los ports.
    - Interacción de UI → componente con RTL.
-   - Cruza Supabase → componente/hook con el cliente falseado (ver abajo).
+   - Cruza Supabase → adaptador en `src/infrastructure/supabase/` con un cliente falso (ver abajo).
    - Playwright solo para flujos críticos completos (aún no está instalado; no lo añadas sin preguntar).
 3. **RED.** Escribe el test, ejecútalo y comprueba que falla **por la razón correcta** (la aserción, no un import roto). Enseña el mensaje de fallo.
 4. **GREEN.** Código mínimo para pasar. Nada de "ya que estoy".
@@ -32,17 +32,21 @@ Si está disponible, carga también `agent-skills:test-driven-development` (teor
 7. **Commit** por ciclo, mensaje que diga qué comportamiento se añade. `git commit` pide confirmación en `.claude/settings.json`: propón el mensaje y espera.
 
 ## Cómo falsear Supabase
-Falsea solo la frontera (`src/lib/supabase`), nunca el código propio. Patrón de este repo:
+Con Clean Architecture (ADR-0001) no hace falta `vi.mock`: cada capa recibe sus dependencias, así que se le pasa una falsa.
 
-```jsx
-const rpc = vi.hoisted(() => vi.fn())
-vi.mock('../lib/supabase', () => ({ supabase: { rpc } }))
+- **Adaptador de Supabase** (`src/infrastructure/supabase/`): recibe el cliente por parámetro. Pásale un cliente falso y comprueba qué pide y qué devuelve ya traducido:
 
-rpc.mockResolvedValue({ data: [{ nickname: 'Cris', goals: 3 }], error: null })
-// ...render, interactúa y comprueba lo que ve el usuario
+```js
+const rpc = vi.fn().mockResolvedValue({ data: [{ nickname: 'Cris', goals: 3 }], error: null })
+const repository = createSupabaseSquadRepository({ rpc })
+
+expect(await repository.getStats({ seasonId: 1, competitionId: null })).toEqual([{ nickname: 'Cris', goals: 3 }])
 expect(rpc).toHaveBeenCalledWith('get_squad_stats', { p_season_id: 1, p_competition_id: null })
 ```
-Ejemplos completos: `src/context/AuthProvider.test.jsx` (cadena `from().select().eq().single()`, promesas pendientes) y `src/components/Login.test.jsx`.
+- **Caso de uso** (`src/application/use-cases/`): fakes de los ports (objetos con `vi.fn()`).
+- **UI** (`src/infrastructure/ui/`): casos de uso falsos en `<UseCasesContext.Provider value={...}>`; comprueba lo que ve el usuario.
+
+Ejemplos completos: `src/infrastructure/supabase/profile-repository.test.js` (cadena `from().select().eq().single()`), `src/application/use-cases/auth.test.js`, `src/infrastructure/ui/auth/AuthProvider.test.jsx` (promesas pendientes) y `src/infrastructure/ui/components/Login.test.jsx`.
 
 ## Reglas del proyecto que los tests deben proteger
 - **Los totales no se calculan en el frontend.** Si existe una RPC (`get_squad_stats`, `get_player_rating_timeline`, `get_season_mvps`), el test falsea la RPC y comprueba que la UI **pinta lo que devuelve**, sin recalcular.

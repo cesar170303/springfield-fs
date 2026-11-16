@@ -119,8 +119,8 @@ Igual que A pero con `presentation/` aparte.
 
 1. [x] Confirmar las decisiones abiertas (abajo) y pasar este ADR a **Aceptado**.
 2. [x] Actualizar la sección «Arquitectura del frontend» de `CLAUDE.md` para que describa estas capas y la regla de dependencia.
-3. [ ] Automatizar la regla de dependencia: intentar `no-restricted-imports` por carpeta en `.oxlintrc.json` (hay que comprobar que oxlint lo soporta con `overrides`); si no, un test de Vitest que lea los `import` de `domain/` y `application/` y falle si ven `react`, `supabase` o `infrastructure`.
-4. [ ] Migrar el código existente: `lib/supabase.js` → `infrastructure/supabase/client.js`; `context/*` y `components/*` → `infrastructure/ui/`; las llamadas de `Login` y `AuthProvider` a Supabase pasan por un port `AuthGateway` y casos de uso. Hacerlo con TDD (`feature-tdd`), manteniendo verdes los tests actuales.
+3. [x] Automatizar la regla de dependencia: `no-restricted-imports` por carpeta en `.oxlintrc.json` (`overrides`). Comprobado que el lint falla con imports prohibidos en `domain/` y `application/`.
+4. [x] Migrar el código existente: `lib/supabase.js` → `infrastructure/supabase/client.js`; `context/*` y `components/*` → `infrastructure/ui/`; las llamadas de `Login` y `AuthProvider` a Supabase pasan por un port `AuthGateway` y casos de uso. Hacerlo con TDD (`feature-tdd`), manteniendo verdes los tests actuales.
 5. [ ] Rehacer el plan del paso 3 (lista de plantilla) con esta estructura: `SquadRepository` + caso de uso `getSquadStats` + mapper, en lugar de hooks que llamen a Supabase.
 
 ## Decisiones cerradas al aceptar

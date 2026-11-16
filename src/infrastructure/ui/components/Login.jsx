@@ -1,7 +1,8 @@
 import { useState } from 'react'
-import { supabase } from '../lib/supabase'
+import { useUseCases } from '../use-cases-context'
 
 export default function Login() {
+  const { signInWithPassword, signUp, signInWithGoogle } = useUseCases()
   const [mode, setMode] = useState('signin') // 'signin' | 'signup'
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
@@ -12,22 +13,18 @@ export default function Login() {
     e.preventDefault()
     setBusy(true)
     setMessage('')
-    const { data, error } =
+    // Los dos casos de uso devuelven ya el texto a mostrar (o null si todo fue bien).
+    const text =
       mode === 'signin'
-        ? await supabase.auth.signInWithPassword({ email, password })
-        : await supabase.auth.signUp({ email, password })
+        ? (await signInWithPassword({ email, password })).error
+        : (await signUp({ email, password })).message
     setBusy(false)
-    if (error) setMessage(error.message)
-    // Si la confirmación de email está activa, signUp no devuelve sesión.
-    else if (mode === 'signup' && !data.session) setMessage('Revisa tu correo para confirmar la cuenta.')
+    setMessage(text ?? '')
   }
 
   async function handleGoogle() {
-    const { error } = await supabase.auth.signInWithOAuth({
-      provider: 'google',
-      options: { redirectTo: window.location.origin },
-    })
-    if (error) setMessage(error.message)
+    const { error } = await signInWithGoogle()
+    if (error) setMessage(error)
   }
 
   return (
@@ -68,7 +65,11 @@ export default function Login() {
         >
           {mode === 'signin' ? '¿No tienes cuenta? Regístrate' : '¿Ya tienes cuenta? Entra'}
         </button>
-        {message && <p role="alert" className="text-sm text-red-400">{message}</p>}
+        {message && (
+          <p role="alert" className="text-sm text-red-400">
+            {message}
+          </p>
+        )}
       </form>
     </main>
   )

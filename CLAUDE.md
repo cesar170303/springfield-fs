@@ -16,7 +16,7 @@ PWA para que el equipo de fútbol sala **Springfield FS** (Torrejón de Ardoz) r
 ## Estado actual
 - Backend diseñado y probado: `supabase/migrations/20261114120000_initial_schema.sql`.
 - `supabase/seed.sql`: datos de prueba, **solo para desarrollo**.
-- Frontend: hechos los pasos 1 y 2 del "Orden de trabajo sugerido" (`docs/SPEC.md` §10): proyecto base, cliente de Supabase, login y contexto de sesión con rol. Siguiente: migrar el código existente a Clean Architecture (ADR-0001) y después el paso 3 (lista de la plantilla con `get_squad_stats`). El diseño visual se decide después; por ahora, componentes funcionales con Tailwind básico.
+- Frontend: hechos los pasos 1 y 2 del "Orden de trabajo sugerido" (`docs/SPEC.md` §10): proyecto base, cliente de Supabase, login y contexto de sesión con rol, ya migrados a Clean Architecture (ADR-0001). Siguiente: paso 3 (lista de la plantilla con `get_squad_stats`), sobre las capas. El diseño visual se decide después; por ahora, componentes funcionales con Tailwind básico.
 - `public/escudo.png`: escudo del equipo (150×150; falta una versión en alta resolución).
 
 ## Reglas del proyecto
@@ -40,12 +40,16 @@ Tres capas; las dependencias solo apuntan hacia dentro (`infrastructure → appl
 - Reglas: la UI llama **solo a casos de uso**, nunca a un repositorio ni a `supabase`; el dominio **no duplica** lo que ya hace una RPC o la BD (los totales siguen saliendo de las RPC); el repositorio de votos nunca lee votos ajenos.
 - Código nuevo: va directamente en su capa. Cada feature se escribe con TDD (`feature-tdd`): dominio y casos de uso se prueban con fakes, sin Supabase.
 
-### Código actual (pendiente de migrar a las capas)
-`lib/`, `context/` y `components/` son anteriores al ADR y se moverán a `infrastructure/`; no añadas archivos nuevos ahí.
-- `src/lib/supabase.js` crea el único cliente de Supabase (lanza error si faltan las variables de `.env`; plantilla en `.env.example`). Impórtalo desde ahí, no crees otro.
-- **Sesión y rol**: `src/context/AuthProvider.jsx` guarda `session` y pide aparte la fila de `profiles` (de ahí sale `role`). Los componentes lo leen con `useAuth()` → `{ session, user, profile, role, loading, signOut }`. `loading` es `true` hasta tener sesión **y** perfil, así que `App.jsx` no pinta nada con rol hasta entonces.
+- La regla de dependencia la vigila oxlint (`no-restricted-imports` por carpeta en `.oxlintrc.json`): un import prohibido en `domain/` o `application/` hace fallar `npm run lint`.
+
+### Qué hay ya en cada capa (autenticación y perfil)
+- `src/domain/user.js`: `displayName({ fullName, email })`.
+- `src/application/ports/auth.js` (contratos `AuthGateway` y `ProfileRepository`) y `src/application/use-cases/auth.js`: `createAuthUseCases(...)` → `getCurrentSession`, `watchSession`, `getProfile`, `signInWithPassword`, `signUp`, `signInWithGoogle`, `signOut`. Devuelven datos ya traducidos (mensajes de error como texto, `signUp` con `status`), nunca objetos de Supabase.
+- `src/infrastructure/supabase/client.js` crea el único cliente de Supabase (lanza error si faltan las variables de `.env`; plantilla en `.env.example`). Solo lo importa `composition.js`; los adaptadores (`auth-gateway.js`, `profile-repository.js`) reciben el cliente por parámetro y traducen con `mappers.js`.
+- `src/infrastructure/composition.js` monta los casos de uso reales; `main.jsx` los pasa a la UI con `UseCasesContext`. Los componentes los leen con `useUseCases()` (`ui/use-cases-context.js`).
+- **Sesión y rol**: `ui/auth/AuthProvider.jsx` guarda el usuario y pide aparte su perfil (de ahí sale `role`). Los componentes lo leen con `useAuth()` → `{ user, profile, role, loading, signOut }` (`profile.fullName`, camelCase). `loading` es `true` hasta tener sesión **y** perfil, así que `App.jsx` no pinta nada con rol hasta entonces.
 - El contexto (`auth-context.js`) y el provider (`AuthProvider.jsx`) están en archivos separados a propósito: la regla `react/only-export-components` de oxlint avisa si un archivo mezcla componentes con otros exports.
-- El perfil se pide fuera del callback de `onAuthStateChange` para no bloquear el auth de Supabase; mantén esa separación si tocas el provider.
+- El perfil se pide fuera del aviso de cambio de sesión (`onAuthStateChange` en el gateway) para no bloquear el auth de Supabase; mantén esa separación si tocas el provider o el gateway.
 
 ## Base de datos
 - Las migraciones se aplican a mano en el SQL Editor de Supabase (no hay CLI de Supabase en el flujo). Pasos de puesta en marcha (Google, Site URL, crear superadmin) en `docs/SPEC.md` §9.
@@ -54,7 +58,7 @@ Tres capas; las dependencias solo apuntan hacia dentro (`infrastructure → appl
 ## Tests y TDD
 - **Toda feature nueva, cambio de comportamiento o bug fix se hace con TDD**: invoca la skill `feature-tdd` (`.claude/skills/feature-tdd/SKILL.md`) antes de escribir código. Primero el test que falla, después el código mínimo, después refactor.
 - Los tests viven junto al código (`Login.jsx` → `Login.test.jsx`). Config en `vitest.config.js`; arranque común en `src/test/setup.js`.
-- Los tests usan variables de Supabase **falsas** y falsean `src/lib/supabase`: nunca deben tocar el proyecto real.
+- Los tests usan variables de Supabase **falsas** y nunca tocan el proyecto real: dominio y casos de uso se prueban con fakes de los ports; la UI, con casos de uso falsos en `UseCasesContext`; los adaptadores de Supabase, con un cliente falso pasado por parámetro. No hace falta `vi.mock`.
 - Cobertura mínima en `vitest.config.js` (`thresholds`): sube, no baja. No la reduzcas para que pase.
 - CI (`.github/workflows/ci.yml`) ejecuta lint, tests con cobertura y build en cada PR y en `main`.
 - Cambios de BD (migraciones, RLS, RPC): script SQL de prueba en `supabase/tests/` escrito antes, ejecutado a mano solo en desarrollo.

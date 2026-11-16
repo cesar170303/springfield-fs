@@ -2,14 +2,11 @@ import { describe, expect, it, vi } from 'vitest'
 import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import App from './App'
-import { AuthContext } from './context/auth-context'
-
-// Login importa el cliente de Supabase; lo sustituimos para que App nunca hable con la red.
-vi.mock('./lib/supabase', () => ({ supabase: { auth: {} } }))
+import { AuthContext } from './auth/auth-context'
+import { UseCasesContext } from './use-cases-context'
 
 function renderApp(auth = {}) {
   const value = {
-    session: null,
     user: null,
     profile: null,
     role: null,
@@ -18,9 +15,12 @@ function renderApp(auth = {}) {
     ...auth,
   }
   render(
-    <AuthContext.Provider value={value}>
-      <App />
-    </AuthContext.Provider>,
+    // Login (hijo de App) pide los casos de uso; aquí no se llega a usar ninguno.
+    <UseCasesContext.Provider value={{}}>
+      <AuthContext.Provider value={value}>
+        <App />
+      </AuthContext.Provider>
+    </UseCasesContext.Provider>,
   )
   return value
 }
@@ -47,7 +47,7 @@ describe('App', () => {
   it('saluda con el nombre del perfil y muestra el rol', () => {
     renderApp({
       user: { email: 'jugador@example.com' },
-      profile: { full_name: 'Jugador' },
+      profile: { fullName: 'Jugador' },
       role: 'superadmin',
     })
 
@@ -56,7 +56,7 @@ describe('App', () => {
   })
 
   it('usa el correo si el perfil no tiene nombre', () => {
-    renderApp({ user: { email: 'jugador@example.com' }, profile: { full_name: null }, role: 'player' })
+    renderApp({ user: { email: 'jugador@example.com' }, profile: { fullName: null }, role: 'player' })
 
     expect(screen.getByRole('heading', { name: 'Hola, jugador@example.com' })).toBeInTheDocument()
   })

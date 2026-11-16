@@ -1,4 +1,5 @@
-import { useAuth } from './context/auth-context'
+import { displayName } from '../../domain/user'
+import { useAuth } from './auth/auth-context'
 import Login from './components/Login'
 
 function App() {
@@ -13,9 +14,15 @@ function App() {
   return (
     <main className="min-h-screen bg-black text-white flex flex-col items-center justify-center gap-4">
       <img src="/escudo.png" alt="Escudo Springfield FS" width="120" height="120" />
-      <h1 className="text-2xl font-bold text-yellow-400">Hola, {profile?.full_name ?? user.email}</h1>
-      <p>Rol: <strong>{role ?? 'sin perfil'}</strong></p>
-      <button onClick={signOut} className="rounded border border-zinc-600 px-4 py-2">Salir</button>
+      <h1 className="text-2xl font-bold text-yellow-400">
+        Hola, {displayName({ fullName: profile?.fullName, email: user.email })}
+      </h1>
+      <p>
+        Rol: <strong>{role ?? 'sin perfil'}</strong>
+      </p>
+      <button onClick={signOut} className="rounded border border-zinc-600 px-4 py-2">
+        Salir
+      </button>
     </main>
   )
 }
