@@ -1,0 +1,72 @@
+{
+  "permissions": {
+    "deny": [
+      "Read(**/.env)",
+      "Read(**/.env.local)",
+      "Read(**/.env.development)",
+      "Read(**/.env.production)",
+      "Read(**/.env.test)",
+      "Read(**/.env.*.local)",
+      "Edit(**/.env)",
+      "Edit(**/.env.local)",
+      "Edit(**/.env.development)",
+      "Edit(**/.env.production)",
+      "Edit(**/.env.test)",
+      "Edit(**/.env.*.local)",
+      "Bash(* .env)",
+      "Bash(* .env *)",
+      "Bash(* .env.local*)",
+      "Bash(* .env.development*)",
+      "Bash(* .env.production*)",
+      "Bash(* .env.test*)",
+      "PowerShell(* .env)",
+      "PowerShell(* .env *)",
+      "PowerShell(* .env.local*)",
+      "PowerShell(* .env.development*)",
+      "PowerShell(* .env.production*)",
+      "PowerShell(* .env.test*)"
+    ],
+    "ask": [
+      "Bash(git push *)",
+      "Bash(git commit *)",
+      "PowerShell(git push *)",
+      "PowerShell(git commit *)",
+      "Bash(curl *)",
+      "Bash(wget *)",
+      "PowerShell(Invoke-WebRequest *)",
+      "PowerShell(Invoke-RestMethod *)",
+      "WebFetch",
+      "mcp__2d8ed33a-5f55-4cc9-bb79-bff7d3638928",
+      "mcp__3fe15915-95e4-4297-bdca-1b235d1ca6ac"
+    ]
+  },
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Edit|Write",
+        "hooks": [
+          {
+            "type": "command",
+            "shell": "bash",
+            "command": "node \"$CLAUDE_PROJECT_DIR/.claude/hooks/format.mjs\"",
+            "timeout": 30,
+            "statusMessage": "Formateando con Prettier..."
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "shell": "bash",
+            "command": "node \"$CLAUDE_PROJECT_DIR/.claude/hooks/check.mjs\"",
+            "timeout": 180,
+            "statusMessage": "Comprobando lint y build..."
+          }
+        ]
+      }
+    ]
+  }
+}
