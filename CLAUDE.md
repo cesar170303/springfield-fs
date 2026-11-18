@@ -63,6 +63,11 @@ Tres capas; las dependencias solo apuntan hacia dentro (`infrastructure → appl
 - CI (`.github/workflows/ci.yml`) ejecuta lint, tests con cobertura y build en cada PR y en `main`.
 - Cambios de BD (migraciones, RLS, RPC): script SQL de prueba en `supabase/tests/` escrito antes, ejecutado a mano solo en desarrollo.
 
+## Versionado y changelog
+- `CHANGELOG.md` (raíz, en español) resume cada feature y lista los «Fallos conocidos». La versión vive en `package.json` (y `package-lock.json`).
+- **Al cerrar cada feature o fix** (tras `feature-tdd`, en el mismo commit): sube `version` según SemVer 0.x (feature → MINOR, arreglo → PATCH; `1.0.0` al publicar en Vercel) y añade la entrada en `CHANGELOG.md` con un resumen breve. Fallo nuevo detectado → «Fallos conocidos»; fallo arreglado → «Corregido» de la versión.
+- La versión de `package.json` debe coincidir con la última entrada del changelog.
+
 ## Skills y flujo de trabajo
 Flujo por feature (los pasos 2-4 usan `agent-skills`; `feature-tdd` manda en cómo se escriben los tests):
 1. **Feature nueva con decisiones de producto** → `/spec`. La especificación vive en `docs/SPEC.md`: actualízala, no crees otra.
