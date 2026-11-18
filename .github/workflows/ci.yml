@@ -20,3 +20,17 @@ jobs:
       # Falla si algún test falla o si la cobertura baja de los umbrales de vitest.config.js
       - run: npm run test:coverage
       - run: npm run build
+
+  database:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      # Solo lo que necesitan los tests SQL: Postgres, Auth (tabla auth.users) y Storage (políticas de fotos).
+      - run: npx supabase start -x realtime,imgproxy,kong,mailpit,postgrest,postgres-meta,studio,edge-runtime,logflare,vector,supavisor
+      - run: npm run db:test

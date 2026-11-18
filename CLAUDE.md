@@ -52,7 +52,8 @@ Tres capas; las dependencias solo apuntan hacia dentro (`infrastructure → appl
 - El perfil se pide fuera del aviso de cambio de sesión (`onAuthStateChange` en el gateway) para no bloquear el auth de Supabase; mantén esa separación si tocas el provider o el gateway.
 
 ## Base de datos
-- Las migraciones se aplican a mano en el SQL Editor de Supabase (no hay CLI de Supabase en el flujo). Pasos de puesta en marcha (Google, Site URL, crear superadmin) en `docs/SPEC.md` §9.
+- **Supabase local** (ADR-0002): CLI como dependencia de desarrollo + Docker Desktop abierto. `npm run db:start` arranca, `npm run db:reset` aplica migraciones + `seed.sql` **solo en local**, `npm run db:test` ejecuta los tests pgTAP, `npm run db:stop` para.
+- Las migraciones se prueban en local antes de llegar a la nube. Aplicarlas a la nube (`supabase link`, `supabase db push` o SQL Editor) es decisión del propietario: pídelo siempre. Pasos de puesta en marcha (Google, Site URL, crear superadmin) en `docs/SPEC.md` §9.
 - Los roles (`profiles.role`, p. ej. `superadmin` y `admin`) los aplica RLS en el servidor; el rol que lee el frontend solo sirve para decidir qué mostrar.
 
 ## Tests y TDD
@@ -61,7 +62,7 @@ Tres capas; las dependencias solo apuntan hacia dentro (`infrastructure → appl
 - Los tests usan variables de Supabase **falsas** y nunca tocan el proyecto real: dominio y casos de uso se prueban con fakes de los ports; la UI, con casos de uso falsos en `UseCasesContext`; los adaptadores de Supabase, con un cliente falso pasado por parámetro. No hace falta `vi.mock`.
 - Cobertura mínima en `vitest.config.js` (`thresholds`): sube, no baja. No la reduzcas para que pase.
 - CI (`.github/workflows/ci.yml`) ejecuta lint, tests con cobertura y build en cada PR y en `main`.
-- Cambios de BD (migraciones, RLS, RPC): script SQL de prueba en `supabase/tests/` escrito antes, ejecutado a mano solo en desarrollo.
+- Cambios de BD (migraciones, RLS, RPC, triggers): test pgTAP en `supabase/tests/database/NN_area.test.sql` escrito antes de la migración, en rojo, y en verde con ella (`npm run db:test`). Auxiliares en `supabase/tests/helpers.psql` (`pg_temp.create_user`, `pg_temp.act_as`, `pg_temp.act_as_anon`). El CI los ejecuta en el job `database`.
 
 ## Versionado y changelog
 - `CHANGELOG.md` (raíz, en español) resume cada feature y lista los «Fallos conocidos». La versión vive en `package.json` (y `package-lock.json`).
