@@ -1,5 +1,5 @@
 import react from '@vitejs/plugin-react'
-import { defineConfig } from 'vitest/config'
+import { configDefaults, defineConfig } from 'vitest/config'
 
 // Config aparte de vite.config.js a propósito: los tests no necesitan Tailwind ni el service worker de la PWA.
 export default defineConfig({
@@ -7,6 +7,8 @@ export default defineConfig({
   test: {
     environment: 'jsdom',
     setupFiles: ['./src/test/setup.js'],
+    // .claude/worktrees guarda copias del repo de otras sesiones: sus tests no son los de esta rama.
+    exclude: [...configDefaults.exclude, '.claude/**'],
     // Valores falsos: src/infrastructure/supabase/client.js lanza error si faltan, y los tests NUNCA deben tocar el proyecto real.
     env: {
       VITE_SUPABASE_URL: 'http://localhost:54321',

@@ -1,0 +1,95 @@
+-- Auxiliares para los tests pgTAP. Se incluyen con \ir desde cada test.
+-- Son funciones temporales (pg_temp): desaparecen al acabar la sesión y nunca llegan a la base de datos real.
+
+-- Crea un usuario de Auth (el trigger crea su perfil) y, si se pide, le cambia el rol.
+-- Por defecto con el correo ya confirmado; p_confirmed => false simula un registro pendiente de confirmar.
+create function pg_temp.create_user(p_email text, p_role public.user_role default null, p_confirmed boolean default true)
+returns uuid language plpgsql as $$
+declare v_id uuid := gen_random_uuid();
+begin
+  insert into auth.users (id, instance_id, aud, role, email, raw_user_meta_data, email_confirmed_at)
+  values (v_id, '00000000-0000-0000-0000-000000000000', 'authenticated', 'authenticated', p_email, '{}',
+          case when p_confirmed then now() end);
+  if p_role is not null then
+    update public.profiles set role = p_role where id = v_id;
+  end if;
+  return v_id;
+end $$;
+
+-- Actúa como ese usuario (igual que una petición de la app con su sesión). Volver con: reset role;
+create function pg_temp.act_as(p_user uuid)
+returns void language plpgsql as $$
+begin
+  perform set_config('request.jwt.claims', json_build_object('sub', p_user, 'role', 'authenticated')::text, true);
+  perform set_config('role', 'authenticated', true);
+end $$;
+
+-- Actúa como visitante sin sesión.
+create function pg_temp.act_as_anon()
+returns void language plpgsql as $$
+begin
+  perform set_config('request.jwt.claims', '{"role": "anon"}', true);
+  perform set_config('role', 'anon', true);
+end $$;
+
+-- ---------------------------------------------------------------------
+-- Montaje de datos (se ejecutan como postgres, antes de act_as).
+-- ---------------------------------------------------------------------
+
+create function pg_temp.create_season(p_name text)
+returns bigint language sql as $$
+  insert into public.seasons (name, start_date, end_date) values (p_name, '2040-09-01', '2041-06-30') returning id;
+$$;
+
+create function pg_temp.create_competition(p_name text, p_type public.competition_type)
+returns bigint language sql as $$
+  insert into public.competitions (name, type) values (p_name, p_type) returning id;
+$$;
+
+-- Ficha + plantilla de la temporada. Si p_with_user, también se registra su cuenta (el trigger las vincula).
+create function pg_temp.create_player(p_season bigint, p_nickname text, p_shirt int,
+                                      p_position public.player_position default 'universal',
+                                      p_with_user boolean default true)
+returns bigint language plpgsql as $$
+declare v_id bigint; v_email text := lower(p_nickname) || '@example.com';
+begin
+  insert into public.players (first_name, last_name, nickname, email, position)
+  values (p_nickname, 'Test', p_nickname, v_email, p_position) returning id into v_id;
+  insert into public.player_seasons (season_id, player_id, shirt_number) values (p_season, v_id, p_shirt);
+  if p_with_user then perform pg_temp.create_user(v_email); end if;
+  return v_id;
+end $$;
+
+create function pg_temp.user_of(p_player bigint)
+returns uuid language sql as $$ select user_id from public.players where id = p_player $$;
+
+create function pg_temp.create_match(p_season bigint, p_competition bigint, p_round int, p_date timestamptz,
+                                     p_for int default null, p_against int default null, p_finished boolean default false)
+returns bigint language sql as $$
+  insert into public.matches (season_id, competition_id, round, match_date, opponent, goals_for, goals_against, is_finished)
+  values (p_season, p_competition, p_round, p_date, 'Rival ' || p_round, p_for, p_against, p_finished) returning id;
+$$;
+
+create function pg_temp.play(p_match bigint, p_player bigint, p_minutes int,
+                             p_yellow boolean default false, p_red boolean default false)
+returns void language sql as $$
+  insert into public.match_squad (match_id, player_id, minutes, yellow_card, red_card)
+  values (p_match, p_player, p_minutes, p_yellow, p_red);
+$$;
+
+-- Voto escrito directamente (sin pasar por RLS), para montar datos de estadísticas.
+-- El votante es la cuenta (profiles.id).
+create function pg_temp.add_vote(p_match bigint, p_voter uuid, p_rated bigint, p_score numeric)
+returns void language sql as $$
+  insert into public.votes (match_id, voter_id, rated_id, score) values (p_match, p_voter, p_rated, p_score);
+$$;
+
+-- Guarda un valor de la prueba en una variable de la transacción y lo devuelve (p. ej. un id).
+create function pg_temp.keep(p_name text, p_value text)
+returns text language sql as $$ select set_config('t.' || p_name, p_value, true) $$;
+
+create function pg_temp.id(p_name text)
+returns bigint language sql as $$ select current_setting('t.' || p_name)::bigint $$;
+
+create function pg_temp.uid(p_name text)
+returns uuid language sql as $$ select current_setting('t.' || p_name)::uuid $$;

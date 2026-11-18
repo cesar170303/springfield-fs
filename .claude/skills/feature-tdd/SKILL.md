@@ -55,8 +55,9 @@ Ejemplos completos: `src/infrastructure/supabase/profile-repository.test.js` (ca
 - **Estados de `useAuth()`**: cubre `loading`, sin usuario, con usuario sin perfil y cada rol relevante.
 
 ## Cambios de base de datos (migraciones, RLS, RPC, triggers)
-- No hay Supabase CLI ni tests SQL automáticos en el repo. Para cada migración nueva, escribe **antes** un script de prueba en `supabase/tests/NNN_nombre.sql` (envuelto en `BEGIN; ... ROLLBACK;`) que falle sin la migración y pase con ella.
-- Se ejecuta a mano en un proyecto de **desarrollo** o un Postgres local. **Nunca en producción.** Di claramente al propietario qué script debe ejecutar y qué resultado espera.
+- Tests pgTAP en `supabase/tests/database/NN_area.test.sql` (ADR-0002). Para cada migración nueva, escribe **antes** el test, ejecútalo con `npm run db:test` y enseña el fallo; después la migración (`npm run db:reset` la aplica en local) y el test en verde.
+- Cada archivo: `begin;` → `\ir ../helpers.psql` → `select no_plan();` → aserciones → `select * from finish();` → `rollback;`. Crea tus propios datos (nombres como `TEST 04` para no chocar con el seed). Actúa como un usuario con `select pg_temp.act_as(<uuid>)` y vuelve con `reset role;`.
+- Todo corre en Supabase **local** (Docker). **Nunca en producción.** Aplicar la migración a la nube lo decide el propietario.
 - Nunca edites una migración ya aplicada: crea una nueva.
 
 ## Prohibido
