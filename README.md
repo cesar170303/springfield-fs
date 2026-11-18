@@ -10,7 +10,7 @@
 
 <p align="center">
   <a href="https://github.com/cesar170303/springfield-fs/actions/workflows/ci.yml"><img src="https://github.com/cesar170303/springfield-fs/actions/workflows/ci.yml/badge.svg" alt="CI"></a>
-  <img src="https://img.shields.io/badge/versi%C3%B3n-0.3.0-blue" alt="Versión 0.3.0">
+  <img src="https://img.shields.io/badge/versi%C3%B3n-0.4.1-blue" alt="Versión 0.4.1">
   <a href="LICENSE"><img src="https://img.shields.io/badge/licencia-MIT-green" alt="Licencia MIT"></a>
   <img src="https://img.shields.io/badge/React-Vite-61dafb" alt="React + Vite">
   <img src="https://img.shields.io/badge/Tailwind-CSS-38bdf8" alt="Tailwind CSS">
@@ -23,7 +23,7 @@
 
 Springfield FS juega en la Primera División de la Liga Local. Esta app sustituye a las hojas de cálculo: el admin registra cada partido y los jugadores consultan sus números y votan la actuación de sus compañeros.
 
-> **Estado:** en desarrollo (v0.3.0). Todavía no hay versión desplegada ni capturas; el diseño visual se decide cuando el flujo funcione.
+> **Estado:** en desarrollo (v0.4.1). Todavía no hay versión desplegada ni capturas; el diseño visual se decide cuando el flujo funcione.
 
 ## Funcionalidades
 
@@ -45,7 +45,7 @@ Las decisiones de producto completas están en [`docs/SPEC.md`](docs/SPEC.md).
 | Frontend | React + Vite + Tailwind CSS (JavaScript con JSX) |
 | PWA | `vite-plugin-pwa` |
 | Backend | Supabase: Postgres, Auth (email y Google), Storage y RLS |
-| Tests | Vitest + React Testing Library |
+| Tests | Vitest + React Testing Library (frontend) · pgTAP con Supabase local (base de datos) |
 | Lint | oxlint |
 | Hosting | Vercel (pendiente) |
 
@@ -54,7 +54,8 @@ Las decisiones de producto completas están en [`docs/SPEC.md`](docs/SPEC.md).
 ### Requisitos
 
 - Node.js y npm
-- Un proyecto de Supabase **de desarrollo**
+- Docker Desktop (para la base de datos local y sus tests)
+- Un proyecto de Supabase en la nube para la app
 
 ### Pasos
 
@@ -79,14 +80,22 @@ Las decisiones de producto completas están en [`docs/SPEC.md`](docs/SPEC.md).
 
    > `.env` está en `.gitignore`. **Nunca lo subas al repositorio.**
 
-3. Prepara la base de datos en el **SQL Editor** de Supabase (no se usa la CLI):
-   1. Ejecuta `supabase/migrations/20261114120000_initial_schema.sql`, una sola vez.
-   2. Activa Google en *Authentication → Providers*.
+3. Base de datos **local** para desarrollar y probar (Docker abierto):
+
+   ```bash
+   npm run db:start   # arranca Supabase en local y aplica migraciones + seed
+   npm run db:test    # tests pgTAP de la base de datos
+   ```
+
+   El seed (`supabase/seed.sql`) solo se carga en local. **Nunca lo ejecutes en producción.**
+
+4. Proyecto de la **nube**:
+   1. Aplica, en orden, todas las migraciones de `supabase/migrations/`.
+   2. Activa Google en *Authentication → Providers* y deja **activada** la confirmación de correo.
    3. Pon `http://localhost:5173` como *Site URL*.
    4. Convierte a tu usuario en `superadmin` (detalle en [`docs/SPEC.md`](docs/SPEC.md) §9).
-   5. Opcional, **solo en desarrollo**: carga datos de prueba con `supabase/seed.sql`. **Nunca lo ejecutes en producción.**
 
-4. Arranca la app:
+5. Arranca la app:
 
    ```bash
    npm run dev
@@ -105,8 +114,11 @@ Las decisiones de producto completas están en [`docs/SPEC.md`](docs/SPEC.md).
 | `npm test` | Tests (una pasada) |
 | `npm run test:watch` | Tests en modo vigilancia |
 | `npm run test:coverage` | Tests con informe de cobertura |
+| `npm run db:start` / `db:stop` | Arranca / para Supabase en local (Docker) |
+| `npm run db:reset` | Recrea la base de datos local con migraciones y seed |
+| `npm run db:test` | Tests pgTAP de la base de datos |
 
-El CI ([`.github/workflows/ci.yml`](.github/workflows/ci.yml)) ejecuta lint, tests con cobertura y build en cada PR y en `main`.
+El CI ([`.github/workflows/ci.yml`](.github/workflows/ci.yml)) ejecuta lint, tests con cobertura y build en cada PR y en `main`, y en un job aparte arranca Supabase y pasa los tests de la base de datos ([ADR-0002](docs/adr/0002-supabase-local-pgtap.md)).
 
 ## Arquitectura
 
