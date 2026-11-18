@@ -25,8 +25,9 @@ overriding system value values
 
 -- Cuentas de prueba para cada ficha, SIN contraseña (no se puede iniciar sesión con ellas).
 -- Hacen falta porque el votante es una cuenta; el trigger on_auth_user_created las vincula a su ficha.
-insert into auth.users (id, instance_id, aud, role, email, raw_user_meta_data)
-select gen_random_uuid(), '00000000-0000-0000-0000-000000000000', 'authenticated', 'authenticated', email, '{}'
+-- Con el correo ya confirmado: solo las cuentas confirmadas se vinculan a una ficha.
+insert into auth.users (id, instance_id, aud, role, email, raw_user_meta_data, email_confirmed_at)
+select gen_random_uuid(), '00000000-0000-0000-0000-000000000000', 'authenticated', 'authenticated', email, '{}', now()
 from public.players;
 
 insert into public.player_seasons (season_id, player_id, shirt_number) values

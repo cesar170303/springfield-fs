@@ -55,6 +55,8 @@ Tres capas; las dependencias solo apuntan hacia dentro (`infrastructure → appl
 - **Supabase local** (ADR-0002): CLI como dependencia de desarrollo + Docker Desktop abierto. `npm run db:start` arranca, `npm run db:reset` aplica migraciones + `seed.sql` **solo en local**, `npm run db:test` ejecuta los tests pgTAP, `npm run db:stop` para.
 - Las migraciones se prueban en local antes de llegar a la nube. Aplicarlas a la nube (`supabase link`, `supabase db push` o SQL Editor) es decisión del propietario: pídelo siempre. Pasos de puesta en marcha (Google, Site URL, crear superadmin) en `docs/SPEC.md` §9.
 - Los roles (`profiles.role`, p. ej. `superadmin` y `admin`) los aplica RLS en el servidor; el rol que lee el frontend solo sirve para decidir qué mostrar.
+- `players.email` **no es legible** por `authenticated` (permisos por columna): pide siempre columnas concretas a `players`, nunca `select *`. El staff obtiene los correos con la RPC `get_player_emails()`.
+- Auditoría de seguridad y decisiones: `docs/security/2026-11-auditoria.md`. La ficha solo se vincula a cuentas con el correo **confirmado**: en la nube la confirmación de correo tiene que estar activada.
 
 ## Tests y TDD
 - **Toda feature nueva, cambio de comportamiento o bug fix se hace con TDD**: invoca la skill `feature-tdd` (`.claude/skills/feature-tdd/SKILL.md`) antes de escribir código. Primero el test que falla, después el código mínimo, después refactor.

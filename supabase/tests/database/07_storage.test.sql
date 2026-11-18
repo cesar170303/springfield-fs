@@ -33,9 +33,7 @@ delete from storage.objects where bucket_id = 'player-photos' and name = 'a.webp
 reset role;
 select isnt_empty($$ select 1 from storage.objects where bucket_id = 'player-photos' and name = 'a.webp' $$,
                   'el jugador no puede cambiar ni borrar fotos');
--- FALLO CONOCIDO (auditoría, fase 2): storage.objects no tiene política de SELECT para el bucket,
--- así que UPDATE y DELETE no ven ninguna fila y el admin no puede cambiar ni borrar fotos.
-select todo_start('fallo conocido: falta política de lectura en storage.objects');
+-- UPDATE y DELETE solo ven las filas que permite la política de SELECT (auditoría, hallazgo 3).
 select pg_temp.act_as(current_setting('t.admin')::uuid);
 update storage.objects set name = 'a2.webp' where bucket_id = 'player-photos' and name = 'a.webp';
 reset role;
@@ -46,7 +44,6 @@ delete from storage.objects where bucket_id = 'player-photos';
 reset role;
 select is_empty($$ select 1 from storage.objects where bucket_id = 'player-photos' $$,
                 'el admin borra fotos');
-select todo_end();
 
 select * from finish();
 rollback;

@@ -2,12 +2,14 @@
 -- Son funciones temporales (pg_temp): desaparecen al acabar la sesión y nunca llegan a la base de datos real.
 
 -- Crea un usuario de Auth (el trigger crea su perfil) y, si se pide, le cambia el rol.
-create function pg_temp.create_user(p_email text, p_role public.user_role default null)
+-- Por defecto con el correo ya confirmado; p_confirmed => false simula un registro pendiente de confirmar.
+create function pg_temp.create_user(p_email text, p_role public.user_role default null, p_confirmed boolean default true)
 returns uuid language plpgsql as $$
 declare v_id uuid := gen_random_uuid();
 begin
-  insert into auth.users (id, instance_id, aud, role, email, raw_user_meta_data)
-  values (v_id, '00000000-0000-0000-0000-000000000000', 'authenticated', 'authenticated', p_email, '{}');
+  insert into auth.users (id, instance_id, aud, role, email, raw_user_meta_data, email_confirmed_at)
+  values (v_id, '00000000-0000-0000-0000-000000000000', 'authenticated', 'authenticated', p_email, '{}',
+          case when p_confirmed then now() end);
   if p_role is not null then
     update public.profiles set role = p_role where id = v_id;
   end if;

@@ -8,10 +8,23 @@ Registro de lo que se hace en cada feature y de los fallos detectados. Formato b
 
 Fallos detectados que aún no están resueltos. Al arreglarlos, pasa la línea a «Corregido» de la versión correspondiente.
 
-- **Fotos de jugadores:** `storage.objects` no tiene política de lectura para `player-photos`, así que el admin puede subir fotos pero no cambiarlas ni borrarlas desde la app (test `07_storage`, marcado como TODO).
 - **PWA no instalable:** `vite.config.js` solo declara un icono de 150×150; Chrome no ofrece «instalar» hasta tener iconos de 192 y 512 px (falta el escudo en alta resolución).
 
 ## [Sin publicar]
+
+## [0.4.1] - 2026-11-18
+
+Auditoría de seguridad del backend y corrección de los hallazgos elegidos (`docs/security/2026-11-auditoria.md`).
+
+### Corregido
+- Cualquier usuario registrado podía leer el correo de todos los jugadores. Ahora solo el staff, con `get_player_emails()`.
+- Una cuenta con el correo **sin confirmar** se quedaba con la ficha del jugador y el rol `player`. Ahora la ficha solo se vincula al confirmar el correo.
+- El admin no podía cambiar ni borrar fotos de jugadores (faltaba la política de lectura en Storage).
+- Borrar la cuenta de alguien que había votado cambiaba medias y MVP ya cerrados. Ahora no se puede borrar.
+- Permisos sobrantes: la API ya no tiene `TRUNCATE`, `TRIGGER` ni `REFERENCES`; las funciones auxiliares no las ejecutan anónimos; eliminada `current_player_id`.
+
+### Cambiado
+- Spec: fotos públicas por URL por decisión expresa; confirmación de correo obligatoria en la nube.
 
 ## [0.4.0] - 2026-11-18
 

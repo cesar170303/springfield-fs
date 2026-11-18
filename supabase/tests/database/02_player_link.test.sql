@@ -35,5 +35,26 @@ select pg_temp.keep('dani', pg_temp.create_user('dani02@example.com')::text);
 select is_empty($$ select 1 from public.players where user_id = pg_temp.uid('dani') $$,
                 'sin ficha con su correo, la cuenta no se vincula a ninguna');
 
+-- 5. Registro con el correo de un jugador SIN confirmar: no se vincula hasta que se confirma.
+insert into public.players (first_name, last_name, nickname, email, position)
+values ('Eva', 'Test', 'EVA', 'eva02@example.com', 'winger');
+select pg_temp.keep('eva', pg_temp.create_user('eva02@example.com', null, false)::text);
+select is_empty($$ select 1 from public.players where user_id = pg_temp.uid('eva') $$,
+                'una cuenta sin confirmar no se queda con la ficha');
+select is((select role::text from public.profiles where id = pg_temp.uid('eva')), 'viewer',
+          'una cuenta sin confirmar no pasa a player');
+update auth.users set email_confirmed_at = now() where id = pg_temp.uid('eva');
+select is((select user_id from public.players where email = 'eva02@example.com'), pg_temp.uid('eva'),
+          'al confirmar el correo se vincula la ficha');
+select is((select role::text from public.profiles where id = pg_temp.uid('eva')), 'player',
+          'al confirmar el correo pasa a player');
+
+-- 6. Ficha creada para una cuenta que aún no ha confirmado: tampoco se vincula.
+select pg_temp.keep('fran', pg_temp.create_user('fran02@example.com', null, false)::text);
+insert into public.players (first_name, last_name, nickname, email, position)
+values ('Fran', 'Test', 'FRAN', 'fran02@example.com', 'pivot');
+select is_empty($$ select 1 from public.players where user_id = pg_temp.uid('fran') $$,
+                'crear la ficha no la vincula a una cuenta sin confirmar');
+
 select * from finish();
 rollback;

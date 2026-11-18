@@ -25,8 +25,10 @@ Documento de decisiones acordadas el 14/11/2026. Fuente de verdad del producto.
 | `viewer` | Registrado sin ficha de jugador. Consulta todo; vota solo si el staff lo elige como votante de esa temporada |
 
 - Login con email y con **Google** (Supabase Auth).
-- **Registro abierto**: cualquiera que se registre puede ver la app ("no hay nada que ocultar"). Sin registro no se ve nada.
-- **El admin crea la ficha del jugador** con su email. Cuando ese email se registra, un trigger vincula la cuenta a la ficha y le da el rol `player`. Funciona también si el jugador se registra antes de que exista la ficha.
+- **Registro abierto**: cualquiera que se registre puede ver la app ("no hay nada que ocultar"). Sin registro no se ve nada, salvo las fotos de los jugadores si se tiene su URL (ver §8).
+- **El correo de los jugadores solo lo ve el staff** (RPC `get_player_emails`); el resto de la ficha la ve cualquier registrado.
+- **La confirmación de correo debe estar activada** en el proyecto de la nube: sin ella, cualquiera podría registrarse con el correo de un jugador y quedarse con su ficha.
+- **El admin crea la ficha del jugador** con su email. Cuando ese email se registra **y se confirma**, un trigger vincula la cuenta a la ficha y le da el rol `player` (con Google el correo ya viene confirmado). Funciona también si el jugador se registra antes de que exista la ficha. Una cuenta sin confirmar nunca se vincula.
 - Todos ven la lista completa de la plantilla y las fichas de todos.
 
 ## 3. Temporadas y competiciones
@@ -38,6 +40,7 @@ Documento de decisiones acordadas el 14/11/2026. Fuente de verdad del producto.
   - Hay un **filtro** para ver solo una competición (p. ej., 1 gol en copa + 1 en liga = 2 en la lista).
 - Los partidos de copa **también llevan número de jornada**, pero siempre se distingue que son de copa (etiqueta "Copa J2").
 - Cuando un jugador deja el equipo, **se archiva**: no se borra y conserva su historial.
+- **Una cuenta que ha votado no se puede borrar**, para que no cambien medias ni MVP de partidos ya cerrados.
 
 ## 4. Partidos
 
@@ -82,7 +85,7 @@ Documento de decisiones acordadas el 14/11/2026. Fuente de verdad del producto.
 - **Notificaciones push** (Web Push): votación abierta, recordatorio de votar antes del cierre, y resultados con el MVP. Nota: en iPhone solo funcionan si la PWA está añadida a la pantalla de inicio.
 - **Sin modo offline** para editar. Siempre con conexión.
 - **Sin exportación** a PDF/Excel.
-- **Fotos**: solo las suben el admin y el superadmin. Bucket público `player-photos` (máx. 2 MB; webp/jpeg/png).
+- **Fotos**: solo las suben, cambian o borran el admin y el superadmin. Bucket **público** `player-photos` (máx. 2 MB; webp/jpeg/png): se ven por URL directa sin iniciar sesión, por decisión expresa (más simple y rápido que URLs firmadas).
 
 ## 9. Backend implementado (`supabase/migrations/20261114120000_initial_schema.sql`)
 
