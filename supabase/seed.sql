@@ -23,6 +23,12 @@ overriding system value values
   (7, 'Javier', 'Castillo', 'Javi',   'javier@example.com', 'winger'),
   (8, 'Rubén',  'Ortega',   null,     'ruben@example.com',  'pivot');
 
+-- Cuentas de prueba para cada ficha, SIN contraseña (no se puede iniciar sesión con ellas).
+-- Hacen falta porque el votante es una cuenta; el trigger on_auth_user_created las vincula a su ficha.
+insert into auth.users (id, instance_id, aud, role, email, raw_user_meta_data)
+select gen_random_uuid(), '00000000-0000-0000-0000-000000000000', 'authenticated', 'authenticated', email, '{}'
+from public.players;
+
 insert into public.player_seasons (season_id, player_id, shirt_number) values
   (1, 1, 1), (1, 2, 4), (1, 3, 7), (1, 4, 8),
   (1, 5, 9), (1, 6, 5), (1, 7, 10), (1, 8, 11);
@@ -61,16 +67,17 @@ insert into public.missed_penalties (match_id, player_id, type) values
   (2, 5, 'penalty'),
   (5, 3, 'double_penalty');
 
--- Votos: cada jugador de la plantilla puntúa a los que jugaron (sin autovoto).
+-- Votos: cada jugador de la plantilla (su cuenta) puntúa a los que jugaron (sin autovoto).
 -- Notas pseudoaleatorias deterministas entre 5 y 9.5.
 insert into public.votes (match_id, voter_id, rated_id, score)
 select ms.match_id,
-       ps.player_id,
+       voter.user_id,
        ms.player_id,
        5 + ((ps.player_id * 7 + ms.player_id * 3 + ms.match_id * 5) % 10) * 0.5
 from public.match_squad ms
 join public.matches m         on m.id = ms.match_id and m.is_finished
 join public.player_seasons ps on ps.season_id = m.season_id
+join public.players voter     on voter.id = ps.player_id
 where ms.minutes > 0
   and ps.player_id <> ms.player_id;
 

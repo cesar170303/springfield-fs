@@ -76,11 +76,10 @@ returns void language sql as $$
 $$;
 
 -- Voto escrito directamente (sin pasar por RLS), para montar datos de estadísticas.
--- El votante se identifica por su cuenta: así los tests no dependen de cómo guarde el voto la tabla.
+-- El votante es la cuenta (profiles.id).
 create function pg_temp.add_vote(p_match bigint, p_voter uuid, p_rated bigint, p_score numeric)
 returns void language sql as $$
-  insert into public.votes (match_id, voter_id, rated_id, score)
-  values (p_match, (select id from public.players where user_id = p_voter), p_rated, p_score);
+  insert into public.votes (match_id, voter_id, rated_id, score) values (p_match, p_voter, p_rated, p_score);
 $$;
 
 -- Guarda un valor de la prueba en una variable de la transacción y lo devuelve (p. ej. un id).

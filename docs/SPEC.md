@@ -22,7 +22,7 @@ Documento de decisiones acordadas el 14/11/2026. Fuente de verdad del producto.
 | `superadmin` | Propietario del proyecto. Todo, incluido cambiar roles |
 | `admin` | Gestiona temporadas, jugadores, partidos, estadísticas y fotos |
 | `player` | Consulta todo y **vota** a sus compañeros. No edita nada más (tampoco su foto) |
-| `viewer` | Registrado sin ficha de jugador. Solo consulta |
+| `viewer` | Registrado sin ficha de jugador. Consulta todo; vota solo si el staff lo elige como votante de esa temporada |
 
 - Login con email y con **Google** (Supabase Auth).
 - **Registro abierto**: cualquiera que se registre puede ver la app ("no hay nada que ocultar"). Sin registro no se ve nada.
@@ -61,13 +61,14 @@ Documento de decisiones acordadas el 14/11/2026. Fuente de verdad del producto.
 
 - La valoración la ponen **los compañeros**, con **voto anónimo**.
 - Escala **1–10 con medios puntos** (7, 7.5, 8…).
-- **Votan los jugadores de la plantilla de esa temporada** (vinculados a una ficha activa y no archivada). Un `viewer` no vota.
+- **Votan los jugadores de la plantilla de esa temporada** (vinculados a una ficha activa y no archivada).
+- **Viewers votantes:** el superadmin y los admins pueden elegir, **por temporada**, qué viewers votan (aficionados que van siempre a los partidos). Su voto **pesa igual** que el de un jugador y es igual de anónimo. Un viewer no elegido no vota.
 - Solo se puede votar a quien **jugó al menos 1 minuto**. **Sin autovoto**.
 - La votación está abierta **7 días desde la fecha del partido** (valor fijo).
-- Mientras está abierta, el jugador puede cambiar su voto. No puede borrarlo.
+- **Cada voto es definitivo:** una vez emitido no se puede cambiar ni borrar (para evitar amiguismos). Se puede votar a unos compañeros un día y al resto otro, mientras la votación siga abierta.
 - Las **medias solo se muestran cuando la votación está cerrada**. Así nadie puede deducir el voto de otro viendo cómo cambia la media.
 - **MVP** = mejor media del partido. Si hay empate, el admin lo resuelve (`mvp_override_player_id`).
-- Anonimato: la tabla guarda `voter_id` (para impedir votos dobles), pero RLS impide que nadie, ni el admin, lea votos ajenos desde la app.
+- Anonimato: la tabla guarda `voter_id` (la **cuenta** del votante, para impedir votos dobles), pero RLS impide que nadie, ni el admin, lea votos ajenos desde la app.
 
 ## 7. Gráfica de la ficha del jugador
 

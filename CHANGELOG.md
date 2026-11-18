@@ -8,9 +8,25 @@ Registro de lo que se hace en cada feature y de los fallos detectados. Formato b
 
 Fallos detectados que aún no están resueltos. Al arreglarlos, pasa la línea a «Corregido» de la versión correspondiente.
 
+- **Fotos de jugadores:** `storage.objects` no tiene política de lectura para `player-photos`, así que el admin puede subir fotos pero no cambiarlas ni borrarlas desde la app (test `07_storage`, marcado como TODO).
 - **PWA no instalable:** `vite.config.js` solo declara un icono de 150×150; Chrome no ofrece «instalar» hasta tener iconos de 192 y 512 px (falta el escudo en alta resolución).
 
 ## [Sin publicar]
+
+## [0.4.0] - 2026-11-18
+
+El backend gana una red de seguridad: Supabase en local, 90 tests SQL que se ejecutan con un comando (también en CI) y dos reglas nuevas de votación.
+
+### Añadido
+- Supabase local con la CLI y Docker (ADR-0002): `npm run db:start`, `db:reset`, `db:test` y `db:stop`.
+- Tests pgTAP en `supabase/tests/database/`: roles, vínculo ficha↔cuenta, validaciones, votación, anonimato, estadísticas y fotos.
+- Job `database` en CI que arranca Supabase y ejecuta los tests SQL.
+- **Viewers votantes:** el staff elige por temporada qué viewers pueden votar (tabla `season_voters`). Su voto pesa igual y es anónimo.
+
+### Cambiado
+- **Voto definitivo:** un voto emitido ya no se puede cambiar ni borrar (antes se podía cambiar mientras la votación estaba abierta).
+- `votes.voter_id` pasa a ser la cuenta del votante (`profiles.id`) en lugar de su ficha, para que voten los viewers elegidos.
+- `seed.sql` crea cuentas sin contraseña para sus jugadores ficticios.
 
 ## [0.3.0] - 2026-11-16
 
