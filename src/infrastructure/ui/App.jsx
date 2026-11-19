@@ -13,7 +13,7 @@ function App() {
   // Pantalla provisional: el paso 3 pondrá aquí la lista de la plantilla.
   return (
     <main className="min-h-screen bg-black text-white flex flex-col items-center justify-center gap-4">
-      <img src="/escudo.png" alt="Escudo Springfield FS" width="120" height="120" />
+      <img src="/pwa-512x512.png" alt="Escudo Springfield FS" width="120" height="120" />
       <h1 className="text-2xl font-bold text-yellow-400">
         Hola, {displayName({ fullName: profile?.fullName, email: user.email })}
       </h1>

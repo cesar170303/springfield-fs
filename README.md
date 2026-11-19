@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="public/escudo.png" alt="Escudo de Springfield FS" width="150">
+  <img src="public/escudo-hd.png" alt="Escudo de Springfield FS" width="150">
 </p>
 
 <h1 align="center">Springfield FS · Estadísticas</h1>
@@ -155,7 +155,6 @@ Orden de trabajo definido en [`docs/SPEC.md`](docs/SPEC.md) §10:
 - [ ] 8. Notificaciones push
 - [ ] 9. Despliegue en Vercel
 
-Pendiente también: escudo en alta resolución (hacen falta iconos de 192 y 512 px para que Chrome ofrezca "instalar").
 
 El historial de versiones está en [`CHANGELOG.md`](CHANGELOG.md).
 
@@ -169,4 +168,4 @@ El historial de versiones está en [`CHANGELOG.md`](CHANGELOG.md).
 
 El código se distribuye bajo la licencia [MIT](LICENSE).
 
-La licencia cubre **solo el código**. El escudo (`public/escudo.png`) y el nombre y la marca «Springfield FS» pertenecen al club y no se pueden reutilizar libremente.
+La licencia cubre **solo el código**. El escudo (`public/escudo-hd.png` y los iconos generados a partir de él) y el nombre y la marca «Springfield FS» pertenecen al club y no se pueden reutilizar libremente.

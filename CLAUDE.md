@@ -17,7 +17,7 @@ PWA para que el equipo de fútbol sala **Springfield FS** (Torrejón de Ardoz) r
 - Backend: tres migraciones en `supabase/migrations/` (esquema inicial, voto definitivo + viewers votantes, endurecimiento de seguridad), probadas con pgTAP y **aplicadas en la nube** el 2026-11-19. Cuarta migración (notificaciones push) solo en local: pendiente de aplicar en la nube y de desplegar la Edge Function (`docs/SPEC.md` §9, paso 5).
 - `supabase/seed.sql`: datos de prueba, **solo para desarrollo**.
 - Frontend: hechos los pasos 1 y 2 del "Orden de trabajo sugerido" (`docs/SPEC.md` §10): proyecto base, cliente de Supabase, login y contexto de sesión con rol, ya migrados a Clean Architecture (ADR-0001). Siguiente: paso 3 (lista de la plantilla con `get_squad_stats`), sobre las capas. El diseño visual se decide después; por ahora, componentes funcionales con Tailwind básico.
-- `public/escudo.png`: escudo del equipo (150×150; falta una versión en alta resolución).
+- `public/escudo-hd.png`: escudo del equipo en alta resolución (1024×1024, fondo negro). Es la fuente de los iconos de la PWA; la app muestra `pwa-512x512.png`.
 
 ## Reglas del proyecto
 - **Los totales nunca se guardan.** Las estadísticas se guardan por partido y se calculan con las funciones RPC: `get_squad_stats`, `get_player_rating_timeline` y `get_season_mvps`. No calcules totales en el frontend si ya existe una RPC que lo hace.
@@ -100,4 +100,4 @@ No usar en este proyecto (instrucción para Claude, no un bloqueo técnico): `da
 - Prettier (`.prettierrc.json`): lo ejecuta un hook tras cada Edit/Write (`.claude/hooks/format.mjs`). Otro hook Stop (`.claude/hooks/check.mjs`) bloquea el cierre de la tarea si fallan `npm run lint`, `npm test` o `npm run build`. Permisos en `.claude/settings.json`: `.env*` denegado; `git push/commit`, red, Supabase y Vercel piden confirmación.
 - `npm test` — suite de tests (Vitest, una pasada) · `npm run test:watch` — modo vigilancia · `npm run test:coverage` — con informe de cobertura (carpeta `coverage/`).
 - `dist/` y `coverage/` son salida generada (ignoradas por git).
-- Ojo PWA: `vite.config.js` solo declara un icono de 150×150; Chrome no ofrecerá "instalar" hasta tener iconos de 192 y 512 px (pendiente del escudo en alta resolución).
+- `npm run icons` — regenera los iconos de la PWA (`pwa-*`, `maskable-icon-512x512.png`, `apple-touch-icon-180x180.png`, `favicon.ico`) desde `public/escudo-hd.png` (`pwa-assets.config.js`). Si cambia el escudo, sustituye ese archivo y ejecútalo.
