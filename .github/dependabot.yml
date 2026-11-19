@@ -1,0 +1,20 @@
+version: 2
+updates:
+  # Dependencias de la app (package.json). Un solo PR semanal con todas las subidas
+  # menores y parches, para no recibir un PR por paquete.
+  - package-ecosystem: npm
+    directory: /
+    schedule:
+      interval: weekly
+      day: monday
+    open-pull-requests-limit: 5
+    groups:
+      minor-and-patch:
+        update-types: [minor, patch]
+
+  # Las actions del CI (actions/checkout@v4, setup-node@v4...).
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+      day: monday
