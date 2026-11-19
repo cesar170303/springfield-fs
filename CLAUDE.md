@@ -14,7 +14,7 @@ PWA para que el equipo de fútbol sala **Springfield FS** (Torrejón de Ardoz) r
 - Hosting: Vercel
 
 ## Estado actual
-- Backend: tres migraciones en `supabase/migrations/` (esquema inicial, voto definitivo + viewers votantes, endurecimiento de seguridad), probadas con pgTAP y **aplicadas en la nube** el 2026-11-19. Pendiente: notificaciones push.
+- Backend: tres migraciones en `supabase/migrations/` (esquema inicial, voto definitivo + viewers votantes, endurecimiento de seguridad), probadas con pgTAP y **aplicadas en la nube** el 2026-11-19. Cuarta migración (notificaciones push) solo en local: pendiente de aplicar en la nube y de desplegar la Edge Function (`docs/SPEC.md` §9, paso 5).
 - `supabase/seed.sql`: datos de prueba, **solo para desarrollo**.
 - Frontend: hechos los pasos 1 y 2 del "Orden de trabajo sugerido" (`docs/SPEC.md` §10): proyecto base, cliente de Supabase, login y contexto de sesión con rol, ya migrados a Clean Architecture (ADR-0001). Siguiente: paso 3 (lista de la plantilla con `get_squad_stats`), sobre las capas. El diseño visual se decide después; por ahora, componentes funcionales con Tailwind básico.
 - `public/escudo.png`: escudo del equipo (150×150; falta una versión en alta resolución).
@@ -56,6 +56,7 @@ Tres capas; las dependencias solo apuntan hacia dentro (`infrastructure → appl
 - Las migraciones se prueban en local antes de llegar a la nube. Aplicarlas a la nube (`supabase link`, `supabase db push` o SQL Editor) es decisión del propietario: pídelo siempre. Pasos de puesta en marcha (Google, Site URL, crear superadmin) en `docs/SPEC.md` §9.
 - Los roles (`profiles.role`, p. ej. `superadmin` y `admin`) los aplica RLS en el servidor; el rol que lee el frontend solo sirve para decidir qué mostrar.
 - `players.email` **no es legible** por `authenticated` (permisos por columna): pide siempre columnas concretas a `players`, nunca `select *`. El staff obtiene los correos con la RPC `get_player_emails()`.
+- **Notificaciones push:** `public.claim_pending_notifications()` (solo `service_role`) devuelve los avisos pendientes y los marca en `private.notifications_sent`; la lógica de destinatarios vive en `private.match_voters` y `private.match_pending_voters`. La tarea `pg_cron` `send-push-notifications` (cada 15 min) llama con `pg_net` a la Edge Function `supabase/functions/send-push/` leyendo `project_url` y `secret_key` de Vault. La lógica de envío (`deliver.ts`) se prueba con Vitest; `index.ts` solo conecta piezas.
 - Auditoría de seguridad y decisiones: `docs/security/2026-11-auditoria.md`. La ficha solo se vincula a cuentas con el correo **confirmado**: en la nube la confirmación de correo tiene que estar activada.
 
 ## Tests y TDD

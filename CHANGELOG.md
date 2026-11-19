@@ -12,6 +12,17 @@ Fallos detectados que aún no están resueltos. Al arreglarlos, pasa la línea a
 
 ## [Sin publicar]
 
+## [0.5.0] - 2026-11-19
+
+Backend de las notificaciones push de la votación (falta que la PWA pida permiso y guarde la suscripción).
+
+### Añadido
+- Tres avisos por partido, cada uno una sola vez: **votación abierta** (a los votantes de la temporada), **queda 1 día** (solo a quien le falta algún compañero) y **MVP del partido** al cerrarse (a todos los registrados con notificaciones).
+- `claim_pending_notifications()`: calcula los avisos pendientes y los marca como enviados en el mismo paso. Solo la puede llamar el servidor.
+- Edge Function `send-push` (Web Push con VAPID): envía los avisos y borra las suscripciones caducadas.
+- Tarea `pg_cron` cada 15 minutos que llama a la función; la URL y la clave se leen de Vault.
+- Tests: `09_notifications` (pgTAP) y `deliver.test.ts` (Vitest).
+
 ## [0.4.1] - 2026-11-18
 
 Auditoría de seguridad del backend y corrección de los hallazgos elegidos (`docs/security/2026-11-auditoria.md`).
