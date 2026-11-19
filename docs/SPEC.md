@@ -82,7 +82,17 @@ Documento de decisiones acordadas el 14/11/2026. Fuente de verdad del producto.
 ## 8. Otras funcionalidades
 
 - **Rankings**: máximo goleador, máximo asistente, mejor valorado (con un mínimo de partidos valorados; usar `rated_matches`) y más MVPs.
-- **Notificaciones push** (Web Push): votación abierta, recordatorio de votar antes del cierre, y resultados con el MVP. Nota: en iPhone solo funcionan si la PWA está añadida a la pantalla de inicio.
+- **Notificaciones push** (Web Push). Solo llegan a quien las ha activado en su dispositivo. Nota: en iPhone solo funcionan si la PWA está añadida a la pantalla de inicio.
+
+  | Aviso | Cuándo | A quién |
+  |---|---|---|
+  | **Votación abierta** | Al marcar el partido como terminado (mientras siga abierta la votación) | Votantes de esa temporada: plantilla no archivada y viewers elegidos |
+  | **Queda 1 día** | Entre el día 6 y el 7 desde la fecha del partido | Solo los votantes a los que **les falta algún compañero** que jugó ≥1 minuto (sin contarse a sí mismos) |
+  | **MVP del partido** | Al cerrarse la votación (día 7), hasta 24 h después | **Todos los registrados** con notificaciones activas |
+
+  - Cada aviso se envía **una sola vez** por partido. Una tarea programada (`pg_cron`, cada 15 minutos) lo comprueba, así que puede llegar hasta 15 minutos tarde.
+  - El recordatorio usa **si** alguien ha votado, nunca **qué** ha votado.
+  - Los partidos cerrados hace más de 24 h no generan aviso de MVP (evita una avalancha al activar las notificaciones por primera vez).
 - **Sin modo offline** para editar. Siempre con conexión.
 - **Sin exportación** a PDF/Excel.
 - **Fotos**: solo las suben, cambian o borran el admin y el superadmin. Bucket **público** `player-photos` (máx. 2 MB; webp/jpeg/png): se ven por URL directa sin iniciar sesión, por decisión expresa (más simple y rápido que URLs firmadas).
@@ -110,11 +120,17 @@ supabase.rpc('get_season_mvps', { p_season_id })
 31 pruebas en PostgreSQL 16 con una imitación de Supabase Auth: permisos por rol, vínculo de usuarios con fichas, anonimato, cierre de votación, empate de MVP, jugador archivado y cálculos de totales, filtros y gráfica.
 
 ### Puesta en marcha
-1. Ejecutar la migración en el SQL Editor (una sola vez).
+1. Aplicar en orden todas las migraciones de `supabase/migrations/` (SQL Editor, una sola vez cada una).
 2. Activar Google en Authentication → Providers.
 3. Site URL `http://localhost:5173` mientras se desarrolla; añadir la URL de Vercel al desplegar.
 4. Crear el usuario del propietario y ejecutar:
    `update public.profiles set role = 'superadmin' where email = '<correo del propietario>';`
+5. **Notificaciones push** (una vez por proyecto; los valores nunca van al repo):
+   - En el SQL Editor, guardar en Vault la URL del proyecto y la clave `service_role`:
+     `select vault.create_secret('https://<ref>.supabase.co', 'project_url');` y `select vault.create_secret('<clave service_role>', 'secret_key');`
+   - Generar claves VAPID (`npx web-push generate-vapid-keys`) y guardarlas como *secrets* de Edge Functions: `VAPID_PUBLIC_KEY`, `VAPID_PRIVATE_KEY` y `VAPID_SUBJECT` (`mailto:` de contacto o URL de la app).
+   - Desplegar la función: `npx supabase functions deploy send-push --no-verify-jwt`.
+   - La clave pública VAPID la necesitará la PWA para suscribirse (frontend).
 
 ## 10. Pendiente
 
@@ -125,7 +141,7 @@ supabase.rpc('get_season_mvps', { p_season_id })
 - [ ] Diseño visual (se decide cuando el flujo funcione).
 
 ### Por construir
-- [ ] Edge Function para enviar Web Push y tarea programada (`pg_cron`) para los recordatorios.
+- [x] Edge Function para enviar Web Push y tarea programada (`pg_cron`) para los avisos (backend; falta la suscripción desde la PWA).
 
 ### Orden de trabajo sugerido
 1. Crear el proyecto Vite + React + Tailwind + `vite-plugin-pwa`.

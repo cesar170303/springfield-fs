@@ -84,6 +84,13 @@ returns void language sql as $$
   insert into public.votes (match_id, voter_id, rated_id, score) values (p_match, p_voter, p_rated, p_score);
 $$;
 
+-- Suscripción Web Push falsa de un usuario (un dispositivo).
+create function pg_temp.subscribe(p_user uuid)
+returns void language sql as $$
+  insert into public.push_subscriptions (user_id, endpoint, p256dh, auth)
+  values (p_user, 'https://push.example.com/' || gen_random_uuid(), 'p256dh-test', 'auth-test');
+$$;
+
 -- Guarda un valor de la prueba en una variable de la transacción y lo devuelve (p. ej. un id).
 create function pg_temp.keep(p_name text, p_value text)
 returns text language sql as $$ select set_config('t.' || p_name, p_value, true) $$;
