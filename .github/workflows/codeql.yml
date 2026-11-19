@@ -1,0 +1,29 @@
+name: CodeQL
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+  # Semanal: aparecen reglas nuevas de CodeQL aunque el código no cambie.
+  schedule:
+    - cron: "0 5 * * 1"
+
+jobs:
+  analyze:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    # Permisos mínimos: leer el código y subir los resultados a la pestaña Security.
+    permissions:
+      contents: read
+      actions: read
+      security-events: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: github/codeql-action/init@v4
+        with:
+          languages: javascript-typescript
+          # JavaScript no se compila: CodeQL lee el código tal cual.
+          build-mode: none
+      - uses: github/codeql-action/analyze@v4
+        with:
+          category: /language:javascript-typescript
