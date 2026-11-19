@@ -8,9 +8,20 @@ Registro de lo que se hace en cada feature y de los fallos detectados. Formato b
 
 Fallos detectados que aún no están resueltos. Al arreglarlos, pasa la línea a «Corregido» de la versión correspondiente.
 
-- **PWA no instalable:** `vite.config.js` solo declara un icono de 150×150; Chrome no ofrece «instalar» hasta tener iconos de 192 y 512 px (falta el escudo en alta resolución).
+- Ninguno por ahora.
 
 ## [Sin publicar]
+
+## [0.5.1] - 2026-11-19
+
+Escudo en alta resolución e iconos de la PWA.
+
+### Corregido
+- **PWA no instalable:** faltaban iconos de 192 y 512 px. Ahora se generan desde `public/escudo-hd.png` (1024×1024) con `npm run icons`: 64, 192, 512, maskable, iPhone (180) y favicon, con fondo negro.
+- El escudo del login y de la pantalla de inicio se veía borroso en móviles; ahora usa el de 512 px.
+
+### Cambiado
+- Spec: nombres reales de las competiciones (Primera División Liga Local y Copa); pabellón y local/visitante, decidido no añadirlos por ahora.
 
 ## [0.5.0] - 2026-11-19
 

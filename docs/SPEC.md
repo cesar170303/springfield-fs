@@ -35,7 +35,7 @@ Documento de decisiones acordadas el 14/11/2026. Fuente de verdad del producto.
 
 - **Un solo equipo** (sin multi-tenant).
 - **Varias temporadas** con selector (2026/27…). El **dorsal es por temporada**.
-- **Varias competiciones** (`league`, `cup`, `friendly`):
+- **Varias competiciones** (`league`, `cup`, `friendly`). Las reales son **Primera División Liga Local** (`league`) y **Copa** (`cup`):
   - La lista principal muestra la **suma de todas**.
   - Hay un **filtro** para ver solo una competición (p. ej., 1 gol en copa + 1 en liga = 2 en la lista).
 - Los partidos de copa **también llevan número de jornada**, pero siempre se distingue que son de copa (etiqueta "Copa J2").
@@ -135,9 +135,9 @@ supabase.rpc('get_season_mvps', { p_season_id })
 ## 10. Pendiente
 
 ### Decisiones abiertas
-- [ ] ¿Añadir a `matches` el **pabellón** (`venue`) y **local/visitante** (`is_home`)? Aparecen en los "Match Day" de Instagram. Si se añaden, hacerlo con una migración nueva.
-- [ ] Nombre real de las competiciones (p. ej., "Primera División Liga Local" y el nombre de la copa).
-- [ ] Escudo en alta resolución.
+- [x] Pabellón (`venue`) y local/visitante (`is_home`) en `matches`: **decidido no añadirlos por ahora** (2026-11-19). Si se retoma, con una migración nueva.
+- [x] Nombre real de las competiciones: **Primera División Liga Local** y **Copa**.
+- [x] Escudo en alta resolución: `public/escudo-hd.png` (1024×1024); los iconos de la PWA se generan con `npm run icons`.
 - [ ] Diseño visual (se decide cuando el flujo funcione).
 
 ### Por construir

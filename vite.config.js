@@ -10,7 +10,8 @@ export default defineConfig({
     tailwindcss(),
     VitePWA({
       registerType: 'autoUpdate',
-      includeAssets: ['escudo.png'],
+      // Iconos generados desde public/escudo-hd.png con `npm run icons` (pwa-assets.config.js).
+      includeAssets: ['favicon.ico', 'apple-touch-icon-180x180.png'],
       manifest: {
         name: 'Springfield FS',
         short_name: 'Springfield',
@@ -18,8 +19,12 @@ export default defineConfig({
         theme_color: '#000000',
         background_color: '#000000',
         display: 'standalone',
-        // shortcut: solo hay escudo de 150x150; para que Chrome permita instalar la app hacen falta iconos de 192 y 512 px
-        icons: [{ src: 'escudo.png', sizes: '150x150', type: 'image/png' }],
+        icons: [
+          { src: 'pwa-64x64.png', sizes: '64x64', type: 'image/png' },
+          { src: 'pwa-192x192.png', sizes: '192x192', type: 'image/png' },
+          { src: 'pwa-512x512.png', sizes: '512x512', type: 'image/png', purpose: 'any' },
+          { src: 'maskable-icon-512x512.png', sizes: '512x512', type: 'image/png', purpose: 'maskable' },
+        ],
       },
     }),
   ],

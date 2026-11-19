@@ -29,7 +29,7 @@ export default function Login() {
 
   return (
     <main className="min-h-screen bg-black text-white flex flex-col items-center justify-center gap-6 p-4">
-      <img src="/escudo.png" alt="Escudo Springfield FS" width="120" height="120" />
+      <img src="/pwa-512x512.png" alt="Escudo Springfield FS" width="120" height="120" />
       <h1 className="text-2xl font-bold text-yellow-400">Springfield FS</h1>
 
       <form onSubmit={handleSubmit} className="flex w-full max-w-xs flex-col gap-3">
