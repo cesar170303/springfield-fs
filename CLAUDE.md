@@ -14,7 +14,7 @@ PWA para que el equipo de fútbol sala **Springfield FS** (Torrejón de Ardoz) r
 - Hosting: Vercel
 
 ## Estado actual
-- Backend diseñado y probado: `supabase/migrations/20261114120000_initial_schema.sql`.
+- Backend: tres migraciones en `supabase/migrations/` (esquema inicial, voto definitivo + viewers votantes, endurecimiento de seguridad), probadas con pgTAP y **aplicadas en la nube** el 2026-11-19. Pendiente: notificaciones push.
 - `supabase/seed.sql`: datos de prueba, **solo para desarrollo**.
 - Frontend: hechos los pasos 1 y 2 del "Orden de trabajo sugerido" (`docs/SPEC.md` §10): proyecto base, cliente de Supabase, login y contexto de sesión con rol, ya migrados a Clean Architecture (ADR-0001). Siguiente: paso 3 (lista de la plantilla con `get_squad_stats`), sobre las capas. El diseño visual se decide después; por ahora, componentes funcionales con Tailwind básico.
 - `public/escudo.png`: escudo del equipo (150×150; falta una versión en alta resolución).
