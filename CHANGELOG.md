@@ -12,6 +12,15 @@ Fallos detectados que aún no están resueltos. Al arreglarlos, pasa la línea a
 
 ## [Sin publicar]
 
+## [0.5.2] - 2026-11-19
+
+Menos superficie expuesta en la API, a raíz del analizador de seguridad de Supabase en la nube.
+
+### Cambiado
+- `app_role`, `is_staff`, `is_superadmin` y `can_vote` pasan del esquema `public` al esquema `rls`: siguen funcionando para las políticas, pero ya no se pueden llamar por la API.
+- `pg_net` se reinstala en el esquema `extensions` en lugar de `public`.
+- Tests: `08_hardening` comprueba qué funciones quedan en la API y `09_notifications` dónde vive `pg_net`.
+
 ## [0.5.1] - 2026-11-19
 
 Escudo en alta resolución e iconos de la PWA.
