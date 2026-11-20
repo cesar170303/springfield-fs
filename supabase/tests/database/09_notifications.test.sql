@@ -72,6 +72,11 @@ select set_eq($$ select distinct user_id from closed_claim $$,
 select ok((select bool_and(body like '%A09%') from closed_claim), 'el aviso dice quién es el MVP (A, media 8,5)');
 select is_empty($$ select * from public.claim_pending_notifications() $$, 'el aviso del MVP no se repite');
 
+-- pg_net en el esquema `extensions`, como recomienda Supabase (no en `public`), y la tarea programada la sigue encontrando.
+select is((select extnamespace::regnamespace::text from pg_extension where extname = 'pg_net'), 'extensions',
+          'pg_net está en el esquema extensions, no en public');
+select has_function('net', 'http_post', 'la tarea programada sigue teniendo net.http_post');
+
 -- La cola de avisos enviados no es accesible desde la API.
 select pg_temp.act_as(pg_temp.uid('a_user'));
 select throws_ok($$ select * from private.notifications_sent $$, '42501', null, 'un usuario no ve la cola de avisos');
