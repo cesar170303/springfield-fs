@@ -12,6 +12,13 @@ Fallos detectados que aún no están resueltos. Al arreglarlos, pasa la línea a
 
 ## [Sin publicar]
 
+## [0.5.3] - 2026-11-20
+
+Corrige la alerta de Dependabot #2 (seguridad de dependencias de desarrollo).
+
+### Corregido
+- `minimatch` 10.2.6 con DoS por amplificación de patrones (GHSA-g3hv-75wg-m249 / CVE-2026-118764). Afectaba solo al build (vía `vite-plugin-pwa` → `workbox-build` → `glob`). Se fuerza `minimatch` 11.0.9 con `overrides` en `package.json`.
+
 ## [0.5.2] - 2026-11-19
 
 Menos superficie expuesta en la API, a raíz del analizador de seguridad de Supabase en la nube.
