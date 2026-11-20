@@ -12,6 +12,12 @@ Fallos detectados que aún no están resueltos. Al arreglarlos, pasa la línea a
 
 ## [Sin publicar]
 
+### Añadido
+- Skill `frontend-workflow` (`.claude/skills/frontend-workflow/`): la ruta de trabajo del frontend (en qué paso estamos, qué skill usar en cada etapa y dónde parar a preguntar) y las reglas del sistema de diseño, para que el agente no se desvíe.
+
+### Cambiado
+- `CLAUDE.md`: el frontend sigue `frontend-workflow`; la dirección visual queda decidida (negro, blanco y azul eléctrico; Donut solo en la votación; Archivo; animación con GSAP); `figma:*` se permite para diseño cuando haya un plan con escritura.
+
 ## [0.5.3] - 2026-11-20
 
 Corrige la alerta de Dependabot #2 (seguridad de dependencias de desarrollo).
