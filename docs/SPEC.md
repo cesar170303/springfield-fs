@@ -73,6 +73,33 @@ Documento de decisiones acordadas el 14/11/2026. Fuente de verdad del producto.
 - **MVP** = mejor media del partido. Si hay empate, el admin lo resuelve (`mvp_override_player_id`).
 - Anonimato: la tabla guarda `voter_id` (la **cuenta** del votante, para impedir votos dobles), pero RLS impide que nadie, ni el admin, lea votos ajenos desde la app.
 
+### Pantalla de votación
+
+Decidida el 2026-11-20 con un prototipo interactivo. Usa solo la paleta del modo votación (§11).
+
+- **Cuándo se entra:** con la votación de un partido abierta y algún compañero pendiente, desde el aviso «Votación abierta» (§8) o desde el inicio de la app.
+- **Una tarjeta por compañero pendiente:** jugó al menos 1 minuto, no eres tú y aún no le has votado. Salen en **orden aleatorio**, distinto cada vez que se abre la votación.
+- **Qué muestra la tarjeta:**
+  - A la izquierda: la foto (sin foto, el dorsal en grande), el apodo y la posición.
+  - **A la derecha, a la altura del apodo y en grande:** sus datos de ese partido, es decir, los minutos y, si los hay, goles y asistencias. Al portero, los goles encajados.
+- **La nota:**
+  - Barra de 1 a 10 en saltos de 0,5: control nativo, usable con teclado y lector de pantalla. Sin botones de ±0,5.
+  - **Empieza sin nota** («—»): no se puede votar sin elegirla.
+  - Se escribe con coma («7,5»).
+- **Votar,** con el botón «Aceptar nota» o **deslizando la tarjeta a la derecha:**
+  - La tarjeta sale por la derecha y entra la siguiente.
+  - Durante **5 segundos** se puede **deshacer**. Al acabar la cuenta atrás, la nota se envía y desde ese momento es definitiva.
+  - Sin nota elegida, la tarjeta vuelve a su sitio y lo avisa.
+- **Saltar por ahora,** con el botón «Saltar por ahora» o **deslizando la tarjeta a la izquierda:** el compañero pasa al final de la fila. Si es el último, la tarjeta vuelve a su sitio y lo avisa.
+- **El gesto:**
+  - La tarjeta sigue al dedo y, al pasar un umbral, muestra «Votar 7,5» o «Saltar». Si se suelta antes, vuelve a su sitio.
+  - El gesto no empieza sobre la barra ni sobre los botones, para no confundir mover la nota con deslizar la tarjeta.
+  - Los botones hacen lo mismo, para quien no use gestos.
+- **Progreso:** «3 de 8» y una marca por cada tarjeta.
+- **Al terminar:** «Has votado a todos», cuándo se publican las medias (al cerrarse la votación, 7 días desde el partido) y tus notas, que solo ves tú.
+- **Si sales a medias,** los que faltan siguen pendientes mientras la votación esté abierta.
+- **Si falla el envío,** se avisa y el compañero vuelve a la fila: nada cuenta como votado sin la confirmación de la base de datos.
+
 ## 7. Gráfica de la ficha del jugador
 
 - Eje X: **un punto por partido** (etiquetas "J5", "Copa J2"…).
@@ -138,7 +165,7 @@ supabase.rpc('get_season_mvps', { p_season_id })
 - [x] Pabellón (`venue`) y local/visitante (`is_home`) en `matches`: **decidido no añadirlos por ahora** (2026-11-19). Si se retoma, con una migración nueva.
 - [x] Nombre real de las competiciones: **Primera División Liga Local** y **Copa**.
 - [x] Escudo en alta resolución: `public/escudo-hd.png` (1024×1024); los iconos de la PWA se generan con `npm run icons`.
-- [ ] Diseño visual (se decide cuando el flujo funcione).
+- [x] Diseño visual: **decidido** el 2026-11-20 (ver §11).
 
 ### Por construir
 - [x] Edge Function para enviar Web Push y tarea programada (`pg_cron`) para los avisos (backend; falta la suscripción desde la PWA).
@@ -149,10 +176,61 @@ supabase.rpc('get_season_mvps', { p_season_id })
 3. Lista de la plantilla (`get_squad_stats`) con selector de temporada y filtro de competición.
 4. Ficha del jugador: estadísticas grandes y ordenadas, más la gráfica (Recharts o Chart.js).
 5. Panel de admin: temporadas, jugadores (con foto), plantilla y dorsales, partidos, convocatoria y minutos, goles, tarjetas, penaltis fallados, cerrar partido y desempatar MVP.
-6. Pantalla de votación para jugadores.
+6. Pantalla de votación para jugadores (ver §6, «Pantalla de votación»).
 7. Rankings.
 8. Notificaciones push.
 9. Despliegue en Vercel.
 
 ### Ideas para más adelante
 - Generar automáticamente las imágenes de "Convocatoria" y "Resultado final" para Instagram a partir de los datos de la app.
+
+## 11. Diseño visual
+
+Decidido el 2026-11-20 a partir de dos referencias: [Kopetzki](https://www.awwwards.com/sites/kopetzki) y [DeepBook](https://www.awwwards.com/sites/deepbook) (Awwwards). Los ejemplos visuales están en el sistema de diseño del propietario (privado). Lo que manda está aquí y, en el código, en los tokens de `src/index.css`.
+
+### Color
+
+Toda la app es negra, blanca y gris, con el **azul eléctrico** como único color.
+
+| Token | Color | Para qué |
+|---|---|---|
+| `bg` | `#000000` | Fondo de todas las pantallas |
+| `surface` | `#121417` | Tarjetas y filas destacadas |
+| `line` | `#262626` | Líneas finas entre filas (decorativas) |
+| `border` | `#6a7681` | Bordes de campos, chips y botones secundarios |
+| `text` / `text-muted` | `#ffffff` / `#8a96a3` | Texto principal y secundario |
+| `accent` | `#1e6ef3` | Acción principal (con texto blanco), chip seleccionado, cifra destacada y foco |
+| `accent-text` | `#4d8ef7` | Enlaces y texto azul pequeño |
+| `danger` | `#ff4d4f` | Errores (siempre con una frase) y tarjeta roja |
+| `card-yellow` | `#ffd90f` | Tarjeta amarilla |
+
+**Modo votación** (paleta «Donut»): solo en la pantalla de votación.
+
+| Token | Color | Para qué |
+|---|---|---|
+| `vote-surface` | `#1e1e1e` | Tarjeta y hueco de la foto |
+| `vote-border` | `#767676` | Pista de la barra y bordes |
+| `vote-primary` | `#ffd90f` | «Aceptar nota» y la barra |
+| `vote-rating` | `#ff5fa2` | La nota que se está poniendo |
+| `vote-accent` | `#4cc3ff` | El dorsal |
+| `vote-on` | `#000000` | Texto sobre amarillo, rosa o azul cielo |
+
+Todas las combinaciones de texto cumplen WCAG AA: 4,5:1, y 3:1 en texto grande, bordes y foco. Las tarjetas amarilla y roja se dibujan siempre con su forma y su número, no solo con el color.
+
+### Tipografía
+
+- **Archivo** (gratuita y variable). Estrecha (ancho 62,5 %, peso 800) para titulares, cifras (tabulares) y apodos; a ancho normal para el resto.
+
+### Movimiento
+
+- **Cinco animaciones, con GSAP:**
+  - las rayas del escudo, que ondulan en la entrada;
+  - los titulares, letra a letra;
+  - las cifras, que ruedan hasta su valor;
+  - la ficha, que avanza con el scroll;
+  - la tarjeta de votación, que sigue al dedo y sale deslizándose al votar (derecha) o al saltar (izquierda).
+- Solo se animan la posición y la opacidad. Con «reducir movimiento» activado en el dispositivo, nada se mueve.
+
+### Motivo
+
+- Las rayas verticales del escudo: barras finas que ondulan, alguna en azul.

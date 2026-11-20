@@ -12,7 +12,7 @@ Ordena el trabajo de UI. `CLAUDE.md` manda sobre esta skill, y `feature-tdd` man
 1. Lee `docs/SPEC.md` §10 («Orden de trabajo sugerido») y la sección «Estado actual» de `CLAUDE.md`.
 2. Lee `CHANGELOG.md`: la sección «[Sin publicar]» y la última versión.
 3. Comprueba la base visual, en este orden:
-   1. `docs/SPEC.md` §10 tiene el «Diseño visual» marcado como decidido y descrito.
+   1. `docs/SPEC.md` tiene el «Diseño visual» marcado como decidido (§10) y descrito (§11).
    2. `src/index.css` tiene el bloque `@theme` con los tokens (`bg`, `accent`, `vote-*`…), la fuente Archivo y la base de animación.
 
    Lo que falte **es el trabajo pendiente**, antes que cualquier pantalla.
@@ -54,7 +54,7 @@ Las skills de GSAP, `tailwind-design-system`, `supabase` y `accessibility` está
 
 ## 4. Sistema de diseño (decidido el 2026-11-20)
 
-- **Fuente de verdad:** los tokens de `src/index.css` (`@theme`) y `docs/SPEC.md` §10, «Diseño visual». La vista con ejemplos está en el artefacto «Springfield FS» del propietario, que es privado.
+- **Fuente de verdad:** los tokens de `src/index.css` (`@theme`) y `docs/SPEC.md` §11, «Diseño visual». La vista con ejemplos está en el artefacto «Springfield FS» del propietario, que es privado.
 - **Base, en toda la app:** negro, blanco y gris, con el azul eléctrico como único color. Los rellenos azules llevan texto blanco; el texto azul pequeño va en `accent-text`.
 - **Modo votación:** los tokens `vote-*` (paleta Donut: amarillo, rosa y azul cielo) se usan **solo** en la pantalla de votación, en ninguna otra.
 - **Tipografía:** Archivo. Estrecha (`font-stretch: 62.5%`, peso 800) para titulares, cifras (tabulares) y apodos; a ancho normal para el resto.
@@ -71,11 +71,15 @@ Las skills de GSAP, `tailwind-design-system`, `supabase` y `accessibility` está
   - los titulares, letra a letra;
   - las cifras, que ruedan hasta su valor;
   - la ficha, que avanza con el scroll;
-  - la tarjeta de votación, que se desliza al aceptar.
+  - la tarjeta de votación, que sigue al dedo y sale deslizándose al votar (derecha) o al saltar (izquierda).
   - Cualquier animación nueva → pregunta.
 - **Técnica:** GSAP con `useGSAP`, que limpia sola al desmontar. Anima solo `transform` y `opacity`.
 - **Reducir movimiento:** con `prefers-reduced-motion`, gestionado con `gsap.matchMedia()`, nada se mueve y todo aparece en su estado final (las cifras, con su valor).
-- **Votación:** no se vota deslizando, solo con «Aceptar nota», porque el voto es definitivo.
+- **Votación** (decidido por el propietario; detalle en `docs/SPEC.md` §6):
+  - Se vota con «Aceptar nota» o deslizando la tarjeta a la derecha; a la izquierda, se salta.
+  - Nunca sin nota elegida.
+  - Siempre con 5 s para deshacer antes de enviar, porque el voto es definitivo.
+  - El gesto no empieza sobre la barra ni sobre los botones.
 
 ## 6. Reglas que no se saltan
 

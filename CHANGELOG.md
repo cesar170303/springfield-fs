@@ -17,6 +17,7 @@ Fallos detectados que aún no están resueltos. Al arreglarlos, pasa la línea a
 
 ### Cambiado
 - `CLAUDE.md`: el frontend sigue `frontend-workflow`; la dirección visual queda decidida (negro, blanco y azul eléctrico; Donut solo en la votación; Archivo; animación con GSAP); `figma:*` se permite para diseño cuando haya un plan con escritura.
+- Spec: pantalla de votación decidida con un prototipo (§6: tarjeta por compañero en orden aleatorio, nota de 1 a 10 que empieza vacía, deslizar a la derecha para votar y a la izquierda para saltar, 5 s para deshacer y datos del partido junto al apodo) y nueva §11, «Diseño visual» (colores, tipografía, movimiento y motivo).
 
 ## [0.5.3] - 2026-11-20
 
