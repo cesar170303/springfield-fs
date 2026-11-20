@@ -1,7 +1,7 @@
 {
   "name": "springfield-fs",
   "private": true,
-  "version": "0.5.2",
+  "version": "0.5.3",
   "type": "module",
   "scripts": {
     "dev": "vite",
@@ -21,6 +21,9 @@
     "@supabase/supabase-js": "^2.119.0",
     "react": "^19.3.1",
     "react-dom": "^19.3.1"
+  },
+  "overrides": {
+    "minimatch": "11.0.9"
   },
   "devDependencies": {
     "@tailwindcss/vite": "^4.3.5",
