@@ -12,6 +12,16 @@ Fallos detectados que aún no están resueltos. Al arreglarlos, pasa la línea a
 
 ## [Sin publicar]
 
+## [0.8.0] - 2026-11-21
+
+El formulario del login pasa a una tarjeta de cristal centrada sobre el fondo de rayitas.
+
+### Cambiado
+- `Login.jsx`: tarjeta centrada con escudo, título, campos redondeados, separador y botones en píldora; el mensaje de error va bajo los campos. Solo tokens de `src/index.css`.
+
+### Añadido
+- Icono de Google en «Continuar con Google» (`public/google.svg`, decorativo).
+
 ## [0.7.0] - 2026-11-21
 
 Primera animación: el login estrena un fondo de rayitas que fluyen, al estilo de DeepBook. Queda lista la base para las demás animaciones.

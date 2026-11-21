@@ -29,16 +29,22 @@ export default function Login() {
   }
 
   return (
-    <main className="flex min-h-dvh flex-col">
-      {/* Cabecera con el campo de rayas detrás; el formulario va debajo, sobre negro, para no tapar texto pequeño. */}
-      <section className="relative isolate flex min-h-[55svh] flex-col items-center justify-end gap-6 px-4 pb-8">
-        <StripeField />
-        <img src="/pwa-512x512.png" alt="Escudo Springfield FS" width="120" height="120" />
-        <h1 className="type-display text-center">Springfield FS</h1>
-      </section>
-
-      <div className="flex flex-1 flex-col items-center px-4 pb-8">
-        <form onSubmit={handleSubmit} className="flex w-full max-w-xs flex-col gap-3">
+    <main className="relative isolate flex min-h-dvh items-center justify-center overflow-hidden px-4 py-8">
+      <StripeField />
+      {/* Tarjeta de cristal centrada sobre el campo de rayas. */}
+      <form
+        onSubmit={handleSubmit}
+        className="flex w-full max-w-sm flex-col items-center gap-4 rounded-3xl bg-linear-to-r from-text/10 to-surface p-8 shadow-2xl backdrop-blur-sm"
+      >
+        <img
+          src="/pwa-512x512.png"
+          alt="Escudo Springfield FS"
+          width="48"
+          height="48"
+          className="size-12 rounded-full bg-text/20 shadow-lg"
+        />
+        <h1 className="type-title text-center">Springfield FS</h1>
+        <div className="flex w-full flex-col gap-3">
           <input
             type="email"
             required
@@ -46,7 +52,7 @@ export default function Login() {
             placeholder="Correo"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            className="rounded-sm border border-border bg-surface p-3 placeholder:text-text-muted"
+            className="w-full rounded-xl bg-text/10 px-5 py-3 text-sm placeholder:text-text-muted"
           />
           <input
             type="password"
@@ -56,28 +62,39 @@ export default function Login() {
             placeholder="Contraseña"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            className="rounded-sm border border-border bg-surface p-3 placeholder:text-text-muted"
+            className="w-full rounded-xl bg-text/10 px-5 py-3 text-sm placeholder:text-text-muted"
           />
-          <button disabled={busy} className="rounded-md bg-accent p-3 font-bold text-on-accent disabled:opacity-50">
-            {mode === 'signin' ? 'Entrar' : 'Crear cuenta'}
-          </button>
-          <button type="button" onClick={handleGoogle} className="rounded-md border border-border p-3">
-            Continuar con Google
-          </button>
-          <button
-            type="button"
-            onClick={() => setMode(mode === 'signin' ? 'signup' : 'signin')}
-            className="type-small text-accent-text underline"
-          >
-            {mode === 'signin' ? '¿No tienes cuenta? Regístrate' : '¿Ya tienes cuenta? Entra'}
-          </button>
           {message && (
             <p role="alert" className="type-small text-danger">
               {message}
             </p>
           )}
-        </form>
-      </div>
+        </div>
+        <hr className="w-full border-line" />
+        <div className="flex w-full flex-col gap-3">
+          <button
+            disabled={busy}
+            className="w-full rounded-full bg-accent px-5 py-3 text-sm font-bold text-on-accent transition hover:brightness-110 disabled:opacity-50"
+          >
+            {mode === 'signin' ? 'Entrar' : 'Crear cuenta'}
+          </button>
+          <button
+            type="button"
+            onClick={handleGoogle}
+            className="flex w-full items-center justify-center gap-2 rounded-full bg-linear-to-b from-surface to-line px-5 py-3 text-sm font-medium shadow transition hover:brightness-110"
+          >
+            <img src="/google.svg" alt="" width="20" height="20" />
+            Continuar con Google
+          </button>
+          <button
+            type="button"
+            onClick={() => setMode(mode === 'signin' ? 'signup' : 'signin')}
+            className="type-small text-center text-text-muted underline hover:text-text"
+          >
+            {mode === 'signin' ? '¿No tienes cuenta? Regístrate' : '¿Ya tienes cuenta? Entra'}
+          </button>
+        </div>
+      </form>
     </main>
   )
 }
