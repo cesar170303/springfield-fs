@@ -12,6 +12,28 @@ Fallos detectados que aún no están resueltos. Al arreglarlos, pasa la línea a
 
 ## [Sin publicar]
 
+## [0.7.0] - 2026-11-21
+
+Primera animación: el login estrena un fondo de rayitas que fluyen, al estilo de DeepBook. Queda lista la base para las demás animaciones.
+
+### Añadido
+- GSAP (`gsap` y `@gsap/react`) para la animación. La decisión, con las alternativas y lo que pesa, está en `docs/adr/0003-animacion-con-gsap.md`.
+- `useMotion` (`src/infrastructure/ui/motion.js`): el único punto de entrada a GSAP.
+  - Solo anima si el dispositivo no pide reducir movimiento.
+  - Limpia las animaciones al salir de la pantalla.
+- Fondo animado del login (`StripeField`), dibujado en `<canvas>` con los colores de los tokens:
+  - rayitas verticales grises que suben por curvas paralelas, con destellos azules sueltos;
+  - un botón para pausarlo y reanudarlo (WCAG 2.2.2);
+  - con «reducir movimiento», quieto y sin botón;
+  - decorativo: el lector de pantalla no lo anuncia.
+- Tests:
+  - `StripeField.test.jsx` comprueba que se redibuja en cada fotograma, que el botón lo pausa y lo reanuda, que con «reducir movimiento» se dibuja una sola vez, que deja de dibujar al salir y que el lector de pantalla no lo anuncia;
+  - `src/test/setup.js` añade un `matchMedia` falso y un contexto de canvas falso, porque jsdom no trae ninguno de los dos.
+
+### Cambiado
+- Login: una cabecera con el fondo animado detrás del escudo y el título; el formulario va debajo, sobre negro, para que ninguna rayita quede detrás del texto pequeño.
+- Spec (§11), `CLAUDE.md` y la skill `frontend-workflow`: la animación de entrada es el campo de rayitas, todas las animaciones pasan por `useMotion` y lo que se mueva más de 5 s lleva botón de pausa (WCAG 2.2.2).
+
 ## [0.6.0] - 2026-11-21
 
 El sistema de diseño llega al código: colores, fuente y estilos de texto propios, y el login y el inicio con la dirección visual nueva.

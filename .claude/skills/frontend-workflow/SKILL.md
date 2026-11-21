@@ -13,7 +13,8 @@ Ordena el trabajo de UI. `CLAUDE.md` manda sobre esta skill, y `feature-tdd` man
 2. Lee `CHANGELOG.md`: la sección «[Sin publicar]» y la última versión.
 3. Comprueba la base visual, en este orden:
    1. `docs/SPEC.md` tiene el «Diseño visual» marcado como decidido (§10) y descrito (§11).
-   2. `src/index.css` tiene el bloque `@theme` con los tokens (`bg`, `accent`, `vote-*`…), la fuente Archivo y la base de animación.
+   2. `src/index.css` tiene el bloque `@theme` con los tokens (`bg`, `accent`, `vote-*`…) y la fuente Archivo.
+   3. `src/infrastructure/ui/motion.js` tiene la base de animación (`useMotion`, ADR-0003).
 
    Lo que falte **es el trabajo pendiente**, antes que cualquier pantalla.
 4. Di en una frase cuál es el paso actual y trabaja **solo** en él. Si te piden otra cosa, dilo y pregunta antes de cambiar de paso.
@@ -67,14 +68,16 @@ Las skills de GSAP, `tailwind-design-system`, `supabase` y `accessibility` está
 ## 5. Movimiento
 
 - **Hay cinco animaciones aprobadas:**
-  - las rayas del escudo en la entrada;
+  - las rayas del escudo en la entrada: en el login, un campo de rayitas que fluyen, al estilo de DeepBook (`StripeField`);
   - los titulares, letra a letra;
   - las cifras, que ruedan hasta su valor;
   - la ficha, que avanza con el scroll;
   - la tarjeta de votación, que sigue al dedo y sale deslizándose al votar (derecha) o al saltar (izquierda).
   - Cualquier animación nueva → pregunta.
-- **Técnica:** GSAP con `useGSAP`, que limpia sola al desmontar. Anima solo `transform` y `opacity`.
-- **Reducir movimiento:** con `prefers-reduced-motion`, gestionado con `gsap.matchMedia()`, nada se mueve y todo aparece en su estado final (las cifras, con su valor).
+- **Técnica:** GSAP siempre a través de `useMotion` (`src/infrastructure/ui/motion.js`, ADR-0003), que limpia sola al desmontar. Ningún componente importa `gsap` ni `@gsap/react`. Anima solo `transform` y `opacity`.
+- **Reducir movimiento:** `useMotion` solo crea animaciones con `(prefers-reduced-motion: no-preference)`. Con «reducir movimiento», nada se mueve y todo aparece en su estado final (las cifras, con su valor).
+- **Más de 5 s, con botón de pausa:** lo que se mueva más de 5 s seguidos junto a otro contenido lleva un botón para pararlo (WCAG 2.2.2), como el del login.
+- **Cientos de piezas:** en `<canvas>`, con `gsap.ticker` dentro de `useMotion` (ver `StripeField.jsx`).
 - **Votación** (decidido por el propietario; detalle en `docs/SPEC.md` §6):
   - Se vota con «Aceptar nota» o deslizando la tarjeta a la derecha; a la izquierda, se salta.
   - Nunca sin nota elegida.
