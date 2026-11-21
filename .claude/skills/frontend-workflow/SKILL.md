@@ -56,7 +56,7 @@ Las skills de GSAP, `tailwind-design-system`, `supabase` y `accessibility` está
 ## 4. Sistema de diseño (decidido el 2026-11-20)
 
 - **Fuente de verdad:** los tokens de `src/index.css` (`@theme`) y `docs/SPEC.md` §11, «Diseño visual». La vista con ejemplos está en el artefacto «Springfield FS» del propietario, que es privado.
-- **Base, en toda la app:** negro, blanco y gris, con el azul eléctrico como único color. Los rellenos azules llevan texto blanco; el texto azul pequeño va en `accent-text`.
+- **Base, en toda la app:** negro, blanco y gris, con el azul eléctrico como color de acción. Los rellenos azules llevan texto blanco; el texto azul pequeño va en `accent-text`. El amarillo `highlight` (con texto `on-highlight`) solo marca al mejor de cada tarjeta y los dorsales de la lista de la plantilla; el rosa y el resto de `vote-*`, solo en la votación.
 - **Modo votación:** los tokens `vote-*` (paleta Donut: amarillo, rosa y azul cielo) se usan **solo** en la pantalla de votación, en ninguna otra.
 - **Tipografía:** Archivo. Estrecha (`font-stretch: 62.5%`, peso 800) para titulares, cifras (tabulares) y apodos; a ancho normal para el resto.
 - **Motivo:** las rayas verticales del escudo.

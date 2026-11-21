@@ -60,6 +60,22 @@ Documento de decisiones acordadas el 14/11/2026. Fuente de verdad del producto.
 - Estado del jugador: `available`, `injured`, `suspended` (lo cambia el admin).
 - Ficha: nombre, apellidos, **apodo**, email, posición, estado, foto.
 
+### Pantalla de la plantilla
+
+Decidida el 2026-11-21 con dos referencias del propietario (FotMob y BeSoccer). Los datos salen de `get_squad_stats`.
+
+- **Arriba:** selector de temporada y filtro de competición (todas, liga o copa).
+- **Vista inicial, tarjetas de líderes:** una tarjeta por estadística con los 3 mejores de la plantilla; el primero lleva la cifra en una pastilla.
+  - Tarjetas, en este orden: **Goleadores, Asistencias, Goles + asistencias, Valoración media, MVPs y Tarjetas**.
+  - Tarjetas: amarillas y rojas dibujadas con su forma y su número; ordenadas por rojas y después por amarillas.
+  - No aparece quien tiene 0 en esa estadística ni, en la valoración, quien no tiene nota.
+- **Botón arriba a la derecha:** «Mostrar como lista» ↔ «Mostrar como tarjetas».
+- **Vista lista:** cada fila con dorsal en recuadro, foto y apodo.
+  - Por defecto, ordenada por dorsal y agrupada por posición (Portero, Cierre, Ala, Pívot, Universal).
+  - Se puede ordenar por goles, asistencias, valoración, MVPs, partidos o tarjetas: entonces es una lista única, sin grupos, de mayor a menor (empate: por dorsal).
+  - Columnas: partidos jugados, goles (al portero, encajados), asistencias, tarjetas y valoración media.
+- **Al pulsar un jugador** se abre su ficha (paso 4).
+
 ## 6. Valoración (votación anónima)
 
 - La valoración la ponen **los compañeros**, con **voto anónimo**.
@@ -173,7 +189,7 @@ supabase.rpc('get_season_mvps', { p_season_id })
 ### Orden de trabajo sugerido
 1. Crear el proyecto Vite + React + Tailwind + `vite-plugin-pwa`.
 2. Cliente de Supabase, login (email + Google) y contexto de sesión con el rol del usuario.
-3. Lista de la plantilla (`get_squad_stats`) con selector de temporada y filtro de competición.
+3. Lista de la plantilla (`get_squad_stats`) con selector de temporada y filtro de competición (ver §5, «Pantalla de la plantilla»).
 4. Ficha del jugador: estadísticas grandes y ordenadas, más la gráfica (Recharts o Chart.js).
 5. Panel de admin: temporadas, jugadores (con foto), plantilla y dorsales, partidos, convocatoria y minutos, goles, tarjetas, penaltis fallados, cerrar partido y desempatar MVP.
 6. Pantalla de votación para jugadores (ver §6, «Pantalla de votación»).
@@ -190,7 +206,7 @@ Decidido el 2026-11-20 a partir de dos referencias: [Kopetzki](https://www.awwwa
 
 ### Color
 
-Toda la app es negra, blanca y gris, con el **azul eléctrico** como único color.
+Toda la app es negra, blanca y gris, con el **azul eléctrico** como color de acción. El amarillo `highlight` solo marca al mejor de cada tarjeta y los dorsales de la lista de la plantilla (decidido el 2026-11-21).
 
 | Token | Color | Para qué |
 |---|---|---|
@@ -203,6 +219,7 @@ Toda la app es negra, blanca y gris, con el **azul eléctrico** como único colo
 | `accent-text` | `#4d8ef7` | Enlaces y texto azul pequeño |
 | `danger` | `#ff4d4f` | Errores (siempre con una frase) y tarjeta roja |
 | `card-yellow` | `#ffd90f` | Tarjeta amarilla |
+| `highlight` / `on-highlight` | `#ffd90f` / `#000000` | Pastilla del líder en las tarjetas de la plantilla y recuadro del dorsal en la lista (contraste 14:1) |
 
 **Modo votación** (paleta «Donut»): solo en la pantalla de votación.
 
