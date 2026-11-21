@@ -16,7 +16,7 @@ PWA para que el equipo de fútbol sala **Springfield FS** (Torrejón de Ardoz) r
 ## Estado actual
 - Backend: seis migraciones en `supabase/migrations/`, probadas con pgTAP. **Aplicadas en la nube:** esquema inicial, voto definitivo + viewers votantes y endurecimiento de seguridad (2026-11-19), y funciones auxiliares al esquema `rls` (`20261119130000`, 2026-11-20). **Pendientes, juntas cuando haya frontend:** notificaciones push (`20261119120000`) y `pg_net` en `extensions` (`20261119140000`), más desplegar la Edge Function (`docs/SPEC.md` §9, paso 5).
 - `supabase/seed.sql`: datos de prueba, **solo para desarrollo**.
-- Frontend: hechos los pasos 1 y 2 del "Orden de trabajo sugerido" (`docs/SPEC.md` §10): proyecto base, cliente de Supabase, login y contexto de sesión con rol, ya migrados a Clean Architecture (ADR-0001). **Dirección visual decidida** (2026-11-20): negro, blanco y azul eléctrico; la paleta Donut, solo en la votación; Archivo; mucho movimiento con GSAP. Siguiente: llevar al código los tokens, la fuente y la base de animación; después, el paso 3 (lista de la plantilla con `get_squad_stats`). Todo trabajo de frontend sigue la skill `frontend-workflow`.
+- Frontend: hechos los pasos 1 y 2 del "Orden de trabajo sugerido" (`docs/SPEC.md` §10): proyecto base, cliente de Supabase, login y contexto de sesión con rol, ya migrados a Clean Architecture (ADR-0001). **Dirección visual decidida** (2026-11-20): negro, blanco y azul eléctrico; la paleta Donut, solo en la votación; Archivo; mucho movimiento con GSAP. Tokens, fuente Archivo y estilos de texto ya están en el código (0.6.0), con el login y el inicio rediseñados. Siguiente: la base de animación con GSAP (las rayas del escudo en el login); después, el paso 3 (lista de la plantilla con `get_squad_stats`). Todo trabajo de frontend sigue la skill `frontend-workflow`.
 - `public/escudo-hd.png`: escudo del equipo en alta resolución (1024×1024, fondo negro). Es la fuente de los iconos de la PWA; la app muestra `pwa-512x512.png`.
 
 ## Reglas del proyecto
@@ -30,6 +30,7 @@ PWA para que el equipo de fútbol sala **Springfield FS** (Torrejón de Ardoz) r
 
 ## Arquitectura del frontend
 - JavaScript con JSX (no TypeScript). Tests con Vitest + React Testing Library (ver «Tests y TDD»). La verificación es `npm test` + `npm run lint` + `npm run build` + probar en el navegador.
+- **Estilos:** solo los tokens de `src/index.css` (`@theme`; detalle en `docs/SPEC.md` §11). La paleta de Tailwind está borrada, así que `bg-zinc-900` o `yellow-400` no generan nada: usa `bg-surface`, `text-text-muted`, `bg-accent`, etc. Los textos van con `type-display`, `type-number`, `type-name`, `type-title`, `type-body`, `type-label` o `type-small`; los tres primeros ya van estrechos (62,5 %). El foco lo pinta una regla global. Ningún hex dentro de un componente.
 
 ### Clean Architecture (decidida en `docs/adr/0001-clean-architecture.md`)
 Tres capas; las dependencias solo apuntan hacia dentro (`infrastructure → application → domain`):
@@ -97,6 +98,7 @@ No usar en este proyecto (instrucción para Claude, no un bloqueo técnico): `da
 
 ## Comandos
 - `npm run dev` — servidor de desarrollo (http://localhost:5173)
+- Configuración `dev-sin-supabase` (`.claude/launch.json`, puerto 5174): arranca la app sin `.env`, con los valores falsos de los tests. Sirve para revisar pantallas en un worktree; no conecta con ningún Supabase real.
 - `npm run build` — build de producción (genera también el service worker de la PWA)
 - `npm run preview` — sirve el build para probar la PWA
 - `npm run lint` — oxlint (config en `.oxlintrc.json`)
