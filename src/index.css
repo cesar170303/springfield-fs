@@ -1,1 +1,105 @@
-@import "tailwindcss";
+@import 'tailwindcss';
+/* Archivo variable, alojada en la propia app: ancho del 62 % al 125 % y peso de 100 a 900. */
+@import '@fontsource-variable/archivo/standard.css';
+
+/*
+ * Sistema de diseño (docs/SPEC.md §11). Solo existen estos colores: la paleta de Tailwind se borra
+ * para que un color suelto (yellow-400, zinc-900…) no genere nada.
+ */
+@theme {
+  --color-*: initial;
+
+  /* Base: negro, blanco y gris, con el azul eléctrico como único color */
+  --color-bg: #000000;
+  --color-surface: #121417;
+  --color-line: #262626;
+  --color-border: #6a7681;
+  --color-text: #ffffff;
+  --color-text-muted: #8a96a3;
+  --color-accent: #1e6ef3;
+  --color-accent-text: #4d8ef7;
+  --color-on-accent: #ffffff;
+  --color-danger: #ff4d4f;
+  --color-card-yellow: #ffd90f;
+  --color-focus: var(--color-accent);
+
+  /* Modo votación (paleta Donut): solo en la pantalla de votación */
+  --color-vote-surface: #1e1e1e;
+  --color-vote-border: #767676;
+  --color-vote-primary: #ffd90f;
+  --color-vote-rating: #ff5fa2;
+  --color-vote-accent: #4cc3ff;
+  --color-vote-on: #000000;
+
+  --font-sans: 'Archivo Variable', system-ui, sans-serif;
+
+  /* radius-sm (4 px, campos) y rounded-full (chips) ya son los de Tailwind */
+  --radius-md: 0.5rem; /* 8 px: botones */
+  --radius-lg: 0.75rem; /* 12 px: tarjetas */
+}
+
+/* Estilos de texto del sistema de diseño: una clase por estilo. Los estrechos van al 62,5 % de ancho. */
+@utility type-display {
+  font-size: 3.25rem;
+  line-height: 3rem;
+  font-weight: 800;
+  font-stretch: 62.5%;
+  letter-spacing: -0.01em;
+}
+
+@utility type-number {
+  font-size: 2.75rem;
+  line-height: 2.5rem;
+  font-weight: 800;
+  font-stretch: 62.5%;
+  font-variant-numeric: tabular-nums;
+}
+
+@utility type-name {
+  font-size: 1.5rem;
+  line-height: 1.5rem;
+  font-weight: 800;
+  font-stretch: 62.5%;
+}
+
+@utility type-title {
+  font-size: 1.25rem;
+  line-height: 1.5rem;
+  font-weight: 700;
+}
+
+@utility type-body {
+  font-size: 1rem;
+  line-height: 1.5rem;
+  font-weight: 400;
+}
+
+@utility type-label {
+  font-size: 0.75rem;
+  line-height: 1rem;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+}
+
+@utility type-small {
+  font-size: 0.875rem;
+  line-height: 1.25rem;
+  font-weight: 400;
+}
+
+@layer base {
+  html {
+    color-scheme: dark;
+  }
+
+  body {
+    background-color: var(--color-bg);
+    color: var(--color-text);
+  }
+
+  /* Anillo de foco único para toda la app: 2 px sólido, separado 2 px del control */
+  :focus-visible {
+    outline: 2px solid var(--color-focus);
+    outline-offset: 2px;
+  }
+}

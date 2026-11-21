@@ -12,10 +12,25 @@ Fallos detectados que aún no están resueltos. Al arreglarlos, pasa la línea a
 
 ## [Sin publicar]
 
+## [0.6.0] - 2026-11-21
+
+El sistema de diseño llega al código: colores, fuente y estilos de texto propios, y el login y el inicio con la dirección visual nueva.
+
 ### Añadido
+- Tokens del sistema de diseño en `src/index.css` (`@theme` de Tailwind 4), tal como los describe la §11 de la spec:
+  - base en negro, blanco y azul eléctrico, más los `vote-*` de la votación;
+  - la paleta por defecto de Tailwind se borra, así que un color suelto (`yellow-400`) ya no genera nada.
+- Fuente Archivo alojada en la propia app (`@fontsource-variable/archivo`), con sus anchos del 62 % al 125 %.
+- Estilos de texto como clases: `type-display`, `type-number`, `type-name`, `type-title`, `type-body`, `type-label` y `type-small`.
+- Anillo de foco único para toda la app: azul, de 2 px y separado 2 px del control.
+- Configuración `dev-sin-supabase` en `.claude/launch.json`: arranca la app sin `.env`, con los valores falsos de los tests, para revisar pantallas.
 - Skill `frontend-workflow` (`.claude/skills/frontend-workflow/`): la ruta de trabajo del frontend (en qué paso estamos, qué skill usar en cada etapa y dónde parar a preguntar) y las reglas del sistema de diseño, para que el agente no se desvíe.
 
+### Corregido
+- Contraste insuficiente en el login: el borde de los botones secundarios (2,7:1) y el contorno de los campos (1,2:1) no llegaban al 3:1. Ahora tienen borde en `border` (4,5:1).
+
 ### Cambiado
+- Login e inicio con la dirección visual nueva: título en Archivo estrecha, botón principal azul, campos con borde, enlace en azul claro y saludo que parte los correos largos.
 - `CLAUDE.md`: el frontend sigue `frontend-workflow`; la dirección visual queda decidida (negro, blanco y azul eléctrico; Donut solo en la votación; Archivo; animación con GSAP); `figma:*` se permite para diseño cuando haya un plan con escritura.
 - Spec: pantalla de votación decidida con un prototipo (§6: tarjeta por compañero en orden aleatorio, nota de 1 a 10 que empieza vacía, deslizar a la derecha para votar y a la izquierda para saltar, 5 s para deshacer y datos del partido junto al apodo) y nueva §11, «Diseño visual» (colores, tipografía, movimiento y motivo).
 

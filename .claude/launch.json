@@ -6,6 +6,15 @@
       "runtimeExecutable": "npm",
       "runtimeArgs": ["run", "dev"],
       "port": 5173
+    },
+    {
+      "name": "dev-sin-supabase",
+      "runtimeExecutable": "cmd",
+      "runtimeArgs": [
+        "/c",
+        "set VITE_SUPABASE_URL=http://localhost:54321&& set VITE_SUPABASE_ANON_KEY=test-anon-key&& npm run dev -- --port 5174 --strictPort"
+      ],
+      "port": 5174
     }
   ]
 }

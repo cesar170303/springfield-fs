@@ -28,9 +28,9 @@ export default function Login() {
   }
 
   return (
-    <main className="min-h-screen bg-black text-white flex flex-col items-center justify-center gap-6 p-4">
+    <main className="flex min-h-dvh flex-col items-center justify-center gap-6 p-4">
       <img src="/pwa-512x512.png" alt="Escudo Springfield FS" width="120" height="120" />
-      <h1 className="text-2xl font-bold text-yellow-400">Springfield FS</h1>
+      <h1 className="type-display text-center">Springfield FS</h1>
 
       <form onSubmit={handleSubmit} className="flex w-full max-w-xs flex-col gap-3">
         <input
@@ -40,7 +40,7 @@ export default function Login() {
           placeholder="Correo"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
-          className="rounded bg-zinc-900 p-3"
+          className="rounded-sm border border-border bg-surface p-3 placeholder:text-text-muted"
         />
         <input
           type="password"
@@ -50,23 +50,23 @@ export default function Login() {
           placeholder="Contraseña"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
-          className="rounded bg-zinc-900 p-3"
+          className="rounded-sm border border-border bg-surface p-3 placeholder:text-text-muted"
         />
-        <button disabled={busy} className="rounded bg-yellow-400 p-3 font-bold text-black disabled:opacity-50">
+        <button disabled={busy} className="rounded-md bg-accent p-3 font-bold text-on-accent disabled:opacity-50">
           {mode === 'signin' ? 'Entrar' : 'Crear cuenta'}
         </button>
-        <button type="button" onClick={handleGoogle} className="rounded border border-zinc-600 p-3">
+        <button type="button" onClick={handleGoogle} className="rounded-md border border-border p-3">
           Continuar con Google
         </button>
         <button
           type="button"
           onClick={() => setMode(mode === 'signin' ? 'signup' : 'signin')}
-          className="text-sm text-zinc-400 underline"
+          className="type-small text-accent-text underline"
         >
           {mode === 'signin' ? '¿No tienes cuenta? Regístrate' : '¿Ya tienes cuenta? Entra'}
         </button>
         {message && (
-          <p role="alert" className="text-sm text-red-400">
+          <p role="alert" className="type-small text-danger">
             {message}
           </p>
         )}
