@@ -224,13 +224,14 @@ Todas las combinaciones de texto cumplen WCAG AA: 4,5:1, y 3:1 en texto grande, 
 ### Movimiento
 
 - **Cinco animaciones, con GSAP:**
-  - las rayas del escudo, que ondulan en la entrada;
+  - en la entrada (el login), un campo de rayitas verticales que suben por curvas, al estilo de DeepBook, con destellos azules (decidido el 2026-11-21);
   - los titulares, letra a letra;
   - las cifras, que ruedan hasta su valor;
   - la ficha, que avanza con el scroll;
   - la tarjeta de votación, que sigue al dedo y sale deslizándose al votar (derecha) o al saltar (izquierda).
 - Solo se animan la posición y la opacidad. Con «reducir movimiento» activado en el dispositivo, nada se mueve.
+- Lo que se mueva más de 5 s seguidos lleva un botón para pararlo (WCAG 2.2.2), como el campo de rayitas del login.
 
 ### Motivo
 
-- Las rayas verticales del escudo: barras finas que ondulan, alguna en azul.
+- Las rayas verticales del escudo: rayitas finas y grises que fluyen, alguna en azul.
