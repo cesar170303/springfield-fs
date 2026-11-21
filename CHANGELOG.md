@@ -12,6 +12,24 @@ Fallos detectados que aún no están resueltos. Al arreglarlos, pasa la línea a
 
 ## [Sin publicar]
 
+## [0.9.0] - 2026-11-21
+
+Paso 3 de la spec: la pantalla de la plantilla con estadísticas, que sustituye al saludo provisional tras iniciar sesión.
+
+### Añadido
+- Pantalla de la plantilla (`SquadScreen`, docs/SPEC.md §5), con selector de temporada (empieza por la actual) y de competición:
+  - **tarjetas de líderes** (vista inicial): Goleadores, Asistencias, Goles + asistencias, Valoración media, MVPs y Tarjetas, con el top 3 de cada una y el primero en una pastilla amarilla (token nuevo `highlight`); las cifras ruedan hasta su valor (quietas con «reducir movimiento»);
+  - **lista** (botón «Mostrar como lista»): dorsal (en recuadro amarillo `highlight`), foto y apodo, agrupada por posición y por dorsal; al ordenar por goles, asistencias, valoración, MVPs, partidos o tarjetas, lista única de mayor a menor. Al portero, la columna de goles enseña los encajados.
+- Capas nuevas (Clean Architecture):
+  - dominio `src/domain/squad.js`: nombre (apodo o nombre), orden, grupos por posición y top 3;
+  - port `src/application/ports/squad.js` y caso de uso `createSquadUseCases` (`getSquadFilters`, `getSquadStats`);
+  - repositorio `src/infrastructure/supabase/squad-repository.js` (RPC `get_squad_stats`, temporadas, competiciones y URL pública de las fotos).
+- Tests de cada capa: dominio, caso de uso, repositorio y pantalla.
+
+### Cambiado
+- `App.jsx`: con sesión iniciada se ve la plantilla (con «Salir»), en lugar de la pantalla provisional de saludo.
+- Spec §5: nueva sección «Pantalla de la plantilla» con lo decidido sobre la maqueta.
+
 ## [0.8.0] - 2026-11-21
 
 El formulario del login pasa a una tarjeta de cristal centrada sobre el fondo de rayitas.

@@ -14,9 +14,13 @@ function renderApp(auth = {}) {
     signOut: vi.fn(),
     ...auth,
   }
+  // Casos de uso falsos para la plantilla; el login no llega a usar los suyos.
+  const useCases = {
+    getSquadFilters: vi.fn().mockResolvedValue({ seasons: [], competitions: [], initialSeasonId: null }),
+    getSquadStats: vi.fn(),
+  }
   render(
-    // Login (hijo de App) pide los casos de uso; aquí no se llega a usar ninguno.
-    <UseCasesContext.Provider value={{}}>
+    <UseCasesContext.Provider value={useCases}>
       <AuthContext.Provider value={value}>
         <App />
       </AuthContext.Provider>
@@ -44,33 +48,16 @@ describe('App', () => {
     expect(screen.getByRole('button', { name: 'Entrar' })).toBeInTheDocument()
   })
 
-  it('saluda con el nombre del perfil y muestra el rol', () => {
-    renderApp({
-      user: { email: 'jugador@example.com' },
-      profile: { fullName: 'Jugador' },
-      role: 'superadmin',
-    })
+  it('con sesión, enseña la plantilla', async () => {
+    renderApp({ user: { email: 'jugador@example.com' }, role: 'player' })
 
-    expect(screen.getByRole('heading', { name: 'Hola, Jugador' })).toBeInTheDocument()
-    expect(screen.getByText('superadmin')).toBeInTheDocument()
-  })
-
-  it('usa el correo si el perfil no tiene nombre', () => {
-    renderApp({ user: { email: 'jugador@example.com' }, profile: { fullName: null }, role: 'player' })
-
-    expect(screen.getByRole('heading', { name: 'Hola, jugador@example.com' })).toBeInTheDocument()
-  })
-
-  it('indica "sin perfil" cuando el usuario no tiene rol', () => {
-    renderApp({ user: { email: 'jugador@example.com' } })
-
-    expect(screen.getByText('sin perfil')).toBeInTheDocument()
+    expect(await screen.findByRole('heading', { name: 'Plantilla' })).toBeInTheDocument()
   })
 
   it('cierra la sesión al pulsar Salir', async () => {
     const auth = renderApp({ user: { email: 'jugador@example.com' }, role: 'player' })
 
-    await userEvent.click(screen.getByRole('button', { name: 'Salir' }))
+    await userEvent.click(await screen.findByRole('button', { name: 'Salir' }))
 
     expect(auth.signOut).toHaveBeenCalledTimes(1)
   })
