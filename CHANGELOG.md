@@ -12,6 +12,15 @@ Fallos detectados que aún no están resueltos. Al arreglarlos, pasa la línea a
 
 ## [Sin publicar]
 
+## [0.10.1] - 2026-11-22
+
+Ajuste de la barra inferior, decidido por el propietario.
+
+### Cambiado
+- **«Salir» sale de la barra** y pasa arriba a la derecha, en el marco común (`AppShell`), con icono: aparece en todas las pantallas con sesión.
+- **Barra inferior:** en el móvil, solo la sección actual lleva texto (pastilla blanca); el resto, solo icono con su nombre para el lector de pantalla. Desde `md`, todas con icono y texto. Se genera desde una lista de secciones (ruta, nombre e icono), preparada para Votar, Rankings y Admin: con 5 botones mide 313 px a 360 px de ancho.
+- Iconos de línea en un componente común (`Icon`).
+
 ## [0.10.0] - 2026-11-22
 
 Navegación entre pantallas, el primer trozo del paso 4 (ADR-0004).
