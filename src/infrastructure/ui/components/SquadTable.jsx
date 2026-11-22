@@ -3,6 +3,7 @@ import { groupByPosition, sortSquad } from '../../../domain/squad'
 import { formatStat } from '../format'
 import CardsCount from './CardsCount'
 import PlayerAvatar from './PlayerAvatar'
+import PlayerLink from './PlayerLink'
 
 const SORTS = [
   ['shirt', 'Dorsal'],
@@ -83,7 +84,9 @@ export default function SquadTable({ players }) {
                 <th scope="row" className="py-2 text-left font-normal">
                   <span className="flex items-center gap-2">
                     <PlayerAvatar name={p.name} photoUrl={p.photoUrl} />
-                    <span className="truncate">{p.name}</span>
+                    <PlayerLink id={p.id} className="truncate">
+                      {p.name}
+                    </PlayerLink>
                   </span>
                 </th>
                 <td className={num}>{p.matchesPlayed}</td>

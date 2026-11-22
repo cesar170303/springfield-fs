@@ -12,6 +12,22 @@ Fallos detectados que aún no están resueltos. Al arreglarlos, pasa la línea a
 
 ## [Sin publicar]
 
+## [0.10.0] - 2026-11-22
+
+Navegación entre pantallas, el primer trozo del paso 4 (ADR-0004).
+
+### Añadido
+- **React Router 7** (`react-router`): la plantilla vive en `/` y la ficha en `/jugador/:id`; una dirección desconocida enseña «Esta página no existe». El «atrás» del navegador y del móvil vuelve a la pantalla anterior.
+- **Barra inferior flotante** (`BottomNav`): píldora de cristal centrada, con iconos; «Plantilla» marcada como página actual en una pastilla blanca, y «Salir». Deja hueco para el notch y, a 360 px, no provoca scroll horizontal.
+- Los apodos de las tarjetas de líderes y de la lista son enlaces a la ficha (`PlayerLink`).
+- Ficha del jugador provisional (`PlayerScreen`), con enlace «‹ Plantilla»; su diseño está pendiente de aprobar.
+- `vercel.json`: cualquier ruta sirve `index.html`, para poder recargar una ficha en Vercel.
+
+### Cambiado
+- La temporada y la competición de la plantilla se guardan en la URL (`?temporada=&competicion=`): al volver de una ficha se mantienen.
+- «Salir» pasa de la cabecera de la plantilla a la barra inferior.
+- Spec: §5 «Navegación» y paso 4 con la gráfica en SVG propio, en lugar de Recharts o Chart.js.
+
 ## [0.9.0] - 2026-11-21
 
 Paso 3 de la spec: la pantalla de la plantilla con estadísticas, que sustituye al saludo provisional tras iniciar sesión.

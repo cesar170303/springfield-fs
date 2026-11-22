@@ -4,6 +4,7 @@ import { formatStat } from '../format'
 import { gsap, useMotion } from '../motion'
 import CardsCount from './CardsCount'
 import PlayerAvatar from './PlayerAvatar'
+import PlayerLink from './PlayerLink'
 
 /** Vista inicial de la plantilla: una tarjeta por estadística con sus 3 mejores (docs/SPEC.md §5). */
 export default function LeaderCards({ players }) {
@@ -45,7 +46,9 @@ export default function LeaderCards({ players }) {
                   return (
                     <li key={p.id} className="flex items-center gap-3 border-t border-line py-2">
                       <PlayerAvatar name={p.name} photoUrl={p.photoUrl} />
-                      <span className="flex-1 truncate">{p.name}</span>
+                      <PlayerLink id={p.id} className="flex-1 truncate">
+                        {p.name}
+                      </PlayerLink>
                       {stat.key === 'cards' ? (
                         <CardsCount yellow={p.yellowCards} red={p.redCards} />
                       ) : (

@@ -74,7 +74,11 @@ Decidida el 2026-11-21 con dos referencias del propietario (FotMob y BeSoccer). 
   - Por defecto, ordenada por dorsal y agrupada por posición (Portero, Cierre, Ala, Pívot, Universal).
   - Se puede ordenar por goles, asistencias, valoración, MVPs, partidos o tarjetas: entonces es una lista única, sin grupos, de mayor a menor (empate: por dorsal).
   - Columnas: partidos jugados, goles (al portero, encajados), asistencias, tarjetas y valoración media.
-- **Al pulsar un jugador** se abre su ficha (paso 4).
+- **Al pulsar un jugador** se abre su ficha (paso 4), a pantalla completa en `/jugador/:id`, con la misma temporada y competición.
+
+### Navegación
+
+Decidida el 2026-11-22 (ADR-0004): React Router con URLs reales (el «atrás» del móvil vuelve a la pantalla anterior), filtros de la plantilla en la URL (`?temporada=&competicion=`) y una **barra inferior fija** que hoy tiene Plantilla y Salir, y crecerá con Votar, Rankings y Admin (solo staff).
 
 ## 6. Valoración (votación anónima)
 
@@ -190,7 +194,7 @@ supabase.rpc('get_season_mvps', { p_season_id })
 1. Crear el proyecto Vite + React + Tailwind + `vite-plugin-pwa`.
 2. Cliente de Supabase, login (email + Google) y contexto de sesión con el rol del usuario.
 3. Lista de la plantilla (`get_squad_stats`) con selector de temporada y filtro de competición (ver §5, «Pantalla de la plantilla»).
-4. Ficha del jugador: estadísticas grandes y ordenadas, más la gráfica (Recharts o Chart.js).
+4. Ficha del jugador: estadísticas grandes y ordenadas, más la gráfica (SVG propio, sin librería; decidido el 2026-11-22). Antes, la navegación entre pantallas (hecha en 0.10.0, ADR-0004).
 5. Panel de admin: temporadas, jugadores (con foto), plantilla y dorsales, partidos, convocatoria y minutos, goles, tarjetas, penaltis fallados, cerrar partido y desempatar MVP.
 6. Pantalla de votación para jugadores (ver §6, «Pantalla de votación»).
 7. Rankings.

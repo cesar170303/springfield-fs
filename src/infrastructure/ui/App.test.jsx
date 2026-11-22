@@ -1,11 +1,12 @@
 import { describe, expect, it, vi } from 'vitest'
-import { render, screen } from '@testing-library/react'
+import { render, screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
+import { MemoryRouter } from 'react-router'
 import App from './App'
 import { AuthContext } from './auth/auth-context'
 import { UseCasesContext } from './use-cases-context'
 
-function renderApp(auth = {}) {
+function renderApp(auth = {}, url = '/') {
   const value = {
     user: null,
     profile: null,
@@ -22,7 +23,9 @@ function renderApp(auth = {}) {
   render(
     <UseCasesContext.Provider value={useCases}>
       <AuthContext.Provider value={value}>
-        <App />
+        <MemoryRouter initialEntries={[url]}>
+          <App />
+        </MemoryRouter>
       </AuthContext.Provider>
     </UseCasesContext.Provider>,
   )
@@ -57,8 +60,29 @@ describe('App', () => {
   it('cierra la sesión al pulsar Salir', async () => {
     const auth = renderApp({ user: { email: 'jugador@example.com' }, role: 'player' })
 
-    await userEvent.click(await screen.findByRole('button', { name: 'Salir' }))
+    const nav = await screen.findByRole('navigation', { name: 'Principal' })
+    await userEvent.click(within(nav).getByRole('button', { name: 'Salir' }))
 
     expect(auth.signOut).toHaveBeenCalledTimes(1)
+  })
+
+  it('en /jugador/:id enseña la ficha, con un enlace para volver a la plantilla', async () => {
+    renderApp({ user: { email: 'jugador@example.com' }, role: 'player' }, '/jugador/7?temporada=2')
+
+    expect(await screen.findByRole('heading', { name: 'Ficha del jugador' })).toBeInTheDocument()
+    expect(screen.getByRole('link', { name: 'Volver a la plantilla' })).toHaveAttribute('href', '/?temporada=2')
+  })
+
+  it('una dirección que no existe lo dice y enlaza a la plantilla', async () => {
+    renderApp({ user: { email: 'jugador@example.com' }, role: 'player' }, '/no-existe')
+
+    expect(await screen.findByRole('heading', { name: 'Esta página no existe' })).toBeInTheDocument()
+    expect(screen.getByRole('link', { name: 'Ir a la plantilla' })).toHaveAttribute('href', '/')
+  })
+
+  it('sin sesión, cualquier dirección enseña el login', () => {
+    renderApp({}, '/jugador/7')
+
+    expect(screen.getByRole('button', { name: 'Entrar' })).toBeInTheDocument()
   })
 })
