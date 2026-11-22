@@ -51,7 +51,8 @@ select hasnt_function('public', 'current_player_id', 'current_player_id (sin uso
 -- Las funciones que solo usan las políticas RLS no son direcciones de la API: viven en el esquema `rls`.
 select set_eq($$ select p.proname::text from pg_proc p join pg_namespace n on n.oid = p.pronamespace
                  where n.nspname = 'public' and p.prosecdef and has_function_privilege('authenticated', p.oid, 'execute') $$,
-              array['get_squad_stats', 'get_player_rating_timeline', 'get_season_mvps', 'get_player_emails'],
+              array['get_squad_stats', 'get_player_rating_timeline', 'get_season_mvps', 'get_player_emails',
+                    'get_player_match_log'],
               'en la API solo quedan las funciones security definer que usa la app');
 select hasnt_function('public', f, 'public.' || f || ' ya no está en la API') from unnest(array['app_role', 'is_staff', 'is_superadmin', 'can_vote']) f;
 select has_function('rls', f, 'rls.' || f || ' existe para las políticas') from unnest(array['app_role', 'is_staff', 'is_superadmin', 'can_vote']) f;

@@ -1,7 +1,7 @@
 import { useRef } from 'react'
 import { LEADER_STATS, topThree } from '../../../domain/squad'
 import { formatStat } from '../format'
-import { gsap, useMotion } from '../motion'
+import { countUp, useMotion } from '../motion'
 import CardsCount from './CardsCount'
 import PlayerAvatar from './PlayerAvatar'
 import PlayerLink from './PlayerLink'
@@ -12,22 +12,7 @@ export default function LeaderCards({ players }) {
 
   // Cifras que ruedan hasta su valor (docs/SPEC.md §11). React ya pinta el valor final: con «reducir movimiento» se
   // queda así, y con movimiento la animación arranca en 0 y acaba en el mismo texto.
-  useMotion(() => {
-    for (const el of root.current.querySelectorAll('[data-count]')) {
-      const end = Number(el.dataset.count)
-      const decimals = Number(el.dataset.decimals)
-      gsap.fromTo(
-        el,
-        { innerText: 0 },
-        {
-          innerText: end,
-          duration: 0.9,
-          ease: 'power3.out',
-          modifiers: { innerText: (v) => formatStat(Number(v), decimals) },
-        },
-      )
-    }
-  }, root)
+  useMotion(() => countUp(root.current.querySelectorAll('[data-count]')), root)
 
   return (
     <div ref={root} className="grid gap-3 md:grid-cols-2 lg:grid-cols-3">

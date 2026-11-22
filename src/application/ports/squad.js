@@ -5,11 +5,14 @@
  * @typedef {{ id: number, name: string, isCurrent: boolean }} Season
  * @typedef {{ id: number, name: string }} Competition
  * @typedef {'goalkeeper' | 'defender' | 'winger' | 'pivot' | 'universal'} Position
+ * @typedef {'available' | 'injured' | 'suspended'} PlayerStatus
  * @typedef {{
- *   id: number, name: string, shirtNumber: number, position: Position, photoUrl: string | null,
- *   matchesPlayed: number, goals: number, assists: number, yellowCards: number, redCards: number,
- *   avgRating: number | null, mvps: number, goalsConceded: number
- * }} SquadPlayer totales de la temporada; `avgRating` es null si no hay votaciones cerradas
+ *   id: number, name: string, fullName: string, shirtNumber: number, position: Position, status: PlayerStatus,
+ *   photoUrl: string | null, matchesCalled: number, matchesPlayed: number, minutes: number,
+ *   goals: number, assists: number, penaltyGoals: number, yellowCards: number, redCards: number,
+ *   avgRating: number | null, ratedMatches: number, mvps: number, goalsConceded: number, cleanSheets: number
+ * }} SquadPlayer totales de la temporada; `avgRating` es null si no hay votaciones cerradas.
+ *   `goalsConceded` y `cleanSheets` solo cuentan para el portero (0 en el resto)
  *
  * @typedef {object} SquadRepository
  * @property {() => Promise<Season[]>} getSeasons de la más reciente a la más antigua

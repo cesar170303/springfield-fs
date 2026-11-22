@@ -8,9 +8,31 @@ Registro de lo que se hace en cada feature y de los fallos detectados. Formato b
 
 Fallos detectados que aún no están resueltos. Al arreglarlos, pasa la línea a «Corregido» de la versión correspondiente.
 
-- Ninguno por ahora.
+- El bundle principal pasa de 500 kB (aviso de Vite al compilar; ya pasaba antes de la ficha). Se resolverá cargando las pantallas bajo demanda.
 
 ## [Sin publicar]
+
+## [0.11.0] - 2026-11-22
+
+Paso 4 de la spec: la ficha del jugador, sobre la maqueta aprobada por el propietario (docs/SPEC.md §7).
+
+### Añadido
+- **Ficha del jugador** en `/jugador/:id` (`PlayerScreen`), con la temporada y la competición de la URL:
+  - cabecera con foto (o iniciales), apodo, nombre real y dorsal, posición y estado, y el dorsal de fondo;
+  - **medidor de media luna** con la valoración media (`RatingGauge`);
+  - **seis cifras** de la temporada con su detalle (`PlayerStatCards`); al portero, goles encajados y porterías a cero;
+  - **gráfica «Partido a partido»** en SVG propio (`RatingChart`): nota, media acumulada y media del equipo, con los datos de cada partido al pasar el ratón o el dedo y «Ver como tabla»;
+  - **últimos partidos** (`MatchLog`) con «Ver todos los partidos» y, si la votación sigue abierta, hasta cuándo.
+- **Movimiento de la ficha:** el apodo entra letra a letra (SplitText) y cada bloque sube al aparecer (ScrollTrigger), con las cifras rodando, el medidor llenándose y la gráfica dibujándose. Con «reducir movimiento», todo quieto.
+- **RPC `get_player_match_log`** (migración `20261122120000`, con su test pgTAP): los partidos del jugador con minutos, goles, asistencias y, solo con la votación cerrada, nota y MVP. **Pendiente de aplicar en la nube.**
+- Capas nuevas: dominio `src/domain/player.js`, port y caso de uso `getPlayerSheet`, repositorio `player-repository.js` y mappers `toRatingPoint` y `toMatchLogEntry`.
+
+### Cambiado
+- `toSquadPlayer` trae también nombre completo, estado, convocatorias, minutos, goles de penalti, partidos valorados y porterías a cero.
+- Los filtros de temporada y competición se comparten entre la plantilla y la ficha (`useSeasonFilters` y `SeasonFilters`).
+- `countUp` (cifras que ruedan) pasa a `motion.js` y lo usan la plantilla y la ficha.
+- `CardsCount` tiene un tamaño grande para la ficha.
+- Spec: §7 «Ficha del jugador y su gráfica» y la RPC nueva en §9.
 
 ## [0.10.1] - 2026-11-22
 

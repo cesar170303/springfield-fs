@@ -120,11 +120,23 @@ Decidida el 2026-11-20 con un prototipo interactivo. Usa solo la paleta del modo
 - **Si sales a medias,** los que faltan siguen pendientes mientras la votación esté abierta.
 - **Si falla el envío,** se avisa y el compañero vuelve a la fila: nada cuenta como votado sin la confirmación de la base de datos.
 
-## 7. Gráfica de la ficha del jugador
+## 7. Ficha del jugador y su gráfica
 
-- Eje X: **un punto por partido** (etiquetas "J5", "Copa J2"…).
-- Tres líneas: **nota de cada partido**, **media acumulada** y **media del equipo** en ese partido.
-- Datos: RPC `get_player_rating_timeline(p_player_id, p_season_id)`.
+Decidida el 2026-11-22 sobre una maqueta aprobada por el propietario (vistas a 360 px y a 1280 px).
+
+- **Dónde:** `/jugador/:id`, a pantalla completa, con la temporada y la competición de la plantilla (los selectores también están en la ficha). Si el jugador no está en la plantilla de esa temporada, se dice.
+- **Cabecera:** foto (sin foto, sus iniciales), apodo en grande, nombre real y dorsal, posición y estado (disponible, lesionado o sancionado). De fondo, el dorsal enorme: relleno gris, contorno más claro y difuminado hacia abajo.
+- **Valoración media:** medidor de media luna de 1 a 10 y cuántos partidos la forman. Sin votaciones cerradas, «–».
+- **Seis cifras:** partidos jugados (de cuántas convocatorias), minutos (y por partido), goles (cuántos de penalti; destacada en azul), asistencias (y goles + asistencias), MVP y tarjetas. Al portero, goles encajados y porterías a cero (destacada) en lugar de goles y asistencias.
+- **Gráfica «Partido a partido»** (SVG propio, sin librería):
+  - Eje X: **un punto por partido** con la votación cerrada (etiquetas "J5", "Copa J2"…; con muchos partidos, solo algunas).
+  - Tres líneas: **nota de cada partido**, **media acumulada** y **media del equipo** en ese partido. La escala va de un punto por debajo del valor más bajo hasta 10.
+  - Al pasar el ratón o el dedo, los datos de ese partido. «Ver como tabla» da lo mismo en una tabla.
+  - Siempre de todas las competiciones (la RPC no filtra por competición); si hay un filtro, se avisa.
+  - Datos: RPC `get_player_rating_timeline(p_player_id, p_season_id)`.
+- **Últimos partidos:** los 4 más recientes («Ver todos los partidos» enseña el resto): rival, minutos, goles, asistencias (al portero, encajados), MVP y la nota. Con la votación abierta, «Votación abierta hasta el …». Datos: RPC `get_player_match_log(p_player_id, p_season_id, p_competition_id)`.
+- **Movimiento** (§11): el apodo entra letra a letra; cada bloque sube al aparecer en pantalla, con las cifras rodando, el medidor llenándose y la gráfica dibujándose de izquierda a derecha (inspirado en una referencia del propietario).
+- No se enseña la media del equipo de toda la temporada: ninguna RPC la da y calcularla en el frontend iría contra la regla de los totales.
 
 ## 8. Otras funcionalidades
 
@@ -154,7 +166,9 @@ Decidida el 2026-11-20 con un prototipo interactivo. Usa solo la paleta del modo
 supabase.rpc('get_squad_stats', { p_season_id, p_competition_id: null }) // null = todas
 supabase.rpc('get_player_rating_timeline', { p_player_id, p_season_id })
 supabase.rpc('get_season_mvps', { p_season_id })
+supabase.rpc('get_player_match_log', { p_player_id, p_season_id, p_competition_id: null }) // 20261122120000
 ```
+`get_player_match_log` da los partidos terminados en los que jugó (≥1 minuto), del más reciente al más antiguo: etiqueta, rival, minutos, goles, asistencias, goles encajados (portero), nota y MVP (solo con la votación cerrada) y fecha de cierre de la votación.
 `get_squad_stats` devuelve por jugador: dorsal, apodo, posición, estado, foto, convocatorias, PJ, minutos, goles, asistencias, goles de penalti, penaltis fallados, amarillas, rojas, valoración media, partidos valorados, MVPs, goles encajados y porterías a cero (estas dos solo para porteros).
 
 ### Validaciones en la base de datos (triggers y constraints)
@@ -194,7 +208,7 @@ supabase.rpc('get_season_mvps', { p_season_id })
 1. Crear el proyecto Vite + React + Tailwind + `vite-plugin-pwa`.
 2. Cliente de Supabase, login (email + Google) y contexto de sesión con el rol del usuario.
 3. Lista de la plantilla (`get_squad_stats`) con selector de temporada y filtro de competición (ver §5, «Pantalla de la plantilla»).
-4. Ficha del jugador: estadísticas grandes y ordenadas, más la gráfica (SVG propio, sin librería; decidido el 2026-11-22). Antes, la navegación entre pantallas (hecha en 0.10.0, ADR-0004).
+4. Ficha del jugador: estadísticas grandes y ordenadas, más la gráfica (SVG propio, sin librería; decidido el 2026-11-22). Hecha en 0.11.0 (§7), tras la navegación entre pantallas (0.10.0, ADR-0004).
 5. Panel de admin: temporadas, jugadores (con foto), plantilla y dorsales, partidos, convocatoria y minutos, goles, tarjetas, penaltis fallados, cerrar partido y desempatar MVP.
 6. Pantalla de votación para jugadores (ver §6, «Pantalla de votación»).
 7. Rankings.
