@@ -57,13 +57,20 @@ describe('App', () => {
     expect(await screen.findByRole('heading', { name: 'Plantilla' })).toBeInTheDocument()
   })
 
-  it('cierra la sesión al pulsar Salir', async () => {
+  it('cierra la sesión con «Salir», que está fuera de la barra de navegación', async () => {
     const auth = renderApp({ user: { email: 'jugador@example.com' }, role: 'player' })
 
     const nav = await screen.findByRole('navigation', { name: 'Principal' })
-    await userEvent.click(within(nav).getByRole('button', { name: 'Salir' }))
+    expect(within(nav).queryByRole('button', { name: 'Salir' })).not.toBeInTheDocument()
+    await userEvent.click(screen.getByRole('button', { name: 'Salir' }))
 
     expect(auth.signOut).toHaveBeenCalledTimes(1)
+  })
+
+  it('«Salir» también está en la ficha', async () => {
+    renderApp({ user: { email: 'jugador@example.com' }, role: 'player' }, '/jugador/7')
+
+    expect(await screen.findByRole('button', { name: 'Salir' })).toBeInTheDocument()
   })
 
   it('en /jugador/:id enseña la ficha, con un enlace para volver a la plantilla', async () => {

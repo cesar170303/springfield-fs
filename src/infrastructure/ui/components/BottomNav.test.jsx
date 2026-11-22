@@ -1,17 +1,15 @@
-import { describe, expect, it, vi } from 'vitest'
-import { render, screen } from '@testing-library/react'
-import userEvent from '@testing-library/user-event'
+import { describe, expect, it } from 'vitest'
+import { render, screen, within } from '@testing-library/react'
 import { MemoryRouter } from 'react-router'
 import BottomNav from './BottomNav'
 
 function renderNav(url = '/') {
-  const onSignOut = vi.fn()
   render(
     <MemoryRouter initialEntries={[url]}>
-      <BottomNav onSignOut={onSignOut} />
+      <BottomNav />
     </MemoryRouter>,
   )
-  return onSignOut
+  return screen.getByRole('navigation', { name: 'Principal' })
 }
 
 describe('BottomNav', () => {
@@ -21,17 +19,23 @@ describe('BottomNav', () => {
     expect(screen.getByRole('link', { name: 'Plantilla' })).toHaveAttribute('aria-current', 'page')
   })
 
-  it('en otra pantalla, «Plantilla» no está marcada', () => {
+  it('en otra pantalla, «Plantilla» no está marcada y conserva su nombre para el lector de pantalla', () => {
     renderNav('/jugador/7')
 
-    expect(screen.getByRole('link', { name: 'Plantilla' })).not.toHaveAttribute('aria-current')
+    const link = screen.getByRole('link', { name: 'Plantilla' })
+    expect(link).not.toHaveAttribute('aria-current')
+    expect(link).toHaveAttribute('href', '/')
   })
 
-  it('«Salir» cierra la sesión', async () => {
-    const onSignOut = renderNav()
+  it('los iconos son decorativos: el lector de pantalla solo lee el nombre', () => {
+    const nav = renderNav()
 
-    await userEvent.click(screen.getByRole('button', { name: 'Salir' }))
+    for (const svg of nav.querySelectorAll('svg')) expect(svg).toHaveAttribute('aria-hidden', 'true')
+  })
 
-    expect(onSignOut).toHaveBeenCalledTimes(1)
+  it('no lleva «Salir»: la barra es solo para navegar', () => {
+    const nav = renderNav()
+
+    expect(within(nav).queryByRole('button')).not.toBeInTheDocument()
   })
 })
