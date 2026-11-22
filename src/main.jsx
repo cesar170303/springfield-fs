@@ -1,5 +1,6 @@
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
+import { BrowserRouter } from 'react-router'
 import './index.css'
 import { useCases } from './infrastructure/composition'
 import App from './infrastructure/ui/App'
@@ -10,7 +11,9 @@ createRoot(document.getElementById('root')).render(
   <StrictMode>
     <UseCasesContext.Provider value={useCases}>
       <AuthProvider>
-        <App />
+        <BrowserRouter>
+          <App />
+        </BrowserRouter>
       </AuthProvider>
     </UseCasesContext.Provider>
   </StrictMode>,

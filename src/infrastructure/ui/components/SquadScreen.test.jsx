@@ -2,6 +2,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest'
 import { render, screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { gsap } from 'gsap'
+import { MemoryRouter, Route, Routes, useLocation } from 'react-router'
 import SquadScreen from './SquadScreen'
 import { UseCasesContext } from '../use-cases-context'
 
@@ -41,7 +42,13 @@ const FILTERS = {
   initialSeasonId: 2,
 }
 
-function renderScreen(overrides = {}) {
+// Enseña la URL a la que se ha navegado, para comprobar enlaces sin un navegador real.
+function WhereAmI() {
+  const { pathname, search } = useLocation()
+  return <p>Estás en {pathname + search}</p>
+}
+
+function renderScreen(overrides = {}, url = '/') {
   const useCases = {
     getSquadFilters: vi.fn().mockResolvedValue(FILTERS),
     getSquadStats: vi.fn().mockResolvedValue(SQUAD),
@@ -49,7 +56,12 @@ function renderScreen(overrides = {}) {
   }
   render(
     <UseCasesContext.Provider value={useCases}>
-      <SquadScreen />
+      <MemoryRouter initialEntries={[url]}>
+        <Routes>
+          <Route path="/" element={<SquadScreen />} />
+          <Route path="/jugador/:playerId" element={<WhereAmI />} />
+        </Routes>
+      </MemoryRouter>
     </UseCasesContext.Provider>,
   )
   return useCases
@@ -182,5 +194,33 @@ describe('SquadScreen', () => {
 
     const count = within(await screen.findByRole('region', { name: 'Goleadores' })).getByText('11')
     expect(gsap.getTweensOf(count)).toHaveLength(0)
+  })
+
+  it('al pulsar un jugador abre su ficha con la temporada y la competición elegidas', async () => {
+    renderScreen()
+
+    await userEvent.selectOptions(await screen.findByLabelText('Competición'), 'Copa')
+    const scorers = await screen.findByRole('region', { name: 'Goleadores' })
+    await userEvent.click(within(scorers).getByRole('link', { name: 'Chino' }))
+
+    expect(screen.getByText('Estás en /jugador/3?temporada=2&competicion=2')).toBeInTheDocument()
+  })
+
+  it('en la lista, el apodo también lleva a la ficha', async () => {
+    renderScreen()
+
+    await userEvent.click(await screen.findByRole('button', { name: 'Mostrar como lista' }))
+    await userEvent.click(within(screen.getByRole('table')).getByRole('link', { name: 'Rulo' }))
+
+    expect(screen.getByText('Estás en /jugador/2?temporada=2')).toBeInTheDocument()
+  })
+
+  it('lee la temporada y la competición de la URL (al volver de una ficha se mantienen)', async () => {
+    const useCases = renderScreen({}, '/?temporada=1&competicion=2')
+
+    await screen.findByRole('region', { name: 'Goleadores' })
+    expect(useCases.getSquadStats).toHaveBeenCalledWith({ seasonId: 1, competitionId: 2 })
+    expect(useCases.getSquadStats).not.toHaveBeenCalledWith({ seasonId: 2, competitionId: null })
+    expect(screen.getByLabelText('Temporada')).toHaveValue('1')
   })
 })

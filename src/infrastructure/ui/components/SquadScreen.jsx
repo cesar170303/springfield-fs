@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { useSearchParams } from 'react-router'
 import { useUseCases } from '../use-cases-context'
 import LeaderCards from './LeaderCards'
 import SquadTable from './SquadTable'
@@ -6,11 +7,24 @@ import SquadTable from './SquadTable'
 const select = 'min-w-0 rounded-md border border-border bg-bg px-3 py-2 type-small'
 
 /** Pantalla de la plantilla (docs/SPEC.md §5): tarjetas de líderes o lista, por temporada y competición. */
-export default function SquadScreen({ onSignOut }) {
+export default function SquadScreen() {
   const { getSquadFilters, getSquadStats } = useUseCases()
   const [filters, setFilters] = useState(null)
-  const [seasonId, setSeasonId] = useState(null)
-  const [competitionId, setCompetitionId] = useState(null) // null = todas
+  // Los filtros viven en la URL (?temporada=&competicion=): al volver de una ficha siguen igual y la ficha los hereda.
+  const [params, setParams] = useSearchParams()
+  const seasonId = Number(params.get('temporada')) || null
+  const competitionId = Number(params.get('competicion')) || null // null = todas
+  // replace: cambiar un filtro no añade un paso más al botón «atrás».
+  const setFilter = (name, value) =>
+    setParams(
+      (prev) => {
+        const next = new URLSearchParams(prev)
+        if (value === null) next.delete(name)
+        else next.set(name, value)
+        return next
+      },
+      { replace: true },
+    )
   const [filtersFailed, setFiltersFailed] = useState(false)
   // Cada respuesta se guarda con los filtros que la pidieron: si no son los de ahora, está cargando.
   const [result, setResult] = useState({ key: null, players: null, failed: false })
@@ -26,13 +40,14 @@ export default function SquadScreen({ onSignOut }) {
       .then((f) => {
         if (stale) return
         setFilters(f)
-        setSeasonId(f.initialSeasonId)
+        // La temporada inicial solo se pone si la URL no trae ninguna.
+        if (f.initialSeasonId !== null && !seasonId) setFilter('temporada', f.initialSeasonId)
       })
       .catch(() => !stale && setFiltersFailed(true))
     return () => {
       stale = true
     }
-  }, [getSquadFilters])
+  }, [getSquadFilters]) // eslint-disable-line react-hooks/exhaustive-deps -- solo al montar
 
   useEffect(() => {
     if (seasonId === null) return
@@ -80,11 +95,6 @@ export default function SquadScreen({ onSignOut }) {
               {view === 'cards' ? 'Mostrar como lista' : 'Mostrar como tarjetas'}
             </button>
           )}
-          {onSignOut && (
-            <button type="button" onClick={onSignOut} className="px-2 py-2 type-small text-text-muted underline">
-              Salir
-            </button>
-          )}
         </div>
       </header>
 
@@ -93,7 +103,7 @@ export default function SquadScreen({ onSignOut }) {
           <select
             aria-label="Temporada"
             value={seasonId ?? ''}
-            onChange={(e) => setSeasonId(Number(e.target.value))}
+            onChange={(e) => setFilter('temporada', Number(e.target.value))}
             className={select}
           >
             {filters.seasons.map((s) => (
@@ -105,7 +115,7 @@ export default function SquadScreen({ onSignOut }) {
           <select
             aria-label="Competición"
             value={competitionId ?? ''}
-            onChange={(e) => setCompetitionId(e.target.value ? Number(e.target.value) : null)}
+            onChange={(e) => setFilter('competicion', e.target.value ? Number(e.target.value) : null)}
             className={select}
           >
             <option value="">Todas</option>
