@@ -1,53 +1,22 @@
 import { useEffect, useState } from 'react'
-import { useSearchParams } from 'react-router'
 import { useUseCases } from '../use-cases-context'
+import { useSeasonFilters } from '../use-season-filters'
 import LeaderCards from './LeaderCards'
+import SeasonFilters from './SeasonFilters'
 import SquadTable from './SquadTable'
-
-const select = 'min-w-0 rounded-md border border-border bg-bg px-3 py-2 type-small'
 
 /** Pantalla de la plantilla (docs/SPEC.md §5): tarjetas de líderes o lista, por temporada y competición. */
 export default function SquadScreen() {
-  const { getSquadFilters, getSquadStats } = useUseCases()
-  const [filters, setFilters] = useState(null)
-  // Los filtros viven en la URL (?temporada=&competicion=): al volver de una ficha siguen igual y la ficha los hereda.
-  const [params, setParams] = useSearchParams()
-  const seasonId = Number(params.get('temporada')) || null
-  const competitionId = Number(params.get('competicion')) || null // null = todas
-  // replace: cambiar un filtro no añade un paso más al botón «atrás».
-  const setFilter = (name, value) =>
-    setParams(
-      (prev) => {
-        const next = new URLSearchParams(prev)
-        if (value === null) next.delete(name)
-        else next.set(name, value)
-        return next
-      },
-      { replace: true },
-    )
-  const [filtersFailed, setFiltersFailed] = useState(false)
+  const { getSquadStats } = useUseCases()
+  const season = useSeasonFilters()
+  const { filters, seasonId, competitionId } = season
   // Cada respuesta se guarda con los filtros que la pidieron: si no son los de ahora, está cargando.
   const [result, setResult] = useState({ key: null, players: null, failed: false })
   const [view, setView] = useState('cards')
   const key = `${seasonId}-${competitionId}`
   const current = result.key === key ? result : { players: null, failed: false }
   const players = current.players // null = cargando
-  const failed = filtersFailed || current.failed
-
-  useEffect(() => {
-    let stale = false
-    getSquadFilters()
-      .then((f) => {
-        if (stale) return
-        setFilters(f)
-        // La temporada inicial solo se pone si la URL no trae ninguna.
-        if (f.initialSeasonId !== null && !seasonId) setFilter('temporada', f.initialSeasonId)
-      })
-      .catch(() => !stale && setFiltersFailed(true))
-    return () => {
-      stale = true
-    }
-  }, [getSquadFilters]) // eslint-disable-line react-hooks/exhaustive-deps -- solo al montar
+  const failed = season.failed || current.failed
 
   useEffect(() => {
     if (seasonId === null) return
@@ -74,59 +43,25 @@ export default function SquadScreen() {
     if (!players) return <p className="text-text-muted">Cargando…</p>
     if (players.length === 0) return <p className="text-text-muted">Todavía no hay estadísticas en esta temporada.</p>
     // La key vuelve a montar las tarjetas al cambiar de filtros: así las cifras vuelven a rodar.
-    return view === 'cards' ? (
-      <LeaderCards key={`${seasonId}-${competitionId}`} players={players} />
-    ) : (
-      <SquadTable players={players} />
-    )
+    return view === 'cards' ? <LeaderCards key={key} players={players} /> : <SquadTable players={players} />
   }
 
   return (
     <main className="mx-auto flex w-full max-w-5xl flex-col gap-4 px-4 py-6">
       <header className="flex items-center justify-between gap-3">
         <h1 className="type-display">Plantilla</h1>
-        <div className="flex items-center gap-2">
-          {players?.length > 0 && (
-            <button
-              type="button"
-              onClick={() => setView(view === 'cards' ? 'list' : 'cards')}
-              className="rounded-md border border-border px-3 py-2 type-small whitespace-nowrap"
-            >
-              {view === 'cards' ? 'Mostrar como lista' : 'Mostrar como tarjetas'}
-            </button>
-          )}
-        </div>
+        {players?.length > 0 && (
+          <button
+            type="button"
+            onClick={() => setView(view === 'cards' ? 'list' : 'cards')}
+            className="rounded-md border border-border px-3 py-2 type-small whitespace-nowrap"
+          >
+            {view === 'cards' ? 'Mostrar como lista' : 'Mostrar como tarjetas'}
+          </button>
+        )}
       </header>
 
-      {filters?.seasons.length > 0 && (
-        <div className="flex gap-2">
-          <select
-            aria-label="Temporada"
-            value={seasonId ?? ''}
-            onChange={(e) => setFilter('temporada', Number(e.target.value))}
-            className={select}
-          >
-            {filters.seasons.map((s) => (
-              <option key={s.id} value={s.id}>
-                {s.name}
-              </option>
-            ))}
-          </select>
-          <select
-            aria-label="Competición"
-            value={competitionId ?? ''}
-            onChange={(e) => setFilter('competicion', e.target.value ? Number(e.target.value) : null)}
-            className={select}
-          >
-            <option value="">Todas</option>
-            {filters.competitions.map((c) => (
-              <option key={c.id} value={c.id}>
-                {c.name}
-              </option>
-            ))}
-          </select>
-        </div>
-      )}
+      <SeasonFilters {...season} />
 
       {content()}
     </main>

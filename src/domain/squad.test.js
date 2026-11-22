@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { LEADER_STATS, groupByPosition, playerName, sortSquad, topThree } from './squad'
+import { LEADER_STATS, groupByPosition, playerName, positionLabel, sortSquad, topThree } from './squad'
 
 // Jugador mínimo: solo lo que miran estas reglas.
 const player = (shirtNumber, stats = {}) => ({
@@ -21,6 +21,13 @@ describe('playerName', () => {
   it('usa el apodo y, si no tiene, el nombre', () => {
     expect(playerName({ nickname: 'Chino', firstName: 'Luis' })).toBe('Chino')
     expect(playerName({ nickname: null, firstName: 'Luis' })).toBe('Luis')
+  })
+})
+
+describe('positionLabel', () => {
+  it('nombra la posición como en la pista', () => {
+    expect(positionLabel('goalkeeper')).toBe('Portero')
+    expect(positionLabel('winger')).toBe('Ala')
   })
 })
 

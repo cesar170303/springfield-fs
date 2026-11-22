@@ -15,10 +15,11 @@ function renderApp(auth = {}, url = '/') {
     signOut: vi.fn(),
     ...auth,
   }
-  // Casos de uso falsos para la plantilla; el login no llega a usar los suyos.
+  // Casos de uso falsos para la plantilla y la ficha; el login no llega a usar los suyos.
   const useCases = {
     getSquadFilters: vi.fn().mockResolvedValue({ seasons: [], competitions: [], initialSeasonId: null }),
     getSquadStats: vi.fn(),
+    getPlayerSheet: vi.fn().mockResolvedValue({ player: null, timeline: [], matches: [] }),
   }
   render(
     <UseCasesContext.Provider value={useCases}>
@@ -76,8 +77,8 @@ describe('App', () => {
   it('en /jugador/:id enseña la ficha, con un enlace para volver a la plantilla', async () => {
     renderApp({ user: { email: 'jugador@example.com' }, role: 'player' }, '/jugador/7?temporada=2')
 
-    expect(await screen.findByRole('heading', { name: 'Ficha del jugador' })).toBeInTheDocument()
-    expect(screen.getByRole('link', { name: 'Volver a la plantilla' })).toHaveAttribute('href', '/?temporada=2')
+    expect(await screen.findByRole('link', { name: 'Volver a la plantilla' })).toHaveAttribute('href', '/?temporada=2')
+    expect(await screen.findByText('Aún no hay ninguna temporada.')).toBeInTheDocument()
   })
 
   it('una dirección que no existe lo dice y enlaza a la plantilla', async () => {
