@@ -2,7 +2,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest'
 import { render, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { gsap } from 'gsap'
-import { MemoryRouter, Route, Routes, useLocation } from 'react-router'
+import { Link, MemoryRouter, Route, Routes, useLocation } from 'react-router'
 import SquadScreen from './SquadScreen'
 import { UseCasesContext } from '../use-cases-context'
 
@@ -58,7 +58,15 @@ function renderScreen(overrides = {}, url = '/') {
     <UseCasesContext.Provider value={useCases}>
       <MemoryRouter initialEntries={[url]}>
         <Routes>
-          <Route path="/" element={<SquadScreen />} />
+          <Route
+            path="/"
+            element={
+              <>
+                <SquadScreen />
+                <Link to="/">Plantilla (barra)</Link>
+              </>
+            }
+          />
           <Route path="/jugador/:playerId" element={<WhereAmI />} />
         </Routes>
       </MemoryRouter>
@@ -219,6 +227,16 @@ describe('SquadScreen', () => {
     const useCases = renderScreen({}, '/?temporada=99&competicion=99')
 
     await waitFor(() => expect(useCases.getSquadStats).toHaveBeenLastCalledWith({ seasonId: 2, competitionId: null }))
+  })
+
+  it('al pulsar la sección en la que ya está, conserva la temporada y no se queda cargando', async () => {
+    const useCases = renderScreen({}, '/?temporada=1&competicion=2')
+    await screen.findByRole('region', { name: 'Goleadores' })
+
+    await userEvent.click(screen.getByRole('link', { name: 'Plantilla (barra)' }))
+
+    await waitFor(() => expect(useCases.getSquadStats).toHaveBeenLastCalledWith({ seasonId: 1, competitionId: null }))
+    expect(await screen.findByRole('region', { name: 'Goleadores' })).toBeInTheDocument()
   })
 
   it('si solo ha desaparecido la competición, conserva la temporada elegida', async () => {

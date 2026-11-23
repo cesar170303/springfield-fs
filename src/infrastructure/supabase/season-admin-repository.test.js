@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest'
+import { describe, expect, it, vi } from 'vitest'
 import { createSupabaseSeasonAdminRepository } from './season-admin-repository'
 
 // Cliente falso: apunta los pasos de cada petición ([['from', 'seasons'], ['select', …], …]) y responde por orden.
@@ -22,7 +22,8 @@ function setup(...results) {
     )
     return query
   }
-  return { calls, repository: createSupabaseSeasonAdminRepository({ from }) }
+  const rpc = vi.fn().mockResolvedValue(results[0] ?? { data: null, error: null })
+  return { calls, rpc, repository: createSupabaseSeasonAdminRepository({ from, rpc }) }
 }
 
 const DATA = { name: '2027/28', startDate: '2027-09-01', endDate: '2028-06-30' }
@@ -70,33 +71,19 @@ describe('repositorio de temporadas del panel', () => {
     expect(calls).toEqual([[['from', 'seasons'], ['update', ROW], ['eq', 'id', 2], ['select', 'id'], ['single']]])
   })
 
-  it('al marcar la actual, primero desmarca la que lo era (solo puede haber una)', async () => {
-    const { calls, repository } = setup()
+  it('marca la actual con una sola petición: si falla, la que lo era lo sigue siendo', async () => {
+    const { rpc, repository } = setup()
 
     await repository.setCurrentSeason(2)
 
-    expect(calls).toEqual([
-      [
-        ['from', 'seasons'],
-        ['update', { is_current: false }],
-        ['eq', 'is_current', true],
-        ['neq', 'id', 2],
-      ],
-      [['from', 'seasons'], ['update', { is_current: true }], ['eq', 'id', 2], ['select', 'id'], ['single']],
-    ])
+    expect(rpc).toHaveBeenCalledExactlyOnceWith('set_current_season', { p_season_id: 2 })
   })
 
-  it('si no puede desmarcar la anterior, no sigue', async () => {
-    const { calls, repository } = setup(FAILED)
+  it('si no puede marcarla, lo dice (o dice por qué)', async () => {
+    const gone = { data: null, error: { code: 'P0001', message: 'Esa temporada ya no existe' } }
 
-    await expect(repository.setCurrentSeason(2)).rejects.toThrow('No se pudo cambiar la temporada actual.')
-    expect(calls).toHaveLength(1)
-  })
-
-  it('si no puede marcar la nueva, lo dice', async () => {
-    const { repository } = setup({ data: null, error: null }, FAILED)
-
-    await expect(repository.setCurrentSeason(2)).rejects.toThrow('No se pudo cambiar la temporada actual.')
+    await expect(setup(FAILED).repository.setCurrentSeason(2)).rejects.toThrow('No se pudo cambiar la temporada actual.')
+    await expect(setup(gone).repository.setCurrentSeason(2)).rejects.toThrow('Esa temporada ya no existe.')
   })
 
   it('da las competiciones con su tipo', async () => {

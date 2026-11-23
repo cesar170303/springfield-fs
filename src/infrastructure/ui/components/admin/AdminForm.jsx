@@ -60,7 +60,7 @@ export default function AdminForm({ onSubmit, onCancel, onDelete, deleteQuestion
           <button type="submit" disabled={busy} className={primaryButton}>
             Guardar
           </button>
-          <button type="button" onClick={onCancel} className={secondaryButton}>
+          <button type="button" disabled={busy} onClick={onCancel} className={secondaryButton}>
             Cancelar
           </button>
           {onDelete && (

@@ -15,7 +15,7 @@ export default function SeasonsAdmin() {
   const save = (season) => editor.save(() => saveSeason(season), 'Temporada guardada.')
 
   return (
-    <EditableSection title="Temporadas" newLabel="Nueva temporada" editor={editor} loadError={error}>
+    <EditableSection title="Temporadas" newLabel="Nueva temporada" editor={editor} loadError={error} onRetry={reload}>
       {editor.editing === 'new' && (
         <SeasonForm season={{ name: '', startDate: '', endDate: '' }} onSave={save} onCancel={editor.close} />
       )}

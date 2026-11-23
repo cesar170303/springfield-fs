@@ -15,7 +15,13 @@ export default function CompetitionsAdmin() {
   const save = (competition) => editor.save(() => saveCompetition(competition), 'Competición guardada.')
 
   return (
-    <EditableSection title="Competiciones" newLabel="Nueva competición" editor={editor} loadError={error}>
+    <EditableSection
+      title="Competiciones"
+      newLabel="Nueva competición"
+      editor={editor}
+      loadError={error}
+      onRetry={reload}
+    >
       {editor.editing === 'new' && (
         <CompetitionForm
           competition={{ name: '', type: COMPETITION_TYPES[0].value }}

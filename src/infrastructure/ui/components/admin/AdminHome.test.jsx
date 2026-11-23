@@ -1,7 +1,7 @@
 import { describe, expect, it, vi } from 'vitest'
 import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { MemoryRouter, useLocation } from 'react-router'
+import { Link, MemoryRouter, useLocation } from 'react-router'
 import AdminHome from './AdminHome'
 import { UseCasesContext } from '../../use-cases-context'
 
@@ -24,6 +24,7 @@ function renderHome(getSquadFilters, url = '/admin') {
     <UseCasesContext.Provider value={{ getSquadFilters }}>
       <MemoryRouter initialEntries={[url]}>
         <AdminHome />
+        <Link to="/admin">Admin</Link>
         <WhereAmI />
       </MemoryRouter>
     </UseCasesContext.Provider>,
@@ -43,6 +44,15 @@ describe('AdminHome', () => {
     renderHome(vi.fn().mockResolvedValue(FILTERS), '/admin?temporada=99')
 
     expect(await screen.findByText('Estás en /admin?temporada=2')).toBeInTheDocument()
+  })
+
+  it('al pulsar «Admin» estando en el panel, conserva la temporada elegida', async () => {
+    renderHome(vi.fn().mockResolvedValue(FILTERS), '/admin?temporada=1')
+    await screen.findByLabelText('Temporada')
+
+    await userEvent.click(screen.getByRole('link', { name: 'Admin' }))
+
+    expect(await screen.findByText('Estás en /admin?temporada=1')).toBeInTheDocument()
   })
 
   it('al cambiar de temporada, cambia la URL', async () => {
@@ -70,6 +80,15 @@ describe('AdminHome', () => {
   it('si no se puede cargar, lo dice', async () => {
     renderHome(vi.fn().mockRejectedValue(new Error('x')))
 
-    expect(await screen.findByRole('alert')).toHaveTextContent('No se pudo cargar el panel. Inténtalo de nuevo.')
+    expect(await screen.findByRole('alert')).toHaveTextContent('No se pudo cargar el panel.')
+  })
+
+  it('tras un fallo, «Reintentar» vuelve a cargarlo', async () => {
+    renderHome(vi.fn().mockRejectedValueOnce(new Error('x')).mockResolvedValue(FILTERS))
+
+    await userEvent.click(await screen.findByRole('button', { name: 'Reintentar' }))
+
+    expect(await screen.findByLabelText('Temporada')).toBeInTheDocument()
+    expect(screen.queryByRole('alert')).not.toBeInTheDocument()
   })
 })

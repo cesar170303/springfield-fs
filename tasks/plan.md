@@ -19,8 +19,8 @@ Va al final para no renumerar (CLAUDE.md y el código citan §5, §7, §9…). T
 
 - **Acceso:** `/admin` y subrutas solo para el staff (`admin` y `superadmin`); al resto, «Esta página no existe». Botón «Admin» en la barra inferior, solo para el staff. El código del panel se descarga solo al entrar. La seguridad sigue siendo RLS. Sin animaciones nuevas (no está entre las cinco aprobadas).
 - **Inicio del panel:** selector de temporada (`?temporada=`), avisos (partidos jugados sin terminar, empates de MVP) y las secciones.
-- **Temporadas:** crear y editar (nombre `2026/27`, inicio y fin) y marcar la actual (solo una). No se borran.
-- **Competiciones:** crear y editar (nombre y tipo: Liga, Copa o Amistoso). No se borran.
+- **Temporadas:** crear y editar (nombre `2026/27`, inicio y fin) y marcar la actual (solo una). Se borran al editar, si no tienen partidos (2026-11-23).
+- **Competiciones:** crear y editar (nombre y tipo: Liga, Copa o Amistoso). Se borran al editar, si no tienen partidos (2026-11-23).
 - **Jugadores:**
   - fichas activas y archivadas (aparte), con foto, apodo, nombre, posición, estado, correo (solo staff, `get_player_emails`) y si tiene cuenta vinculada;
   - crear y editar: nombre, apellidos, apodo (opcional), correo (opcional; al registrarse y confirmarlo se vincula solo), posición y estado;
@@ -56,7 +56,7 @@ Test antes: `supabase/tests/database/11_admin_integrity.test.sql` (rojo → verd
 - Mensajes con `raise exception` en español: la app los enseña tal cual.
 - Borrar un partido **sin** votos sigue arrastrando su convocatoria y sus goles (caso en el test).
 - Anonimato: el error «ya tiene votos» revela **que** alguien votó, nunca **qué** (lo mismo que ya usa el recordatorio push). Se anota en `docs/security/2026-11-auditoria.md`.
-- Aplicarla en la nube lo decide el propietario; lo natural, al cerrar la fase 3, antes de usar el editor de partidos contra la nube.
+- Aplicarla en la nube lo decide el propietario. Desde la revisión del 2026-11-23 incluye `set_current_season`: hace falta antes de usar el panel contra la nube.
 
 ## Decisiones técnicas
 

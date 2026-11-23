@@ -1,8 +1,15 @@
+import LoadError from './LoadError'
 import { primaryButton } from './styles'
 
 /** Sección con una lista que se edita en el sitio: título, botón de crear y avisos. `editor` es lo que da useEditor. */
-export default function EditableSection({ title, newLabel, editor: { open, newButton, result }, loadError, children }) {
-  const error = result.error || loadError?.message
+export default function EditableSection({
+  title,
+  newLabel,
+  editor: { open, newButton, result },
+  loadError,
+  onRetry,
+  children,
+}) {
   return (
     <section aria-label={title} className="flex flex-col gap-3">
       <div className="flex flex-wrap items-center justify-between gap-3">
@@ -11,11 +18,12 @@ export default function EditableSection({ title, newLabel, editor: { open, newBu
           {newLabel}
         </button>
       </div>
-      {error && (
+      {result.error && (
         <p role="alert" className="type-small text-danger">
-          {error}
+          {result.error}
         </p>
       )}
+      {loadError && <LoadError message={loadError.message} onRetry={onRetry} />}
       <p role="status" className="type-small text-text-muted empty:sr-only">
         {result.ok}
       </p>

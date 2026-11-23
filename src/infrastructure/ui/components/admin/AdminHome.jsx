@@ -1,6 +1,7 @@
 import { Link, useLocation } from 'react-router'
 import { useSeasonFilters } from '../../use-season-filters'
 import SeasonFilters from '../SeasonFilters'
+import LoadError from './LoadError'
 
 /** Inicio del panel de admin (docs/SPEC.md §12). Cada sección que se construye añade aquí su enlace. */
 export default function AdminHome() {
@@ -21,11 +22,7 @@ export default function AdminHome() {
         <h1 className="type-display">Panel</h1>
         <SeasonFilters {...season} showCompetition={false} />
       </header>
-      {season.failed && (
-        <p role="alert" className="type-small text-danger">
-          No se pudo cargar el panel. Inténtalo de nuevo.
-        </p>
-      )}
+      {season.failed && <LoadError message="No se pudo cargar el panel." onRetry={season.retry} />}
       {season.filters?.initialSeasonId === null && <p className="text-text-muted">Aún no hay ninguna temporada.</p>}
       {season.filters && (
         <nav aria-label="Secciones del panel" className="grid md:grid-cols-2 md:gap-x-8">

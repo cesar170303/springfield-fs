@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest'
-import { render, screen, waitFor, within } from '@testing-library/react'
+import { act, render, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import SeasonsAdmin from './SeasonsAdmin'
 import { UseCasesContext } from '../../use-cases-context'
@@ -110,6 +110,65 @@ describe('SeasonsAdmin', () => {
     await userEvent.click(screen.getByRole('button', { name: 'Guardar' }))
 
     expect(useCases.saveSeason).toHaveBeenCalledTimes(1)
+  })
+
+  it('mientras guarda no se puede cancelar: ya va de camino', async () => {
+    renderScreen({ saveSeason: vi.fn(() => new Promise(() => {})) })
+
+    await userEvent.click(await screen.findByRole('button', { name: 'Editar 2025/26' }))
+    await userEvent.click(screen.getByRole('button', { name: 'Guardar' }))
+
+    expect(screen.getByRole('button', { name: 'Cancelar' })).toBeDisabled()
+  })
+
+  it('un guardado lento no cierra el formulario abierto después, y se anuncia igual', async () => {
+    let finish
+    const useCases = renderScreen({ saveSeason: vi.fn(() => new Promise((resolve) => (finish = resolve))) })
+    await userEvent.click(await screen.findByRole('button', { name: 'Editar 2025/26' }))
+    await userEvent.click(screen.getByRole('button', { name: 'Guardar' }))
+
+    await userEvent.click(screen.getByRole('button', { name: 'Nueva temporada' }))
+    await userEvent.type(screen.getByLabelText('Nombre'), 'a medias')
+    await act(async () => finish())
+
+    expect(screen.getByLabelText('Nombre')).toHaveValue('a medias')
+    expect(screen.getByLabelText('Nombre')).toHaveFocus()
+    expect(screen.getByRole('status')).toHaveTextContent('Temporada guardada.')
+    expect(useCases.listSeasons).toHaveBeenCalledTimes(2)
+  })
+
+  it('si el guardado lento falla con otro formulario abierto, el error no se pierde', async () => {
+    let fail
+    renderScreen({ saveSeason: vi.fn(() => new Promise((_, reject) => (fail = reject))) })
+    await userEvent.click(await screen.findByRole('button', { name: 'Editar 2025/26' }))
+    await userEvent.click(screen.getByRole('button', { name: 'Guardar' }))
+
+    await userEvent.click(screen.getByRole('button', { name: 'Nueva temporada' }))
+    await act(async () => fail(new Error('Ya hay una temporada con ese nombre.')))
+
+    expect(screen.getByRole('alert')).toHaveTextContent('Ya hay una temporada con ese nombre.')
+    expect(screen.getByLabelText('Nombre')).toBeInTheDocument()
+  })
+
+  it('dos toques seguidos marcan la actual una sola vez', async () => {
+    const useCases = renderScreen({ setCurrentSeason: vi.fn(() => new Promise(() => {})) })
+
+    const button = await screen.findByRole('button', { name: 'Marcar como actual: 2025/26' })
+    await userEvent.click(button)
+    await userEvent.click(button)
+
+    expect(useCases.setCurrentSeason).toHaveBeenCalledTimes(1)
+  })
+
+  it('tras un fallo de carga, «Reintentar» vuelve a pedir la lista', async () => {
+    renderScreen({
+      listSeasons: vi.fn().mockRejectedValueOnce(new Error('No se pudieron cargar.')).mockResolvedValue(SEASONS),
+    })
+
+    await userEvent.click(await screen.findByRole('button', { name: 'Reintentar' }))
+
+    expect(await screen.findByText('2025/26')).toBeInTheDocument()
+    expect(screen.queryByRole('alert')).not.toBeInTheDocument()
   })
 
   it('cancelar cierra el formulario sin guardar', async () => {

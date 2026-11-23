@@ -54,7 +54,7 @@ Detalle, decisiones y riesgos: [`tasks/plan.md`](plan.md).
   - Solo convocados con minutos; en un penalti no hay asistente; con menos goles que el resultado, avisa sin bloquear
 - [ ] **T14.** Terminar y reabrir
   - Explica qué falta; avisa hasta cuándo estará abierta la votación; reabrir con votos lo impide la BD
-- [ ] **Checkpoint 3 (PR 3):** como el 1, `CHANGELOG` 0.14.0. Pedir al propietario aplicar la migración de T3 en la nube. **PARADA.**
+- [ ] **Checkpoint 3 (PR 3):** como el 1, `CHANGELOG` 0.14.0. Comprobar que la migración de T3 está aplicada en la nube (se pide ya al cerrar la fase 1). **PARADA.**
 
 ## Fase 4 — Desempate de MVP y usuarios → PR, 0.15.0
 

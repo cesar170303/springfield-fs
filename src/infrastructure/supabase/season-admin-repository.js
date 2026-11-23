@@ -7,7 +7,6 @@ const toRow = ({ name, startDate, endDate }) => ({ name, start_date: startDate, 
 export function createSupabaseSeasonAdminRepository(client) {
   const NOT_SAVED = 'No se pudo guardar la temporada. Inténtalo de nuevo.'
   const COMPETITION_NOT_SAVED = 'No se pudo guardar la competición. Inténtalo de nuevo.'
-  const NOT_CURRENT = 'No se pudo cambiar la temporada actual. Inténtalo de nuevo.'
   // select + single: si RLS ignora el cambio o el borrado no hay fila de vuelta y salta un error, en vez de darlo por guardado.
   const update = (table, id, row) => client.from(table).update(row).eq('id', id).select('id').single()
   const remove = (table, id) => client.from(table).delete().eq('id', id).select('id').single()
@@ -32,13 +31,10 @@ export function createSupabaseSeasonAdminRepository(client) {
       if (error) throw readableError(error, NOT_SAVED)
     },
 
-    // En dos pasos porque la base de datos solo admite una actual. Si falla el segundo no queda ninguna: la app abre
-    // por la más reciente hasta que se vuelva a marcar.
+    // RPC porque son dos cambios (solo puede haber una actual) y tienen que ir juntos: o los dos o ninguno.
     async setCurrentSeason(id) {
-      const cleared = await client.from('seasons').update({ is_current: false }).eq('is_current', true).neq('id', id)
-      if (cleared.error) throw readableError(cleared.error, NOT_CURRENT)
-      const { error } = await update('seasons', id, { is_current: true })
-      if (error) throw readableError(error, NOT_CURRENT)
+      const { error } = await client.rpc('set_current_season', { p_season_id: id })
+      if (error) throw readableError(error, 'No se pudo cambiar la temporada actual. Inténtalo de nuevo.')
     },
 
     async deleteSeason(id) {
