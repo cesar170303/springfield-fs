@@ -9,8 +9,19 @@ Registro de lo que se hace en cada feature y de los fallos detectados. Formato b
 Fallos detectados que aún no están resueltos. Al arreglarlos, pasa la línea a «Corregido» de la versión correspondiente.
 
 - El bundle principal pasa de 500 kB (aviso de Vite al compilar; ya pasaba antes de la ficha). Se resolverá cargando las pantallas bajo demanda.
+- Sin red, la app abre con la letra de reserva y sin el icono de Google: el service worker no precarga las fuentes (`woff2`) ni los `svg` (Workbox solo incluye `js`, `css` y `html` por defecto).
 
 ## [Sin publicar]
+
+## [0.11.1] - 2026-11-23
+
+Corrige la PWA sin red: el service worker precargaba solo los iconos.
+
+### Corregido
+- **Precarga vacía del service worker** (desde la 0.5.3): `dist/sw.js` no incluía `index.html`, el JS ni el CSS, así que la app no abría sin conexión. El `override` de `minimatch` 11 rompía `glob` 11.1.0, que pide la 10, y `glob` no encontraba ningún archivo. Ahora se fuerza `glob` 14.0.6, que ya pide `minimatch` ^11.0.5 (sin versiones de la 10 parcheadas para GHSA-g3hv-75wg-m249) y cierra además la alerta GHSA-3g3m-2fjr-6pw4 de `glob`.
+
+### Añadido
+- **El build falla** si la precarga no lleva `index.html`, JS y CSS (`scripts/require-app-shell.mjs`, en `workbox.manifestTransforms`): lo vigilan el CI, el hook `Stop` y Vercel.
 
 ## [0.11.0] - 2026-11-22
 
