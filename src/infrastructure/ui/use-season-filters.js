@@ -14,12 +14,14 @@ export function useSeasonFilters() {
   const seasonId = Number(params.get('temporada')) || null
   const competitionId = Number(params.get('competicion')) || null // null = todas
   // replace: cambiar un filtro no añade un paso más al botón «atrás».
-  const setFilter = (name, value) =>
+  const changeUrl = (changes) =>
     setParams(
       (prev) => {
         const next = new URLSearchParams(prev)
-        if (value === null) next.delete(name)
-        else next.set(name, value)
+        for (const [name, value] of Object.entries(changes)) {
+          if (value === null) next.delete(name)
+          else next.set(name, value)
+        }
         return next
       },
       { replace: true },
@@ -31,9 +33,12 @@ export function useSeasonFilters() {
       .then((f) => {
         if (stale) return
         setFilters(f)
-        // La inicial solo se pone si la URL no trae ninguna, o trae una que ya no existe.
-        const known = f.seasons.some((s) => s.id === seasonId)
-        if (f.initialSeasonId !== null && !known) setFilter('temporada', f.initialSeasonId)
+        // Lo que la URL no trae, o ya no existe (el staff puede borrarlo): la temporada inicial y todas las competiciones.
+        const exists = (list, id) => list.some((item) => item.id === id)
+        const changes = {}
+        if (f.initialSeasonId !== null && !exists(f.seasons, seasonId)) changes.temporada = f.initialSeasonId
+        if (competitionId !== null && !exists(f.competitions, competitionId)) changes.competicion = null
+        if (Object.keys(changes).length) changeUrl(changes)
       })
       .catch(() => !stale && setFailed(true))
     return () => {
@@ -46,7 +51,7 @@ export function useSeasonFilters() {
     failed,
     seasonId,
     competitionId,
-    setSeason: (id) => setFilter('temporada', id),
-    setCompetition: (id) => setFilter('competicion', id),
+    setSeason: (id) => changeUrl({ temporada: id }),
+    setCompetition: (id) => changeUrl({ competicion: id }),
   }
 }

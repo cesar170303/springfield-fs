@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
-import { render, screen, within } from '@testing-library/react'
+import { render, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { gsap } from 'gsap'
 import { MemoryRouter, Route, Routes, useLocation } from 'react-router'
@@ -213,6 +213,18 @@ describe('SquadScreen', () => {
     await userEvent.click(within(screen.getByRole('table')).getByRole('link', { name: 'Rulo' }))
 
     expect(screen.getByText('Estás en /jugador/2?temporada=2')).toBeInTheDocument()
+  })
+
+  it('si la temporada y la competición de la URL ya no existen, abre por la inicial y con todas', async () => {
+    const useCases = renderScreen({}, '/?temporada=99&competicion=99')
+
+    await waitFor(() => expect(useCases.getSquadStats).toHaveBeenLastCalledWith({ seasonId: 2, competitionId: null }))
+  })
+
+  it('si solo ha desaparecido la competición, conserva la temporada elegida', async () => {
+    const useCases = renderScreen({}, '/?temporada=1&competicion=99')
+
+    await waitFor(() => expect(useCases.getSquadStats).toHaveBeenLastCalledWith({ seasonId: 1, competitionId: null }))
   })
 
   it('lee la temporada y la competición de la URL (al volver de una ficha se mantienen)', async () => {

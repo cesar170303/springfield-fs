@@ -46,7 +46,7 @@ export default function SeasonsAdmin() {
                   {!season.isCurrent && (
                     <button
                       type="button"
-                      aria-label={`Marcar ${season.name} como actual`}
+                      aria-label={`Marcar como actual: ${season.name}`}
                       onClick={() =>
                         editor.run(() => setCurrentSeason(season.id), `${season.name} es la temporada actual.`)
                       }

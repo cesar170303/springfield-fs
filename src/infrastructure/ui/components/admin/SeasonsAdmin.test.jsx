@@ -46,7 +46,7 @@ describe('SeasonsAdmin', () => {
     const current = await row('2026/27')
     expect(current).toHaveTextContent('1 sept 2026 – 30 jun 2027')
     expect(within(current).getByText('Actual')).toBeInTheDocument()
-    expect(within(current).queryByRole('button', { name: 'Marcar 2026/27 como actual' })).not.toBeInTheDocument()
+    expect(within(current).queryByRole('button', { name: 'Marcar como actual: 2026/27' })).not.toBeInTheDocument()
     expect(within(await row('2025/26')).queryByText('Actual')).not.toBeInTheDocument()
   })
 
@@ -125,7 +125,7 @@ describe('SeasonsAdmin', () => {
   it('marca otra temporada como actual y recarga', async () => {
     const useCases = renderScreen()
 
-    await userEvent.click(await screen.findByRole('button', { name: 'Marcar 2025/26 como actual' }))
+    await userEvent.click(await screen.findByRole('button', { name: 'Marcar como actual: 2025/26' }))
 
     expect(useCases.setCurrentSeason).toHaveBeenCalledWith(1)
     expect(await screen.findByRole('status')).toHaveTextContent('2025/26 es la temporada actual.')
@@ -136,10 +136,20 @@ describe('SeasonsAdmin', () => {
   it('si no se puede marcar, lo dice y recarga para enseñar el estado real', async () => {
     const useCases = renderScreen({ setCurrentSeason: vi.fn().mockRejectedValue(new Error('No se pudo.')) })
 
-    await userEvent.click(await screen.findByRole('button', { name: 'Marcar 2025/26 como actual' }))
+    await userEvent.click(await screen.findByRole('button', { name: 'Marcar como actual: 2025/26' }))
 
     expect(await screen.findByRole('alert')).toHaveTextContent('No se pudo.')
     await waitFor(() => expect(useCases.listSeasons).toHaveBeenCalledTimes(2))
+  })
+
+  it('al abrir otro formulario, desaparece el aviso anterior', async () => {
+    renderScreen()
+    await userEvent.click(await screen.findByRole('button', { name: 'Marcar como actual: 2025/26' }))
+    expect(await screen.findByText('2025/26 es la temporada actual.')).toBeInTheDocument()
+
+    await userEvent.click(screen.getByRole('button', { name: 'Nueva temporada' }))
+
+    expect(screen.getByRole('status')).toBeEmptyDOMElement()
   })
 
   it('borra una temporada desde su edición, avisando de lo que se lleva', async () => {

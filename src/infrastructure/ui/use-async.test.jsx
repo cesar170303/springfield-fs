@@ -38,6 +38,17 @@ describe('useAsync', () => {
     expect(result.current.data).toEqual(['a', 'b'])
   })
 
+  it('si falla la recarga, da el error y conserva los datos que había', async () => {
+    const load = vi.fn().mockResolvedValueOnce(['a']).mockRejectedValueOnce(new Error('sin red'))
+    const { result } = renderHook(() => useAsync(load))
+    await waitFor(() => expect(result.current.data).toEqual(['a']))
+
+    act(() => result.current.reload())
+
+    await waitFor(() => expect(result.current.error?.message).toBe('sin red'))
+    expect(result.current.data).toEqual(['a'])
+  })
+
   it('al cambiar la clave, los datos anteriores dejan de valer y una respuesta vieja se descarta', async () => {
     const pending = { 1: deferred(), 2: deferred() }
     const { result, rerender } = renderHook(({ id }) => useAsync(() => pending[id].promise, id), {
