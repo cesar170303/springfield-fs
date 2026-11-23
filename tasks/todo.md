@@ -23,7 +23,7 @@ Detalle, decisiones y riesgos: [`tasks/plan.md`](plan.md).
 - [x] **T4.** Ruta `/admin` protegida y botón «Admin»
   - El staff ve «Admin» y llega; jugador y viewer, no (en `/admin`, «Esta página no existe»)
   - El panel sale en un archivo aparte del build; la temporada vive en `?temporada=`
-- [ ] **T5.** Temporadas (estrena `errors.js`, `useAsync`, `ports/admin.js`)
+- [x] **T5.** Temporadas (estrena `errors.js`, `useAsync`, `ports/admin.js`)
   - Se crea una temporada y sale en la lista y los selectores; marcar actual desmarca la anterior
   - Nombre repetido o fin antes del inicio, con frase
 - [ ] **T6.** Competiciones

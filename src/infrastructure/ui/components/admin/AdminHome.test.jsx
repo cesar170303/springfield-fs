@@ -51,6 +51,14 @@ describe('AdminHome', () => {
     renderHome(vi.fn().mockResolvedValue({ seasons: [], competitions: [], initialSeasonId: null }))
 
     expect(await screen.findByText('Aún no hay ninguna temporada.')).toBeInTheDocument()
+    expect(screen.getByRole('link', { name: /Temporadas/ })).toHaveAttribute('href', '/admin/temporadas')
+  })
+
+  it('enlaza a las temporadas, con la elegida en la URL, y dice cuál es la actual', async () => {
+    renderHome(vi.fn().mockResolvedValue(FILTERS), '/admin?temporada=1')
+
+    const link = await screen.findByRole('link', { name: /Temporadas 2026\/27 es la actual/ })
+    expect(link).toHaveAttribute('href', '/admin/temporadas?temporada=1')
   })
 
   it('si no se puede cargar, lo dice', async () => {
