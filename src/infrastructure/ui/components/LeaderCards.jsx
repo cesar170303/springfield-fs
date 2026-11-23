@@ -42,7 +42,7 @@ export default function LeaderCards({ players }) {
                           key={value}
                           data-count={value}
                           data-decimals={decimals}
-                          className={`font-bold tabular-nums ${i === 0 ? 'rounded-full bg-highlight px-2.5 text-on-highlight' : 'px-2.5'}`}
+                          className={`font-bold tabular-nums ${i === 0 ? 'rounded-full bg-accent px-2.5 text-on-accent' : 'px-2.5'}`}
                         >
                           {formatStat(value, decimals)}
                         </span>

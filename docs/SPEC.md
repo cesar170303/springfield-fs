@@ -224,7 +224,7 @@ Decidido el 2026-11-20 a partir de dos referencias: [Kopetzki](https://www.awwwa
 
 ### Color
 
-Toda la app es negra, blanca y gris, con el **azul eléctrico** como color de acción. El amarillo `highlight` solo marca al mejor de cada tarjeta y los dorsales de la lista de la plantilla (decidido el 2026-11-21).
+Toda la app es negra, blanca y gris, con el **azul eléctrico** como único color de datos, acciones y lo destacado, igual en todas las pantallas: la pastilla del líder, la cifra destacada de la ficha y la nota de los partidos en que fue MVP (decidido el 2026-11-23). El amarillo queda solo para las tarjetas amarillas y la votación. Los dorsales de la lista van en una pastilla azul, como la del líder.
 
 | Token | Color | Para qué |
 |---|---|---|
@@ -233,11 +233,10 @@ Toda la app es negra, blanca y gris, con el **azul eléctrico** como color de ac
 | `line` | `#262626` | Líneas finas entre filas (decorativas) |
 | `border` | `#6a7681` | Bordes de campos, chips y botones secundarios |
 | `text` / `text-muted` | `#ffffff` / `#8a96a3` | Texto principal y secundario |
-| `accent` | `#1e6ef3` | Acción principal (con texto blanco), chip seleccionado, cifra destacada y foco |
-| `accent-text` | `#4d8ef7` | Enlaces y texto azul pequeño |
+| `accent` | `#1e6ef3` | Acción principal (con texto blanco), chip seleccionado, pastilla del líder y del dorsal, cifra destacada, medidor, gráfica y foco |
+| `accent-text` | `#4d8ef7` | Enlaces, texto azul pequeño y nota de MVP |
 | `danger` | `#ff4d4f` | Errores (siempre con una frase) y tarjeta roja |
 | `card-yellow` | `#ffd90f` | Tarjeta amarilla |
-| `highlight` / `on-highlight` | `#ffd90f` / `#000000` | Pastilla del líder en las tarjetas de la plantilla y recuadro del dorsal en la lista (contraste 14:1) |
 
 **Modo votación** (paleta «Donut»): solo en la pantalla de votación.
 
