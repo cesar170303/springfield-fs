@@ -32,6 +32,17 @@ Paso 5 de la spec, panel de admin: cimientos, temporadas y competiciones (fase 1
 - Fuera de «Fallos conocidos» el aviso del bundle de más de 500 kB: ya no sale (266 kB).
 - Si la temporada de la URL ya no existe, la plantilla, la ficha y el panel abren por la inicial; y sin filtro si la que no existe es la competición.
 
+## [0.11.2] - 2026-11-23
+
+Mismo color para lo destacado en la plantilla y en la ficha, decidido por el propietario.
+
+### Cambiado
+- **Lo destacado va siempre en azul** (`accent`): la pastilla del líder de la plantilla pasa de amarillo a azul, como la cifra destacada de la ficha. El amarillo queda solo para las tarjetas amarillas y la votación.
+- **Dorsales de la lista:** pastilla azul redondeada con número blanco, como la del líder, en lugar del recuadro amarillo.
+
+### Eliminado
+- Tokens `highlight` y `on-highlight`, que se quedan sin uso.
+
 ## [0.11.1] - 2026-11-23
 
 Corrige la PWA sin red: el service worker precargaba solo los iconos.
