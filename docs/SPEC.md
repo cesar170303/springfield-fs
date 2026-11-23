@@ -168,6 +168,7 @@ supabase.rpc('get_player_rating_timeline', { p_player_id, p_season_id })
 supabase.rpc('get_season_mvps', { p_season_id })
 supabase.rpc('get_player_match_log', { p_player_id, p_season_id, p_competition_id: null }) // 20261122120000
 supabase.rpc('get_mvp_ties', { p_season_id }) // solo staff; panel de admin (§12)
+supabase.rpc('set_current_season', { p_season_id }) // panel de admin: la actual, en un solo paso
 ```
 `get_player_match_log` da los partidos terminados en los que jugó (≥1 minuto), del más reciente al más antiguo: etiqueta, rival, minutos, goles, asistencias, goles encajados (portero), nota y MVP (solo con la votación cerrada) y fecha de cierre de la votación.
 `get_squad_stats` devuelve por jugador: dorsal, apodo, posición, estado, foto, convocatorias, PJ, minutos, goles, asistencias, goles de penalti, penaltis fallados, amarillas, rojas, valoración media, partidos valorados, MVPs, goles encajados y porterías a cero (estas dos solo para porteros).
@@ -179,7 +180,10 @@ supabase.rpc('get_mvp_ties', { p_season_id }) // solo staff; panel de admin (§1
 - Minutos de 0 a 40, notas solo en medios puntos y sin autovoto.
 - **Integridad de los votos (panel de admin, §12):**
   - un partido con votos no se borra ni se reabre, y su fecha no se cambia si eso reabre una votación ya cerrada;
-  - a un jugador con votos no se le quita de la convocatoria ni se le deja a 0 minutos; a quien tiene goles o asistencias tampoco se le deja a 0 minutos;
+  - a un jugador con votos no se le quita de la convocatoria ni se le deja a 0 minutos; a quien tiene goles o asistencias tampoco se le deja a 0 minutos, ni se le quita de la convocatoria (ni a quien falló un penalti): se borrarían, y también los goles de los compañeros a los que asistió;
+  - un partido con convocatoria no cambia de temporada;
+  - un voto no se cuela en un partido que se está reabriendo, ni a quien se le están quitando los minutos;
+  - la cuenta vinculada a una ficha no la cambia nadie desde la app (un admin podría votarse), y como votante de la temporada solo se elige a un viewer;
   - un partido terminado no puede tener fecha futura;
   - no se quita de la plantilla a quien ya fue convocado esa temporada;
   - el MVP elegido a mano tiene que ser uno de los empatados con la mejor media, con la votación cerrada.

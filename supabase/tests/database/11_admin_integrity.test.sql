@@ -5,6 +5,7 @@ begin;
 select no_plan();
 
 select pg_temp.keep('season', pg_temp.create_season('TEST 11')::text);
+select pg_temp.keep('other_season', pg_temp.create_season('TEST 11 B')::text);
 select pg_temp.keep('comp', pg_temp.create_competition('TEST 11 Liga', 'league')::text);
 select pg_temp.keep('a', pg_temp.create_player(pg_temp.id('season'), 'A11', 7)::text);
 select pg_temp.keep('b', pg_temp.create_player(pg_temp.id('season'), 'B11', 8)::text);
@@ -68,6 +69,19 @@ select lives_ok($$ insert into public.goals (match_id, scorer_id) values (pg_tem
 select lives_ok($$ delete from public.goals where match_id = pg_temp.id('open') $$, 'con votos se borra un gol mal apuntado');
 select lives_ok($$ delete from public.match_squad where match_id = pg_temp.id('open') and player_id = pg_temp.id('c') $$,
                 'a quien no tiene votos sí se le quita de la convocatoria');
+-- Quitar a quien tiene goles, asistencias o penaltis los borraría (también el gol del compañero al que asistió).
+select throws_ok($$ delete from public.match_squad where match_id = pg_temp.id('draft') and player_id = pg_temp.id('a') $$,
+                 'P0001', 'A11 tiene goles, asistencias o penaltis en este partido: bórralos antes de quitarle de la convocatoria',
+                 'a un goleador no se le quita de la convocatoria');
+select throws_ok($$ delete from public.match_squad where match_id = pg_temp.id('draft') and player_id = pg_temp.id('b') $$,
+                 'P0001', 'B11 tiene goles, asistencias o penaltis en este partido: bórralos antes de quitarle de la convocatoria',
+                 'a un asistente no se le quita: se borraría el gol de su compañero');
+select lives_ok($$ insert into public.missed_penalties (match_id, player_id, type) values (pg_temp.id('draft'), pg_temp.id('c'), 'penalty') $$,
+                'se apunta un penalti fallado');
+select throws_ok($$ delete from public.match_squad where match_id = pg_temp.id('draft') and player_id = pg_temp.id('c') $$,
+                 'P0001', 'C11 tiene goles, asistencias o penaltis en este partido: bórralos antes de quitarle de la convocatoria',
+                 'a quien falló un penalti tampoco se le quita');
+select lives_ok($$ delete from public.missed_penalties where match_id = pg_temp.id('draft') $$, 'y se borra el penalti');
 select throws_ok($$ update public.match_squad set minutes = 0 where match_id = pg_temp.id('draft') and player_id = pg_temp.id('a') $$,
                  'P0001', 'A11 tiene goles o asistencias en este partido: bórralos antes de dejarle a 0 minutos',
                  'a un goleador no se le deja a 0 minutos');
@@ -89,6 +103,11 @@ select throws_ok($$ update public.matches set match_date = now() + interval '1 d
 select throws_ok($$ insert into public.matches (season_id, competition_id, round, match_date, opponent, goals_for, goals_against, is_finished)
                     values (pg_temp.id('season'), pg_temp.id('comp'), 6, now() + interval '1 day', 'X', 1, 0, true) $$,
                  'P0001', 'Un partido terminado no puede tener una fecha futura', 'ni se crea ya terminado en el futuro');
+select throws_ok($$ update public.matches set season_id = pg_temp.id('other_season') where id = pg_temp.id('open') $$,
+                 'P0001', 'No se puede cambiar de temporada un partido con convocatoria',
+                 'un partido con convocatoria no cambia de temporada');
+select lives_ok($$ update public.matches set season_id = pg_temp.id('other_season') where id = pg_temp.id('future') $$,
+                'sin convocatoria, sí');
 select lives_ok($$ delete from public.matches where id = pg_temp.id('draft') $$, 'un partido sin votos se borra');
 select is_empty($$ select 1 from public.goals where match_id = pg_temp.id('draft')
                    union all select 1 from public.match_squad where match_id = pg_temp.id('draft') $$,
@@ -134,6 +153,58 @@ reset role;
 
 select is((select count(*)::int from public.votes where match_id in (pg_temp.id('open'), pg_temp.id('closed'))), 4,
           'después de todo, los votos siguen intactos');
+
+-- Un voto bloquea su partido y al votado mientras se guarda, y vuelve a mirar su estado: así no se cuela en un
+-- partido que se está reabriendo ni a alguien a quien se le están quitando los minutos (vale para cualquier rol).
+select throws_ok($$ select pg_temp.add_vote(pg_temp.id('future'), pg_temp.uid('b_user'), pg_temp.id('a'), 7) $$,
+                 '42501', 'No se puede votar: el partido no está terminado o el jugador no jugó', 'no se vota un partido sin terminar');
+update public.match_squad set minutes = 0 where match_id = pg_temp.id('quiet') and player_id = pg_temp.id('c');
+select throws_ok($$ select pg_temp.add_vote(pg_temp.id('quiet'), pg_temp.uid('b_user'), pg_temp.id('c'), 7) $$,
+                 '42501', 'No se puede votar: el partido no está terminado o el jugador no jugó', 'ni a quien no jugó');
+
+-- ---------------------------------------------------------------------
+-- Autovoto y votantes: el staff no puede esquivar las reglas
+-- ---------------------------------------------------------------------
+select pg_temp.keep('viewer2', pg_temp.create_user('viewer211@example.com')::text);
+select pg_temp.act_as(pg_temp.uid('admin'));
+select throws_ok($$ update public.players set user_id = null where id = pg_temp.id('a') $$, '42501', null,
+                 'el staff no desvincula una ficha de su cuenta (permitiría votarse a uno mismo)');
+select throws_ok($$ insert into public.players (first_name, last_name, position, user_id)
+                    values ('X', 'X', 'pivot', pg_temp.uid('admin')) $$, '42501', null, 'ni la crea ya vinculada a quien quiera');
+select lives_ok($$ update public.players set first_name = 'Ana', last_name = 'Test', nickname = 'A11', email = 'a11@example.com',
+                   position = 'winger', status = 'injured', photo_path = null, archived_at = null where id = pg_temp.id('a') $$,
+                'el resto de la ficha sí se edita');
+select lives_ok($$ insert into public.players (first_name, last_name, nickname, email, position, status)
+                   values ('Nuevo', 'Test', 'N11', 'viewer211@example.com', 'pivot', 'available') $$, 'y se crean fichas');
+select is((select user_id from public.players where nickname = 'N11'), pg_temp.uid('viewer2'),
+          'que se siguen vinculando solas por el correo confirmado');
+select lives_ok($$ insert into public.season_voters (season_id, user_id) values (pg_temp.id('season'), pg_temp.uid('viewer')) $$,
+                'un viewer se elige como votante');
+select throws_ok($$ insert into public.season_voters (season_id, user_id) values (pg_temp.id('season'), pg_temp.uid('admin')) $$,
+                 '42501', null, 'un admin no se elige a sí mismo como votante');
+select throws_ok($$ insert into public.season_voters (season_id, user_id) values (pg_temp.id('season'), pg_temp.uid('a_user')) $$,
+                 '42501', null, 'ni a un jugador: solo viewers');
+
+-- ---------------------------------------------------------------------
+-- Temporada actual: en un solo paso, o ninguna cambia
+-- ---------------------------------------------------------------------
+reset role;
+update public.seasons set is_current = false where is_current;
+update public.seasons set is_current = true where id = pg_temp.id('season');
+select pg_temp.act_as(pg_temp.uid('admin'));
+select lives_ok($$ select public.set_current_season(pg_temp.id('other_season')) $$, 'el staff cambia la temporada actual');
+select results_eq($$ select id from public.seasons where is_current $$, $$ values (pg_temp.id('other_season')) $$, 'y solo hay una');
+select throws_ok($$ select public.set_current_season(-1) $$, 'P0001', 'Esa temporada ya no existe', 'a una que no existe, no');
+select results_eq($$ select id from public.seasons where is_current $$, $$ values (pg_temp.id('other_season')) $$,
+                  'y la que era actual lo sigue siendo');
+reset role;
+select pg_temp.act_as(pg_temp.uid('viewer'));
+select throws_ok($$ select public.set_current_season(pg_temp.id('season')) $$, 'P0001', null, 'un viewer no la cambia');
+reset role;
+select results_eq($$ select id from public.seasons where is_current $$, $$ values (pg_temp.id('other_season')) $$, 'ni desmarca la que hay');
+select pg_temp.act_as_anon();
+select throws_ok($$ select public.set_current_season(1) $$, '42501', null, 'un anónimo no puede ni llamarla');
+reset role;
 
 -- La garantía de fondo: ninguna clave foránea borra votos en cascada, ni siquiera si un voto y un borrado coinciden.
 select is_empty($$ select conname::text from pg_constraint

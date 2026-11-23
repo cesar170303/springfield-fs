@@ -101,5 +101,10 @@ El analizador de seguridad del proyecto de la nube (reglas más recientes que la
 Migración `20261123172150_admin_integrity.sql`, con el test `11_admin_integrity` en rojo antes y en verde después. **Pendiente de aplicar en la nube.**
 - **Qué pasaba:** el staff podía borrar votos sin querer. Quitar a un jugador de la convocatoria o borrar un partido los arrastraba en cascada (`on delete cascade`).
 - **Arreglo:** las dos claves foráneas de `votes` pasan a `on delete restrict` y unos triggers en `private` dan la frase de cada rechazo. Comprobado también con un voto y un borrado simultáneos.
+- **Revisión de código del 2026-11-23** (reproducido en local antes y rechazado después, misma migración):
+  - **Autovoto de un admin que juega:** podía desvincularse de su ficha (`players.user_id`), añadirse a `season_voters` y votarse. Ahora el staff no tiene permiso sobre esa columna y solo se elige como votante a un perfil `viewer`.
+  - Mover un partido de temporada, o quitar a un asistente de la convocatoria, hacía desaparecer cifras. Ahora se rechaza.
+  - Carrera entre votar y reabrir el partido (o quitar los minutos): el voto bloquea el partido y al votado.
+- **Aceptado:** una persona puede registrar una segunda cuenta y, si el staff la elige como votante, votar con ella. Elegir a los viewers es responsabilidad del staff.
 - **Aceptado:** la frase «ya tiene votos» revela **que** alguien votó, nunca quién ni qué (el recordatorio push ya usa ese dato).
 - **Aceptado:** al corregir la fecha de una votación abierta, el staff puede cerrarla antes de tiempo. Después ya no se puede reabrir, así que nadie vota tras ver las medias.
