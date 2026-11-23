@@ -142,6 +142,31 @@ describe('SeasonsAdmin', () => {
     await waitFor(() => expect(useCases.listSeasons).toHaveBeenCalledTimes(2))
   })
 
+  it('borra una temporada desde su edición, avisando de lo que se lleva', async () => {
+    const deleteSeason = vi.fn().mockResolvedValue()
+    const useCases = renderScreen({ deleteSeason })
+
+    await userEvent.click(await screen.findByRole('button', { name: 'Editar 2025/26' }))
+    await userEvent.click(screen.getByRole('button', { name: 'Borrar' }))
+    expect(
+      screen.getByText('¿Borrar 2025/26? Se borran también su plantilla y sus votantes. No se puede deshacer.'),
+    ).toBeInTheDocument()
+    await userEvent.click(screen.getByRole('button', { name: 'Sí, borrar' }))
+
+    expect(deleteSeason).toHaveBeenCalledWith(1)
+    expect(screen.getByRole('status')).toHaveTextContent('Temporada borrada.')
+    expect(useCases.listSeasons).toHaveBeenCalledTimes(2)
+    expect(screen.getByRole('button', { name: 'Nueva temporada' })).toHaveFocus()
+  })
+
+  it('al crear no hay nada que borrar', async () => {
+    renderScreen()
+
+    await userEvent.click(await screen.findByRole('button', { name: 'Nueva temporada' }))
+
+    expect(screen.queryByRole('button', { name: 'Borrar' })).not.toBeInTheDocument()
+  })
+
   it('sin temporadas, invita a crear la primera', async () => {
     renderScreen({ listSeasons: vi.fn().mockResolvedValue([]) })
 

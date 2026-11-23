@@ -1,4 +1,4 @@
-import { readableError } from './errors'
+import { HAS_MATCHES, readableError } from './errors'
 import { toAdminSeason } from './mappers'
 
 const toRow = ({ name, startDate, endDate }) => ({ name, start_date: startDate, end_date: endDate })
@@ -8,8 +8,9 @@ export function createSupabaseSeasonAdminRepository(client) {
   const NOT_SAVED = 'No se pudo guardar la temporada. Inténtalo de nuevo.'
   const COMPETITION_NOT_SAVED = 'No se pudo guardar la competición. Inténtalo de nuevo.'
   const NOT_CURRENT = 'No se pudo cambiar la temporada actual. Inténtalo de nuevo.'
-  // select + single: si RLS ignora el cambio no hay fila de vuelta y salta un error, en vez de darlo por guardado.
+  // select + single: si RLS ignora el cambio o el borrado no hay fila de vuelta y salta un error, en vez de darlo por guardado.
   const update = (table, id, row) => client.from(table).update(row).eq('id', id).select('id').single()
+  const remove = (table, id) => client.from(table).delete().eq('id', id).select('id').single()
 
   return {
     async getSeasons() {
@@ -40,6 +41,13 @@ export function createSupabaseSeasonAdminRepository(client) {
       if (error) throw readableError(error, NOT_CURRENT)
     },
 
+    async deleteSeason(id) {
+      const { error } = await remove('seasons', id)
+      // P0001: el trigger que protege la plantilla salta antes que la clave foránea de los partidos.
+      if (error?.code === 'P0001') throw new Error(HAS_MATCHES)
+      if (error) throw readableError(error, 'No se pudo borrar la temporada. Inténtalo de nuevo.')
+    },
+
     async getCompetitions() {
       const { data, error } = await client.from('competitions').select('id, name, type').order('id')
       if (error) throw readableError(error, 'No se pudieron cargar las competiciones. Inténtalo de nuevo.')
@@ -54,6 +62,11 @@ export function createSupabaseSeasonAdminRepository(client) {
     async updateCompetition(id, competition) {
       const { error } = await update('competitions', id, competition)
       if (error) throw readableError(error, COMPETITION_NOT_SAVED)
+    },
+
+    async deleteCompetition(id) {
+      const { error } = await remove('competitions', id)
+      if (error) throw readableError(error, 'No se pudo borrar la competición. Inténtalo de nuevo.')
     },
   }
 }

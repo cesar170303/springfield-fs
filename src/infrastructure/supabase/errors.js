@@ -1,7 +1,11 @@
+export const HAS_MATCHES = 'No se puede borrar: ya tiene partidos.'
+
 // Frase de cada restricción de la base de datos, por su nombre en Postgres. Cada pantalla del panel añade las suyas.
 const CONSTRAINTS = {
   seasons_name_key: 'Ya hay una temporada con ese nombre.',
   competitions_name_key: 'Ya hay una competición con ese nombre.',
+  matches_season_id_fkey: HAS_MATCHES,
+  matches_competition_id_fkey: HAS_MATCHES,
   seasons_check: 'La fecha de fin tiene que ser posterior a la de inicio.',
 }
 

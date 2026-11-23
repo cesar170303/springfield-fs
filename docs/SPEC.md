@@ -242,7 +242,7 @@ Toda la app es negra, blanca y gris, con el **azul eléctrico** como color de ac
 | `text` / `text-muted` | `#ffffff` / `#8a96a3` | Texto principal y secundario |
 | `accent` | `#1e6ef3` | Acción principal (con texto blanco), chip seleccionado, cifra destacada y foco |
 | `accent-text` | `#4d8ef7` | Enlaces y texto azul pequeño |
-| `danger` | `#ff4d4f` | Errores (siempre con una frase) y tarjeta roja |
+| `danger` | `#ff4d4f` | Errores (siempre con una frase), tarjeta roja y botones de borrar |
 | `card-yellow` | `#ffd90f` | Tarjeta amarilla |
 | `highlight` / `on-highlight` | `#ffd90f` / `#000000` | Pastilla del líder en las tarjetas de la plantilla y recuadro del dorsal en la lista (contraste 14:1) |
 
@@ -292,8 +292,8 @@ Decidido el 2026-11-22. Pensado para el móvil, a pie de pista. El diseño visua
 
 ### Temporadas y competiciones
 
-- **Temporadas:** crear y editar (nombre, inicio y fin) y marcar la actual (solo una). No se borran.
-- **Competiciones:** crear y editar (nombre y tipo: Liga, Copa o Amistoso). No se borran.
+- **Temporadas:** crear y editar (nombre, inicio y fin) y marcar la actual (solo una). Al editar, «Borrar» en rojo (decidido el 2026-11-23, por si hubo un error): pide confirmación, se lleva su plantilla y sus votantes, y no se puede si ya tiene partidos.
+- **Competiciones:** crear y editar (nombre y tipo: Liga, Copa o Amistoso). Al editar, «Borrar», igual: no se puede si ya tiene partidos.
 
 ### Jugadores
 

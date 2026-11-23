@@ -280,7 +280,7 @@ Orden: T0, T1, T2 (con T3 en paralelo), T4, T5, T6, checkpoint 1, T7-T10, checkp
 
 ## Fuera de alcance (anotado, no se hace)
 
-- Borrar temporadas, competiciones o fichas (se renombran o se archivan).
+- Borrar fichas (se archivan). Borrar temporadas y competiciones sin partidos **sí** entra: lo pidió el propietario el 2026-11-23.
 - Recorte manual de fotos; gol en propia puerta como tipo; editar un gol (se borra y se apunta otra vez).
 - Animaciones en el panel; historial de cambios del admin; modo offline.
 - Notificaciones push (paso 8): terminar un partido ya abre la votación; el aviso llegará con ese paso.

@@ -68,6 +68,20 @@ describe('CompetitionsAdmin', () => {
     expect(screen.getByLabelText('Nombre')).toHaveValue('Copa local')
   })
 
+  it('borra una competición desde su edición, con confirmación', async () => {
+    const deleteCompetition = vi.fn().mockResolvedValue()
+    const useCases = renderSection({ deleteCompetition })
+
+    await userEvent.click(await screen.findByRole('button', { name: 'Editar Copa local' }))
+    await userEvent.click(screen.getByRole('button', { name: 'Borrar' }))
+    expect(screen.getByText('¿Borrar Copa local? No se puede deshacer.')).toBeInTheDocument()
+    await userEvent.click(screen.getByRole('button', { name: 'Sí, borrar' }))
+
+    expect(deleteCompetition).toHaveBeenCalledWith(2)
+    expect(screen.getByRole('status')).toHaveTextContent('Competición borrada.')
+    expect(useCases.listCompetitions).toHaveBeenCalledTimes(2)
+  })
+
   it('sin competiciones, invita a crear la primera', async () => {
     renderSection({ listCompetitions: vi.fn().mockResolvedValue([]) })
 

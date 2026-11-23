@@ -7,9 +7,9 @@ import AdminForm from './AdminForm'
 import EditableSection from './EditableSection'
 import { field, input, textButton } from './styles'
 
-/** Temporadas (docs/SPEC.md §12): crear, editar y marcar la actual. No se borran. */
+/** Temporadas (docs/SPEC.md §12): crear, editar, borrar (sin partidos) y marcar la actual. */
 export default function SeasonsAdmin() {
-  const { listSeasons, saveSeason, setCurrentSeason } = useUseCases()
+  const { listSeasons, saveSeason, setCurrentSeason, deleteSeason } = useUseCases()
   const { data: seasons, error, reload } = useAsync(listSeasons)
   const editor = useEditor(reload)
   const save = (season) => editor.save(() => saveSeason(season), 'Temporada guardada.')
@@ -25,7 +25,12 @@ export default function SeasonsAdmin() {
         {seasons?.map((season) => (
           <li key={season.id} className="border-t border-line py-2">
             {editor.editing === season.id ? (
-              <SeasonForm season={season} onSave={save} onCancel={editor.close} />
+              <SeasonForm
+                season={season}
+                onSave={save}
+                onCancel={editor.close}
+                onDelete={() => editor.save(() => deleteSeason(season.id), 'Temporada borrada.')}
+              />
             ) : (
               <div className="flex flex-wrap items-center justify-between gap-x-3">
                 <div>
@@ -68,7 +73,7 @@ export default function SeasonsAdmin() {
   )
 }
 
-function SeasonForm({ season, onSave, onCancel }) {
+function SeasonForm({ season, onSave, onCancel, onDelete }) {
   const { id } = season
   const [values, setValues] = useState({ name: season.name, startDate: season.startDate, endDate: season.endDate })
   const bind = (key) => ({
@@ -79,7 +84,12 @@ function SeasonForm({ season, onSave, onCancel }) {
   })
 
   return (
-    <AdminForm onSubmit={() => onSave(id ? { id, ...values } : values)} onCancel={onCancel}>
+    <AdminForm
+      onSubmit={() => onSave(id ? { id, ...values } : values)}
+      onCancel={onCancel}
+      onDelete={onDelete}
+      deleteQuestion={`¿Borrar ${season.name}? Se borran también su plantilla y sus votantes. No se puede deshacer.`}
+    >
       <label className={field}>
         Nombre
         <input type="text" placeholder="2026/27" autoFocus {...bind('name')} />

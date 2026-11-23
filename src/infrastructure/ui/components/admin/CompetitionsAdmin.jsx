@@ -7,9 +7,9 @@ import AdminForm from './AdminForm'
 import EditableSection from './EditableSection'
 import { field, input, textButton } from './styles'
 
-/** Competiciones (docs/SPEC.md §12): crear y editar. No se borran. */
+/** Competiciones (docs/SPEC.md §12): crear, editar y borrar (sin partidos). */
 export default function CompetitionsAdmin() {
-  const { listCompetitions, saveCompetition } = useUseCases()
+  const { listCompetitions, saveCompetition, deleteCompetition } = useUseCases()
   const { data: competitions, error, reload } = useAsync(listCompetitions)
   const editor = useEditor(reload)
   const save = (competition) => editor.save(() => saveCompetition(competition), 'Competición guardada.')
@@ -31,7 +31,12 @@ export default function CompetitionsAdmin() {
         {competitions?.map((competition) => (
           <li key={competition.id} className="border-t border-line py-2">
             {editor.editing === competition.id ? (
-              <CompetitionForm competition={competition} onSave={save} onCancel={editor.close} />
+              <CompetitionForm
+                competition={competition}
+                onSave={save}
+                onCancel={editor.close}
+                onDelete={() => editor.save(() => deleteCompetition(competition.id), 'Competición borrada.')}
+              />
             ) : (
               <div className="flex items-center justify-between gap-x-3">
                 <div className="min-w-0">
@@ -55,7 +60,7 @@ export default function CompetitionsAdmin() {
   )
 }
 
-function CompetitionForm({ competition, onSave, onCancel }) {
+function CompetitionForm({ competition, onSave, onCancel, onDelete }) {
   const [values, setValues] = useState(competition)
   const bind = (key) => ({
     value: values[key],
@@ -64,7 +69,12 @@ function CompetitionForm({ competition, onSave, onCancel }) {
   })
 
   return (
-    <AdminForm onSubmit={() => onSave(values)} onCancel={onCancel}>
+    <AdminForm
+      onSubmit={() => onSave(values)}
+      onCancel={onCancel}
+      onDelete={onDelete}
+      deleteQuestion={`¿Borrar ${competition.name}? No se puede deshacer.`}
+    >
       <label className={field}>
         Nombre
         <input type="text" required autoFocus {...bind('name')} />

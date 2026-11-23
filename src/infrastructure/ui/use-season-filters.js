@@ -4,7 +4,7 @@ import { useUseCases } from './use-cases-context'
 
 /**
  * Temporada y competición elegidas. Viven en la URL (?temporada=&competicion=, ADR-0004): la plantilla y la ficha
- * las comparten y se mantienen al volver atrás. Si la URL no trae temporada, pone la inicial.
+ * las comparten y se mantienen al volver atrás. Si la URL no trae temporada, o ya no existe, pone la inicial.
  */
 export function useSeasonFilters() {
   const { getSquadFilters } = useUseCases()
@@ -31,8 +31,9 @@ export function useSeasonFilters() {
       .then((f) => {
         if (stale) return
         setFilters(f)
-        // La temporada inicial solo se pone si la URL no trae ninguna.
-        if (f.initialSeasonId !== null && !seasonId) setFilter('temporada', f.initialSeasonId)
+        // La inicial solo se pone si la URL no trae ninguna, o trae una que ya no existe.
+        const known = f.seasons.some((s) => s.id === seasonId)
+        if (f.initialSeasonId !== null && !known) setFilter('temporada', f.initialSeasonId)
       })
       .catch(() => !stale && setFailed(true))
     return () => {

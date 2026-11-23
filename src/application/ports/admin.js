@@ -14,9 +14,11 @@
  * @property {(season: SeasonData) => Promise<void>} createSeason
  * @property {(id: number, season: SeasonData) => Promise<void>} updateSeason
  * @property {(id: number) => Promise<void>} setCurrentSeason deja de ser actual la que lo fuera
+ * @property {(id: number) => Promise<void>} deleteSeason con su plantilla y sus votantes; falla si tiene partidos
  * @property {() => Promise<AdminCompetition[]>} getCompetitions
  * @property {(competition: CompetitionData) => Promise<void>} createCompetition
  * @property {(id: number, competition: CompetitionData) => Promise<void>} updateCompetition
+ * @property {(id: number) => Promise<void>} deleteCompetition falla si tiene partidos
  */
 
 export {}

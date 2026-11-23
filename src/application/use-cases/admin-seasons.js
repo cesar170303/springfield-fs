@@ -16,6 +16,8 @@ export function createSeasonAdminUseCases({ seasonAdminRepository }) {
 
     setCurrentSeason: (id) => seasonAdminRepository.setCurrentSeason(id),
 
+    deleteSeason: (id) => seasonAdminRepository.deleteSeason(id),
+
     listCompetitions: () => seasonAdminRepository.getCompetitions(),
 
     /** Sin `id`, crea la competición; con `id`, la edita. */
@@ -25,5 +27,7 @@ export function createSeasonAdminUseCases({ seasonAdminRepository }) {
       if (id) await seasonAdminRepository.updateCompetition(id, data)
       else await seasonAdminRepository.createCompetition(data)
     },
+
+    deleteCompetition: (id) => seasonAdminRepository.deleteCompetition(id),
   }
 }

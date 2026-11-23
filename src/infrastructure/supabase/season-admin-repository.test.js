@@ -136,6 +136,36 @@ describe('repositorio de temporadas del panel', () => {
     await expect(repository.updateCompetition(3, {})).rejects.toThrow('No se pudo guardar la competición.')
   })
 
+  it('borra temporadas y competiciones, y pide la fila de vuelta', async () => {
+    const { calls, repository } = setup()
+
+    await repository.deleteSeason(2)
+    await repository.deleteCompetition(3)
+
+    expect(calls).toEqual([
+      [['from', 'seasons'], ['delete'], ['eq', 'id', 2], ['select', 'id'], ['single']],
+      [['from', 'competitions'], ['delete'], ['eq', 'id', 3], ['select', 'id'], ['single']],
+    ])
+  })
+
+  it('con partidos, explica que no se puede borrar', async () => {
+    const used = (key) => ({ data: null, error: { code: '23503', message: `violates foreign key constraint "${key}"` } })
+    // Con convocatorias, el trigger de la plantilla salta antes que la clave foránea: es el mismo motivo.
+    const called = { data: null, error: { code: 'P0001', message: 'Dani ya fue convocado esta temporada: no se puede…' } }
+    const phrase = 'No se puede borrar: ya tiene partidos.'
+
+    await expect(setup(used('matches_season_id_fkey')).repository.deleteSeason(2)).rejects.toThrow(phrase)
+    await expect(setup(called).repository.deleteSeason(2)).rejects.toThrow(phrase)
+    await expect(setup(used('matches_competition_id_fkey')).repository.deleteCompetition(3)).rejects.toThrow(phrase)
+  })
+
+  it('si falla el borrado por otra cosa, lo dice', async () => {
+    const { repository } = setup(FAILED, FAILED)
+
+    await expect(repository.deleteSeason(2)).rejects.toThrow('No se pudo borrar la temporada.')
+    await expect(repository.deleteCompetition(3)).rejects.toThrow('No se pudo borrar la competición.')
+  })
+
   it('un nombre repetido se explica, al crear y al editar', async () => {
     const repeated = { data: null, error: { code: '23505', message: 'unique constraint "seasons_name_key"' } }
 

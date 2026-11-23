@@ -35,8 +35,14 @@ describe('AdminHome', () => {
     renderHome(vi.fn().mockResolvedValue(FILTERS))
 
     expect(await screen.findByLabelText('Temporada')).toHaveValue('2')
-    expect(screen.getByText('Estás en /admin?temporada=2')).toBeInTheDocument()
+    expect(await screen.findByText('Estás en /admin?temporada=2')).toBeInTheDocument()
     expect(screen.queryByLabelText('Competición')).not.toBeInTheDocument()
+  })
+
+  it('si la temporada de la URL ya no existe (se ha borrado), abre por la inicial', async () => {
+    renderHome(vi.fn().mockResolvedValue(FILTERS), '/admin?temporada=99')
+
+    expect(await screen.findByText('Estás en /admin?temporada=2')).toBeInTheDocument()
   })
 
   it('al cambiar de temporada, cambia la URL', async () => {
@@ -44,7 +50,7 @@ describe('AdminHome', () => {
 
     await userEvent.selectOptions(await screen.findByLabelText('Temporada'), '2025/26')
 
-    expect(screen.getByText('Estás en /admin?temporada=1')).toBeInTheDocument()
+    expect(await screen.findByText('Estás en /admin?temporada=1')).toBeInTheDocument()
   })
 
   it('sin temporadas creadas, lo explica', async () => {

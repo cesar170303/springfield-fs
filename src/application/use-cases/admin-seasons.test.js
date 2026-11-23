@@ -12,6 +12,8 @@ function setup() {
     getCompetitions: vi.fn().mockResolvedValue([{ id: 1 }]),
     createCompetition: vi.fn().mockResolvedValue(),
     updateCompetition: vi.fn().mockResolvedValue(),
+    deleteSeason: vi.fn().mockResolvedValue(),
+    deleteCompetition: vi.fn().mockResolvedValue(),
   }
   return { seasonAdminRepository, useCases: createSeasonAdminUseCases({ seasonAdminRepository }) }
 }
@@ -48,6 +50,18 @@ describe('casos de uso de temporadas', () => {
 
     await expect(useCases.saveSeason({ ...DATA, name: '  ' })).rejects.toThrow('Pon un nombre a la temporada.')
     expect(seasonAdminRepository.createSeason).not.toHaveBeenCalled()
+  })
+})
+
+describe('borrar', () => {
+  it('borra por id temporadas y competiciones', async () => {
+    const { seasonAdminRepository, useCases } = setup()
+
+    await useCases.deleteSeason(2)
+    await useCases.deleteCompetition(3)
+
+    expect(seasonAdminRepository.deleteSeason).toHaveBeenCalledWith(2)
+    expect(seasonAdminRepository.deleteCompetition).toHaveBeenCalledWith(3)
   })
 })
 
