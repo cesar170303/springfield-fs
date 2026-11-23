@@ -46,7 +46,7 @@ export default function SquadTable({ players }) {
         <caption className="sr-only">Estadísticas de la plantilla</caption>
         <thead className="type-label text-text-muted">
           <tr>
-            <th className="w-8 py-2 text-left font-medium">
+            <th className="w-10 py-2 text-left font-medium">
               <span className="sr-only">Dorsal</span>
             </th>
             <th className="py-2 text-left font-medium">Jugador</th>
@@ -77,7 +77,7 @@ export default function SquadTable({ players }) {
             {group.players.map((p) => (
               <tr key={p.id} className="border-t border-line">
                 <td className="py-2">
-                  <span className="grid size-6 place-items-center rounded-xs bg-highlight type-label font-extrabold text-on-highlight">
+                  <span className="grid h-6 w-8 place-items-center rounded-full bg-accent type-label font-extrabold text-on-accent">
                     {p.shirtNumber}
                   </span>
                 </td>

@@ -21,9 +21,6 @@
   --color-on-accent: #ffffff;
   --color-danger: #ff4d4f;
   --color-card-yellow: #ffd90f;
-  /* El mejor de la plantilla (pastilla del líder). Mismo valor que card-yellow, pero otro significado. */
-  --color-highlight: #ffd90f;
-  --color-on-highlight: #000000;
   --color-focus: var(--color-accent);
 
   /* Modo votación (paleta Donut): solo en la pantalla de votación */
