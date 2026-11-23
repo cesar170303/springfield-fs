@@ -2,6 +2,7 @@ import react from '@vitejs/plugin-react'
 import tailwindcss from '@tailwindcss/vite'
 import { VitePWA } from 'vite-plugin-pwa'
 import { defineConfig } from 'vite'
+import { requireAppShell } from './scripts/require-app-shell.mjs'
 
 // https://vite.dev/config/
 export default defineConfig({
@@ -12,8 +13,11 @@ export default defineConfig({
       registerType: 'autoUpdate',
       // Iconos generados desde public/escudo-hd.png con `npm run icons` (pwa-assets.config.js).
       includeAssets: ['favicon.ico', 'apple-touch-icon-180x180.png'],
-      // El panel de admin solo lo usa el staff: no se precarga en los demás dispositivos (docs/SPEC.md §12).
-      workbox: { globIgnores: ['**/AdminRoutes-*.js'] },
+      workbox: {
+        // El panel de admin solo lo usa el staff: no se precarga en los demás dispositivos (docs/SPEC.md §12).
+        globIgnores: ['**/AdminRoutes-*.js'],
+        manifestTransforms: [requireAppShell],
+      },
       manifest: {
         name: 'Springfield FS',
         short_name: 'Springfield',
