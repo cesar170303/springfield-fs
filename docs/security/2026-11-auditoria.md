@@ -96,3 +96,10 @@ El analizador de seguridad del proyecto de la nube (reglas más recientes que la
 - Migración `20261119140000_pg_net_extensions_schema.sql`: `pg_net` (de la migración de notificaciones) quedaba en `public`; se reinstala en `extensions` (aviso «Extension in Public»).
 - Sin corregir, a propósito: aviso de contraseñas filtradas (plan de pago) y avisos informativos de rendimiento (6 claves foráneas sin índice, 3 índices sin usar), irrelevantes con el volumen de datos de un equipo.
 - **Aplicado en la nube (2026-11-20):** `20261119130000`. Comprobado allí: las 4 funciones están en `rls`, las políticas siguen funcionando (prueba actuando como la cuenta existente), la API responde «función no encontrada» para ellas y «esquema no expuesto» para `rls`. El analizador de la nube pasa de 8 a 4 avisos de funciones: las 4 RPC que usa la app, intencionadas. `20261119140000` (pg_net) se aplicará junto con la de notificaciones push.
+
+## Integridad para el panel de admin (2026-11-23)
+Migración `20261123172150_admin_integrity.sql`, con el test `11_admin_integrity` en rojo antes y en verde después. **Pendiente de aplicar en la nube.**
+- **Qué pasaba:** el staff podía borrar votos sin querer. Quitar a un jugador de la convocatoria o borrar un partido los arrastraba en cascada (`on delete cascade`).
+- **Arreglo:** las dos claves foráneas de `votes` pasan a `on delete restrict` y unos triggers en `private` dan la frase de cada rechazo. Comprobado también con un voto y un borrado simultáneos.
+- **Aceptado:** la frase «ya tiene votos» revela **que** alguien votó, nunca quién ni qué (el recordatorio push ya usa ese dato).
+- **Aceptado:** al corregir la fecha de una votación abierta, el staff puede cerrarla antes de tiempo. Después ya no se puede reabrir, así que nadie vota tras ver las medias.
