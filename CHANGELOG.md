@@ -10,7 +10,18 @@ Fallos detectados que aún no están resueltos. Al arreglarlos, pasa la línea a
 
 - El bundle principal pasa de 500 kB (aviso de Vite al compilar; ya pasaba antes de la ficha). Se resolverá cargando las pantallas bajo demanda.
 
+- El service worker no precarga el JS, el CSS ni `index.html` (`dist/sw.js` solo lleva iconos): `minimatch` 11, forzado en 0.5.3, es incompatible con `glob` 11, que usa `workbox-build`. Detectado el 2026-11-23.
+
 ## [Sin publicar]
+
+Paso 5 de la spec, panel de admin (en curso; plan en `tasks/plan.md`).
+
+### Añadido
+- **Ruta `/admin`**, solo para el staff (a los demás, «Esta página no existe»), y botón «Admin» en la barra. El código del panel se descarga al entrar; si falla, se avisa. Inicio del panel con selector de temporada.
+- **Integridad de los votos** (migración `20261123172150`, con su test pgTAP): un partido o un jugador con votos no se borra, y el MVP a mano solo desempata. RPC `get_mvp_ties`. **Pendiente de aplicar en la nube.**
+
+### Cambiado
+- Los selectores de temporada y competición miden 44 px de alto.
 
 ## [0.11.0] - 2026-11-22
 

@@ -78,7 +78,7 @@ Decidida el 2026-11-21 con dos referencias del propietario (FotMob y BeSoccer). 
 
 ### Navegación
 
-Decidida el 2026-11-22 (ADR-0004): React Router con URLs reales (el «atrás» del móvil vuelve a la pantalla anterior), filtros de la plantilla en la URL (`?temporada=&competicion=`) y una **barra inferior fija** que hoy tiene Plantilla y Salir, y crecerá con Votar, Rankings y Admin (solo staff).
+Decidida el 2026-11-22 (ADR-0004): React Router con URLs reales (el «atrás» del móvil vuelve a la pantalla anterior), filtros de la plantilla en la URL (`?temporada=&competicion=`) y una **barra inferior fija** que hoy tiene Plantilla y Admin (solo staff), y crecerá con Votar y Rankings.
 
 ## 6. Valoración (votación anónima)
 

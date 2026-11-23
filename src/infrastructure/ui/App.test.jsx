@@ -88,6 +88,27 @@ describe('App', () => {
     expect(screen.getByRole('link', { name: 'Ir a la plantilla' })).toHaveAttribute('href', '/')
   })
 
+  it.each(['admin', 'superadmin'])('un %s ve «Admin» en la barra y entra en el panel', async (role) => {
+    renderApp({ user: { email: 'staff@example.com' }, role })
+
+    await userEvent.click(await screen.findByRole('link', { name: 'Admin' }))
+
+    expect(await screen.findByRole('heading', { name: 'Panel' })).toBeInTheDocument()
+  })
+
+  it.each(['player', 'viewer'])('un %s no ve «Admin», y en /admin lee que la página no existe', async (role) => {
+    renderApp({ user: { email: 'jugador@example.com' }, role }, '/admin')
+
+    expect(await screen.findByRole('heading', { name: 'Esta página no existe' })).toBeInTheDocument()
+    expect(screen.queryByRole('link', { name: 'Admin' })).not.toBeInTheDocument()
+  })
+
+  it('una dirección del panel que no existe también lo dice', async () => {
+    renderApp({ user: { email: 'staff@example.com' }, role: 'admin' }, '/admin/no-existe')
+
+    expect(await screen.findByRole('heading', { name: 'Esta página no existe' })).toBeInTheDocument()
+  })
+
   it('sin sesión, cualquier dirección enseña el login', () => {
     renderApp({}, '/jugador/7')
 

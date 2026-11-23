@@ -20,7 +20,7 @@ Detalle, decisiones y riesgos: [`tasks/plan.md`](plan.md).
   - Con votos, la BD rechaza borrar o reabrir el partido, reabrir la votación por la fecha y quitar o dejar a 0 minutos a un votado; corregir lo demás sigue funcionando
   - Rechaza un partido terminado con fecha futura, dejar a 0 minutos a un goleador o asistente, quitar de la plantilla a un convocado y un MVP que no empate en cabeza
   - `get_mvp_ties` da los empatados al staff y 42501 al resto; `08_hardening` al día; tests `01`-`10` en verde
-- [ ] **T4.** Ruta `/admin` protegida y botón «Admin»
+- [x] **T4.** Ruta `/admin` protegida y botón «Admin»
   - El staff ve «Admin» y llega; jugador y viewer, no (en `/admin`, «Esta página no existe»)
   - El panel sale en un archivo aparte del build; la temporada vive en `?temporada=`
 - [ ] **T5.** Temporadas (estrena `errors.js`, `useAsync`, `ports/admin.js`)

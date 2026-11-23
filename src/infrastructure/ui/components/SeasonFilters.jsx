@@ -1,7 +1,15 @@
-const select = 'min-w-0 rounded-md border border-border bg-bg px-3 py-2 type-small'
+const select = 'min-h-11 min-w-0 rounded-md border border-border bg-bg px-3 py-2 type-small'
 
 /** Selectores de temporada y competición. Recibe lo que devuelve useSeasonFilters (los valores viven en la URL). */
-export default function SeasonFilters({ filters, seasonId, competitionId, setSeason, setCompetition, className = '' }) {
+export default function SeasonFilters({
+  filters,
+  seasonId,
+  competitionId,
+  setSeason,
+  setCompetition,
+  showCompetition = true, // el panel de admin solo elige temporada
+  className = '',
+}) {
   if (!filters?.seasons.length) return null
   return (
     <div className={`flex gap-2 ${className}`}>
@@ -17,19 +25,21 @@ export default function SeasonFilters({ filters, seasonId, competitionId, setSea
           </option>
         ))}
       </select>
-      <select
-        aria-label="Competición"
-        value={competitionId ?? ''}
-        onChange={(e) => setCompetition(e.target.value ? Number(e.target.value) : null)}
-        className={select}
-      >
-        <option value="">Todas</option>
-        {filters.competitions.map((c) => (
-          <option key={c.id} value={c.id}>
-            {c.name}
-          </option>
-        ))}
-      </select>
+      {showCompetition && (
+        <select
+          aria-label="Competición"
+          value={competitionId ?? ''}
+          onChange={(e) => setCompetition(e.target.value ? Number(e.target.value) : null)}
+          className={select}
+        >
+          <option value="">Todas</option>
+          {filters.competitions.map((c) => (
+            <option key={c.id} value={c.id}>
+              {c.name}
+            </option>
+          ))}
+        </select>
+      )}
     </div>
   )
 }
