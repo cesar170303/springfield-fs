@@ -6,9 +6,10 @@ const toRow = ({ name, startDate, endDate }) => ({ name, start_date: startDate, 
 /** @returns {import('../../application/ports/admin').SeasonAdminRepository} */
 export function createSupabaseSeasonAdminRepository(client) {
   const NOT_SAVED = 'No se pudo guardar la temporada. Inténtalo de nuevo.'
+  const COMPETITION_NOT_SAVED = 'No se pudo guardar la competición. Inténtalo de nuevo.'
   const NOT_CURRENT = 'No se pudo cambiar la temporada actual. Inténtalo de nuevo.'
   // select + single: si RLS ignora el cambio no hay fila de vuelta y salta un error, en vez de darlo por guardado.
-  const update = (id, row) => client.from('seasons').update(row).eq('id', id).select('id').single()
+  const update = (table, id, row) => client.from(table).update(row).eq('id', id).select('id').single()
 
   return {
     async getSeasons() {
@@ -26,7 +27,7 @@ export function createSupabaseSeasonAdminRepository(client) {
     },
 
     async updateSeason(id, season) {
-      const { error } = await update(id, toRow(season))
+      const { error } = await update('seasons', id, toRow(season))
       if (error) throw readableError(error, NOT_SAVED)
     },
 
@@ -35,8 +36,24 @@ export function createSupabaseSeasonAdminRepository(client) {
     async setCurrentSeason(id) {
       const cleared = await client.from('seasons').update({ is_current: false }).eq('is_current', true).neq('id', id)
       if (cleared.error) throw readableError(cleared.error, NOT_CURRENT)
-      const { error } = await update(id, { is_current: true })
+      const { error } = await update('seasons', id, { is_current: true })
       if (error) throw readableError(error, NOT_CURRENT)
+    },
+
+    async getCompetitions() {
+      const { data, error } = await client.from('competitions').select('id, name, type').order('id')
+      if (error) throw readableError(error, 'No se pudieron cargar las competiciones. Inténtalo de nuevo.')
+      return data
+    },
+
+    async createCompetition(competition) {
+      const { error } = await client.from('competitions').insert(competition)
+      if (error) throw readableError(error, COMPETITION_NOT_SAVED)
+    },
+
+    async updateCompetition(id, competition) {
+      const { error } = await update('competitions', id, competition)
+      if (error) throw readableError(error, COMPETITION_NOT_SAVED)
     },
   }
 }

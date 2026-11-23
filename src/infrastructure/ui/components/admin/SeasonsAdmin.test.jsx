@@ -1,7 +1,6 @@
 import { describe, expect, it, vi } from 'vitest'
 import { render, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { MemoryRouter } from 'react-router'
 import SeasonsAdmin from './SeasonsAdmin'
 import { UseCasesContext } from '../../use-cases-context'
 
@@ -19,9 +18,7 @@ function renderScreen(overrides = {}) {
   }
   render(
     <UseCasesContext.Provider value={useCases}>
-      <MemoryRouter initialEntries={['/admin/temporadas?temporada=2']}>
-        <SeasonsAdmin />
-      </MemoryRouter>
+      <SeasonsAdmin />
     </UseCasesContext.Provider>,
   )
   return useCases
@@ -51,12 +48,6 @@ describe('SeasonsAdmin', () => {
     expect(within(current).getByText('Actual')).toBeInTheDocument()
     expect(within(current).queryByRole('button', { name: 'Marcar 2026/27 como actual' })).not.toBeInTheDocument()
     expect(within(await row('2025/26')).queryByText('Actual')).not.toBeInTheDocument()
-  })
-
-  it('vuelve al inicio del panel con la temporada elegida', async () => {
-    renderScreen()
-
-    expect(await screen.findByRole('link', { name: 'Volver al panel' })).toHaveAttribute('href', '/admin?temporada=2')
   })
 
   it('crea una temporada, lo confirma y vuelve a cargar la lista', async () => {

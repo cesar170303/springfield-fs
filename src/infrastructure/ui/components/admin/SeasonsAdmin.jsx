@@ -1,75 +1,31 @@
-import { useRef, useState } from 'react'
+import { useState } from 'react'
 import { formatDay } from '../../format'
 import { useAsync } from '../../use-async'
+import { useEditor } from '../../use-editor'
 import { useUseCases } from '../../use-cases-context'
-import AdminPage from './AdminPage'
-import { field, input, primaryButton, secondaryButton, textButton } from './styles'
-
-const EMPTY = { name: '', startDate: '', endDate: '' }
+import AdminForm from './AdminForm'
+import EditableSection from './EditableSection'
+import { field, input, textButton } from './styles'
 
 /** Temporadas (docs/SPEC.md §12): crear, editar y marcar la actual. No se borran. */
 export default function SeasonsAdmin() {
   const { listSeasons, saveSeason, setCurrentSeason } = useUseCases()
-  const { data: seasons, error: loadError, reload } = useAsync(listSeasons)
-  const [editing, setEditing] = useState(null) // null = sin formulario; 'new' o el id de la temporada
-  const [result, setResult] = useState({ ok: '', error: '' }) // lo que se anuncia tras cada acción
-  const newButton = useRef(null)
-
-  function close() {
-    setEditing(null)
-    newButton.current?.focus() // el formulario desaparece: el foco no se puede quedar en el aire
-  }
-
-  function open(which) {
-    setResult({ ok: '', error: '' })
-    setEditing(which)
-  }
-
-  async function save(season) {
-    await saveSeason(season)
-    setResult({ ok: 'Temporada guardada.', error: '' })
-    close()
-    reload()
-  }
-
-  async function markCurrent({ id, name }) {
-    try {
-      await setCurrentSeason(id)
-      setResult({ ok: `${name} es la temporada actual.`, error: '' })
-      newButton.current?.focus() // el botón pulsado desaparece
-    } catch (error) {
-      setResult({ ok: '', error: error.message })
-    }
-    reload() // también si falla: puede que la anterior ya no esté marcada
-  }
-
-  const error = result.error || loadError?.message
+  const { data: seasons, error, reload } = useAsync(listSeasons)
+  const editor = useEditor(reload)
+  const save = (season) => editor.save(() => saveSeason(season), 'Temporada guardada.')
 
   return (
-    <AdminPage
-      title="Temporadas"
-      action={
-        <button ref={newButton} type="button" onClick={() => open('new')} className={primaryButton}>
-          Nueva temporada
-        </button>
-      }
-    >
-      {error && (
-        <p role="alert" className="type-small text-danger">
-          {error}
-        </p>
+    <EditableSection title="Temporadas" newLabel="Nueva temporada" editor={editor} loadError={error}>
+      {editor.editing === 'new' && (
+        <SeasonForm season={{ name: '', startDate: '', endDate: '' }} onSave={save} onCancel={editor.close} />
       )}
-      <p role="status" className="type-small text-text-muted empty:sr-only">
-        {result.ok}
-      </p>
-      {editing === 'new' && <SeasonForm season={EMPTY} onSave={save} onCancel={close} />}
-      {!seasons && !loadError && <p className="text-text-muted">Cargando…</p>}
+      {!seasons && !error && <p className="text-text-muted">Cargando…</p>}
       {seasons?.length === 0 && <p className="text-text-muted">Aún no hay ninguna temporada. Crea la primera.</p>}
       <ul>
         {seasons?.map((season) => (
           <li key={season.id} className="border-t border-line py-2">
-            {editing === season.id ? (
-              <SeasonForm season={season} onSave={save} onCancel={close} />
+            {editor.editing === season.id ? (
+              <SeasonForm season={season} onSave={save} onCancel={editor.close} />
             ) : (
               <div className="flex flex-wrap items-center justify-between gap-x-3">
                 <div>
@@ -86,7 +42,9 @@ export default function SeasonsAdmin() {
                     <button
                       type="button"
                       aria-label={`Marcar ${season.name} como actual`}
-                      onClick={() => markCurrent(season)}
+                      onClick={() =>
+                        editor.run(() => setCurrentSeason(season.id), `${season.name} es la temporada actual.`)
+                      }
                       className={textButton}
                     >
                       Marcar como actual
@@ -95,7 +53,7 @@ export default function SeasonsAdmin() {
                   <button
                     type="button"
                     aria-label={`Editar ${season.name}`}
-                    onClick={() => open(season.id)}
+                    onClick={() => editor.open(season.id)}
                     className={textButton}
                   >
                     Editar
@@ -106,14 +64,13 @@ export default function SeasonsAdmin() {
           </li>
         ))}
       </ul>
-    </AdminPage>
+    </EditableSection>
   )
 }
 
 function SeasonForm({ season, onSave, onCancel }) {
+  const { id } = season
   const [values, setValues] = useState({ name: season.name, startDate: season.startDate, endDate: season.endDate })
-  const [saving, setSaving] = useState(false)
-  const [error, setError] = useState('')
   const bind = (key) => ({
     value: values[key],
     onChange: (e) => setValues({ ...values, [key]: e.target.value }),
@@ -121,20 +78,8 @@ function SeasonForm({ season, onSave, onCancel }) {
     className: input,
   })
 
-  async function submit(event) {
-    event.preventDefault()
-    setSaving(true)
-    setError('')
-    try {
-      await onSave(season.id ? { id: season.id, ...values } : values)
-    } catch (e) {
-      setError(e.message)
-      setSaving(false)
-    }
-  }
-
   return (
-    <form onSubmit={submit} className="flex flex-col gap-3 rounded-lg bg-surface p-4">
+    <AdminForm onSubmit={() => onSave(id ? { id, ...values } : values)} onCancel={onCancel}>
       <label className={field}>
         Nombre
         <input type="text" placeholder="2026/27" autoFocus {...bind('name')} />
@@ -149,19 +94,6 @@ function SeasonForm({ season, onSave, onCancel }) {
           <input type="date" {...bind('endDate')} />
         </label>
       </div>
-      {error && (
-        <p role="alert" className="type-small text-danger">
-          {error}
-        </p>
-      )}
-      <div className="flex gap-2">
-        <button type="submit" disabled={saving} className={primaryButton}>
-          Guardar
-        </button>
-        <button type="button" onClick={onCancel} className={secondaryButton}>
-          Cancelar
-        </button>
-      </div>
-    </form>
+    </AdminForm>
   )
 }

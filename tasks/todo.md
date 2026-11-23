@@ -26,7 +26,7 @@ Detalle, decisiones y riesgos: [`tasks/plan.md`](plan.md).
 - [x] **T5.** Temporadas (estrena `errors.js`, `useAsync`, `ports/admin.js`)
   - Se crea una temporada y sale en la lista y los selectores; marcar actual desmarca la anterior
   - Nombre repetido o fin antes del inicio, con frase
-- [ ] **T6.** Competiciones
+- [x] **T6.** Competiciones
   - Se crea «Amistosos» y aparece en el filtro de la plantilla; nombre repetido, con frase
 - [ ] **Checkpoint 1 (PR 1):** suite completa + cobertura + `db:test`, navegador a 360/1280 px, `review` + `security-and-hardening` + `accessibility`, `CHANGELOG` 0.12.0 y `CLAUDE.md`. **PARADA.**
 

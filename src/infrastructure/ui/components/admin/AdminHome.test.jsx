@@ -57,7 +57,7 @@ describe('AdminHome', () => {
   it('enlaza a las temporadas, con la elegida en la URL, y dice cuál es la actual', async () => {
     renderHome(vi.fn().mockResolvedValue(FILTERS), '/admin?temporada=1')
 
-    const link = await screen.findByRole('link', { name: /Temporadas 2026\/27 es la actual/ })
+    const link = await screen.findByRole('link', { name: /Temporadas y competiciones 2026\/27 es la actual/ })
     expect(link).toHaveAttribute('href', '/admin/temporadas?temporada=1')
   })
 

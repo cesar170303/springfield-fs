@@ -99,6 +99,43 @@ describe('repositorio de temporadas del panel', () => {
     await expect(repository.setCurrentSeason(2)).rejects.toThrow('No se pudo cambiar la temporada actual.')
   })
 
+  it('da las competiciones con su tipo', async () => {
+    const { calls, repository } = setup({ data: [{ id: 1, name: 'Liga', type: 'league' }], error: null })
+
+    expect(await repository.getCompetitions()).toEqual([{ id: 1, name: 'Liga', type: 'league' }])
+    expect(calls).toEqual([
+      [
+        ['from', 'competitions'],
+        ['select', 'id, name, type'],
+        ['order', 'id'],
+      ],
+    ])
+  })
+
+  it('crea y edita competiciones', async () => {
+    const { calls, repository } = setup()
+    const data = { name: 'Amistosos', type: 'friendly' }
+
+    await repository.createCompetition(data)
+    await repository.updateCompetition(3, data)
+
+    expect(calls).toEqual([
+      [
+        ['from', 'competitions'],
+        ['insert', data],
+      ],
+      [['from', 'competitions'], ['update', data], ['eq', 'id', 3], ['select', 'id'], ['single']],
+    ])
+  })
+
+  it('si fallan las competiciones, lo dice', async () => {
+    const { repository } = setup(FAILED, FAILED, FAILED)
+
+    await expect(repository.getCompetitions()).rejects.toThrow('No se pudieron cargar las competiciones.')
+    await expect(repository.createCompetition({})).rejects.toThrow('No se pudo guardar la competición.')
+    await expect(repository.updateCompetition(3, {})).rejects.toThrow('No se pudo guardar la competición.')
+  })
+
   it('un nombre repetido se explica, al crear y al editar', async () => {
     const repeated = { data: null, error: { code: '23505', message: 'unique constraint "seasons_name_key"' } }
 

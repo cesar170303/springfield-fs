@@ -9,6 +9,9 @@ function setup() {
     createSeason: vi.fn().mockResolvedValue(),
     updateSeason: vi.fn().mockResolvedValue(),
     setCurrentSeason: vi.fn().mockResolvedValue(),
+    getCompetitions: vi.fn().mockResolvedValue([{ id: 1 }]),
+    createCompetition: vi.fn().mockResolvedValue(),
+    updateCompetition: vi.fn().mockResolvedValue(),
   }
   return { seasonAdminRepository, useCases: createSeasonAdminUseCases({ seasonAdminRepository }) }
 }
@@ -45,5 +48,30 @@ describe('casos de uso de temporadas', () => {
 
     await expect(useCases.saveSeason({ ...DATA, name: '  ' })).rejects.toThrow('Pon un nombre a la temporada.')
     expect(seasonAdminRepository.createSeason).not.toHaveBeenCalled()
+  })
+})
+
+describe('casos de uso de competiciones', () => {
+  it('lista, crea (con el nombre sin espacios de más) y edita', async () => {
+    const { seasonAdminRepository, useCases } = setup()
+
+    expect(await useCases.listCompetitions()).toEqual([{ id: 1 }])
+    await useCases.saveCompetition({ name: ' Amistosos ', type: 'friendly' })
+    await useCases.saveCompetition({ id: 2, name: 'Copa', type: 'cup' })
+
+    expect(seasonAdminRepository.createCompetition).toHaveBeenCalledExactlyOnceWith({
+      name: 'Amistosos',
+      type: 'friendly',
+    })
+    expect(seasonAdminRepository.updateCompetition).toHaveBeenCalledExactlyOnceWith(2, { name: 'Copa', type: 'cup' })
+  })
+
+  it('un nombre en blanco no se guarda', async () => {
+    const { seasonAdminRepository, useCases } = setup()
+
+    await expect(useCases.saveCompetition({ name: ' ', type: 'cup' })).rejects.toThrow(
+      'Pon un nombre a la competición.',
+    )
+    expect(seasonAdminRepository.createCompetition).not.toHaveBeenCalled()
   })
 })

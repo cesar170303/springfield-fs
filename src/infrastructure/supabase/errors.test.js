@@ -16,6 +16,9 @@ describe('readableError', () => {
     const badRange = 'new row for relation "seasons" violates check constraint "seasons_check"'
 
     expect(message({ code: '23505', message: duplicate })).toBe('Ya hay una temporada con ese nombre.')
+    expect(message({ code: '23505', message: duplicate.replace('seasons', 'competitions') })).toBe(
+      'Ya hay una competición con ese nombre.',
+    )
     expect(message({ code: '23514', message: badRange })).toBe('La fecha de fin tiene que ser posterior a la de inicio.')
   })
 

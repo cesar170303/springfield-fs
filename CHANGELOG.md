@@ -18,7 +18,7 @@ Paso 5 de la spec, panel de admin (en curso; plan en `tasks/plan.md`).
 
 ### Añadido
 - **Ruta `/admin`**, solo para el staff (a los demás, «Esta página no existe»), y botón «Admin» en la barra. El código del panel se descarga al entrar; si falla, se avisa. Inicio del panel con selector de temporada.
-- **Temporadas** (`/admin/temporadas`): crear, editar y marcar la actual, con cada error en una frase (`readableError`).
+- **Temporadas y competiciones** (`/admin/temporadas`): crear y editar, y marcar la temporada actual, con cada error en una frase (`readableError`).
 - **Integridad de los votos** (migración `20261123172150`, con su test pgTAP): un partido o un jugador con votos no se borra, y el MVP a mano solo desempata. RPC `get_mvp_ties`. **Pendiente de aplicar en la nube.**
 
 ### Cambiado

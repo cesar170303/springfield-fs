@@ -10,7 +10,7 @@ export default function AdminHome() {
   const sections = [
     {
       to: '/admin/temporadas',
-      name: 'Temporadas',
+      name: 'Temporadas y competiciones',
       note: current ? `${current.name} es la actual` : 'Ninguna marcada como actual',
     },
   ]
