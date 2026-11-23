@@ -1,12 +1,12 @@
 import { describe, expect, it } from 'vitest'
-import { render, screen, within } from '@testing-library/react'
+import { cleanup, render, screen, within } from '@testing-library/react'
 import { MemoryRouter } from 'react-router'
 import BottomNav from './BottomNav'
 
-function renderNav(url = '/') {
+function renderNav(url = '/', staff = false) {
   render(
     <MemoryRouter initialEntries={[url]}>
-      <BottomNav />
+      <BottomNav staff={staff} />
     </MemoryRouter>,
   )
   return screen.getByRole('navigation', { name: 'Principal' })
@@ -37,5 +37,21 @@ describe('BottomNav', () => {
     const nav = renderNav()
 
     expect(within(nav).queryByRole('button')).not.toBeInTheDocument()
+  })
+
+  it('enseña «Admin» solo al staff', () => {
+    const nav = renderNav('/', false)
+    expect(within(nav).queryByRole('link', { name: 'Admin' })).not.toBeInTheDocument()
+
+    cleanup()
+    renderNav('/', true)
+    expect(screen.getByRole('link', { name: 'Admin' })).toHaveAttribute('href', '/admin')
+  })
+
+  it('marca «Admin» como la página actual en todo el panel, y «Plantilla» no', () => {
+    renderNav('/admin/partidos', true)
+
+    expect(screen.getByRole('link', { name: 'Admin' })).toHaveAttribute('aria-current', 'page')
+    expect(screen.getByRole('link', { name: 'Plantilla' })).not.toHaveAttribute('aria-current')
   })
 })

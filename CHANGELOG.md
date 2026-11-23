@@ -8,10 +8,29 @@ Registro de lo que se hace en cada feature y de los fallos detectados. Formato b
 
 Fallos detectados que aún no están resueltos. Al arreglarlos, pasa la línea a «Corregido» de la versión correspondiente.
 
-- El bundle principal pasa de 500 kB (aviso de Vite al compilar; ya pasaba antes de la ficha). Se resolverá cargando las pantallas bajo demanda.
 - Sin red, la app abre con la letra de reserva y sin el icono de Google: el service worker no precarga las fuentes (`woff2`) ni los `svg` (Workbox solo incluye `js`, `css` y `html` por defecto).
 
 ## [Sin publicar]
+
+## [0.12.0] - 2026-11-23
+
+Paso 5 de la spec, panel de admin: cimientos, temporadas y competiciones (fase 1 de 4; plan en `tasks/plan.md`, spec §12).
+
+### Añadido
+- **Ruta `/admin`**, solo para el staff (a los demás, «Esta página no existe»), y botón «Admin» en la barra. El código del panel se descarga al entrar; si falla, se avisa. Inicio del panel con selector de temporada.
+- **Temporadas y competiciones** (`/admin/temporadas`): crear, editar, borrar (con confirmación y solo sin partidos) y marcar la temporada actual, con cada error en una frase (`readableError`).
+- **Integridad de los votos** (migración `20261123172150`, con su test pgTAP): un partido o un jugador con votos no se borra, y el MVP a mano solo desempata. RPC `get_mvp_ties` y `set_current_season`. **Pendiente de aplicar en la nube**; sin ella, allí no se puede marcar la temporada actual.
+
+### Corregido
+- **Un admin que juega podía votarse a sí mismo**, y el staff elegir como votante a cualquier cuenta. Ahora la cuenta de una ficha no se cambia desde la app y solo se elige a viewers.
+- Pulsar en la barra la sección en la que ya estás dejaba la plantilla en «Cargando…».
+
+### Cambiado
+- Los selectores de temporada y competición miden 44 px de alto.
+- Lo que recibe el foco del teclado ya no queda detrás de la barra flotante (WCAG 2.4.11).
+- `react-router` pasa a la 8.5.2 (PR de Dependabot); la navegación, comprobada.
+- Fuera de «Fallos conocidos» el aviso del bundle de más de 500 kB: ya no sale (266 kB).
+- Si la temporada de la URL ya no existe, la plantilla, la ficha y el panel abren por la inicial; y sin filtro si la que no existe es la competición.
 
 ## [0.11.2] - 2026-11-23
 

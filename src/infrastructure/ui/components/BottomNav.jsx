@@ -1,20 +1,23 @@
 import { NavLink } from 'react-router'
 import Icon from './Icon'
 
-// Secciones de la barra. Se irán añadiendo Votar, Rankings y Admin (este último solo para el staff).
-const ITEMS = [{ to: '/', label: 'Plantilla', icon: 'grid', end: true }]
+// Secciones de la barra. Se irán añadiendo Votar y Rankings.
+const ITEMS = [
+  { to: '/', label: 'Plantilla', icon: 'grid', end: true },
+  { to: '/admin', label: 'Admin', icon: 'admin', staffOnly: true },
+]
 
 /**
  * Barra de navegación flotante, en píldora de cristal (ADR-0004).
  * En el móvil solo la sección actual lleva texto; el resto, icono con su nombre accesible. Desde md, todas con texto.
  */
-export default function BottomNav() {
+export default function BottomNav({ staff = false }) {
   return (
     <nav
       aria-label="Principal"
       className="fixed bottom-[calc(1rem+env(safe-area-inset-bottom))] left-1/2 z-10 flex -translate-x-1/2 gap-1 rounded-full border border-text/15 bg-surface/60 p-1.5 shadow-2xl backdrop-blur-md"
     >
-      {ITEMS.map(({ to, label, icon, end }) => (
+      {ITEMS.filter((item) => staff || !item.staffOnly).map(({ to, label, icon, end }) => (
         <NavLink
           key={to}
           to={to}

@@ -13,7 +13,11 @@ export default defineConfig({
       registerType: 'autoUpdate',
       // Iconos generados desde public/escudo-hd.png con `npm run icons` (pwa-assets.config.js).
       includeAssets: ['favicon.ico', 'apple-touch-icon-180x180.png'],
-      workbox: { manifestTransforms: [requireAppShell] },
+      workbox: {
+        // El panel de admin solo lo usa el staff: no se precarga en los demás dispositivos (docs/SPEC.md §12).
+        globIgnores: ['**/AdminRoutes-*.js'],
+        manifestTransforms: [requireAppShell],
+      },
       manifest: {
         name: 'Springfield FS',
         short_name: 'Springfield',

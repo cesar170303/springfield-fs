@@ -13,6 +13,11 @@ export function toSeason(row) {
   return { id: row.id, name: row.name, isCurrent: row.is_current }
 }
 
+/** Temporada con sus fechas, para el panel de admin. */
+export function toAdminSeason(row) {
+  return { ...toSeason(row), startDate: row.start_date, endDate: row.end_date }
+}
+
 const numberOrNull = (value) => (value === null ? null : Number(value))
 
 /** Fila de get_squad_stats → SquadPlayer. `photoUrl` traduce la ruta del bucket a una URL pública. */

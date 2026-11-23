@@ -78,7 +78,7 @@ Decidida el 2026-11-21 con dos referencias del propietario (FotMob y BeSoccer). 
 
 ### Navegación
 
-Decidida el 2026-11-22 (ADR-0004): React Router con URLs reales (el «atrás» del móvil vuelve a la pantalla anterior), filtros de la plantilla en la URL (`?temporada=&competicion=`) y una **barra inferior fija** que hoy tiene Plantilla y Salir, y crecerá con Votar, Rankings y Admin (solo staff).
+Decidida el 2026-11-22 (ADR-0004): React Router con URLs reales (el «atrás» del móvil vuelve a la pantalla anterior), filtros de la plantilla en la URL (`?temporada=&competicion=`) y una **barra inferior fija** que hoy tiene Plantilla y Admin (solo staff), y crecerá con Votar y Rankings.
 
 ## 6. Valoración (votación anónima)
 
@@ -167,6 +167,8 @@ supabase.rpc('get_squad_stats', { p_season_id, p_competition_id: null }) // null
 supabase.rpc('get_player_rating_timeline', { p_player_id, p_season_id })
 supabase.rpc('get_season_mvps', { p_season_id })
 supabase.rpc('get_player_match_log', { p_player_id, p_season_id, p_competition_id: null }) // 20261122120000
+supabase.rpc('get_mvp_ties', { p_season_id }) // solo staff; panel de admin (§12)
+supabase.rpc('set_current_season', { p_season_id }) // panel de admin: la actual, en un solo paso
 ```
 `get_player_match_log` da los partidos terminados en los que jugó (≥1 minuto), del más reciente al más antiguo: etiqueta, rival, minutos, goles, asistencias, goles encajados (portero), nota y MVP (solo con la votación cerrada) y fecha de cierre de la votación.
 `get_squad_stats` devuelve por jugador: dorsal, apodo, posición, estado, foto, convocatorias, PJ, minutos, goles, asistencias, goles de penalti, penaltis fallados, amarillas, rojas, valoración media, partidos valorados, MVPs, goles encajados y porterías a cero (estas dos solo para porteros).
@@ -176,6 +178,15 @@ supabase.rpc('get_player_match_log', { p_player_id, p_season_id, p_competition_i
 - No se puede marcar un gol (ni asistir) con 0 minutos jugados.
 - No puede haber más goles registrados que `goals_for`, ni bajar `goals_for` por debajo de los goles ya registrados.
 - Minutos de 0 a 40, notas solo en medios puntos y sin autovoto.
+- **Integridad de los votos (panel de admin, §12):**
+  - un partido con votos no se borra ni se reabre, y su fecha no se cambia si eso reabre una votación ya cerrada;
+  - a un jugador con votos no se le quita de la convocatoria ni se le deja a 0 minutos; a quien tiene goles o asistencias tampoco se le deja a 0 minutos, ni se le quita de la convocatoria (ni a quien falló un penalti): se borrarían, y también los goles de los compañeros a los que asistió;
+  - un partido con convocatoria no cambia de temporada;
+  - un voto no se cuela en un partido que se está reabriendo, ni a quien se le están quitando los minutos;
+  - la cuenta vinculada a una ficha no la cambia nadie desde la app (un admin podría votarse), y como votante de la temporada solo se elige a un viewer;
+  - un partido terminado no puede tener fecha futura;
+  - no se quita de la plantilla a quien ya fue convocado esa temporada;
+  - el MVP elegido a mano tiene que ser uno de los empatados con la mejor media, con la votación cerrada.
 
 ### Probado
 31 pruebas en PostgreSQL 16 con una imitación de Supabase Auth: permisos por rol, vínculo de usuarios con fichas, anonimato, cierre de votación, empate de MVP, jugador archivado y cálculos de totales, filtros y gráfica.
@@ -209,7 +220,7 @@ supabase.rpc('get_player_match_log', { p_player_id, p_season_id, p_competition_i
 2. Cliente de Supabase, login (email + Google) y contexto de sesión con el rol del usuario.
 3. Lista de la plantilla (`get_squad_stats`) con selector de temporada y filtro de competición (ver §5, «Pantalla de la plantilla»).
 4. Ficha del jugador: estadísticas grandes y ordenadas, más la gráfica (SVG propio, sin librería; decidido el 2026-11-22). Hecha en 0.11.0 (§7), tras la navegación entre pantallas (0.10.0, ADR-0004).
-5. Panel de admin: temporadas, jugadores (con foto), plantilla y dorsales, partidos, convocatoria y minutos, goles, tarjetas, penaltis fallados, cerrar partido y desempatar MVP.
+5. Panel de admin: temporadas, jugadores (con foto), plantilla y dorsales, partidos, convocatoria y minutos, goles, tarjetas, penaltis fallados, cerrar partido y desempatar MVP. También competiciones, viewers votantes, copiar la plantilla anterior y usuarios y roles (ver §12; tareas en `tasks/todo.md`).
 6. Pantalla de votación para jugadores (ver §6, «Pantalla de votación»).
 7. Rankings.
 8. Notificaciones push.
@@ -235,7 +246,7 @@ Toda la app es negra, blanca y gris, con el **azul eléctrico** como único colo
 | `text` / `text-muted` | `#ffffff` / `#8a96a3` | Texto principal y secundario |
 | `accent` | `#1e6ef3` | Acción principal (con texto blanco), chip seleccionado, pastilla del líder y del dorsal, cifra destacada, medidor, gráfica y foco |
 | `accent-text` | `#4d8ef7` | Enlaces, texto azul pequeño y nota de MVP |
-| `danger` | `#ff4d4f` | Errores (siempre con una frase) y tarjeta roja |
+| `danger` | `#ff4d4f` | Errores (siempre con una frase), tarjeta roja y botones de borrar |
 | `card-yellow` | `#ffd90f` | Tarjeta amarilla |
 
 **Modo votación** (paleta «Donut»): solo en la pantalla de votación.
@@ -269,3 +280,50 @@ Todas las combinaciones de texto cumplen WCAG AA: 4,5:1, y 3:1 en texto grande, 
 ### Motivo
 
 - Las rayas verticales del escudo: rayitas finas y grises que fluyen, alguna en azul.
+
+## 12. Panel de admin
+
+Decidido el 2026-11-22. Pensado para el móvil, a pie de pista. El diseño visual se aprueba sobre una maqueta antes de construirlo.
+
+### Acceso e inicio
+
+- `/admin` y sus pantallas, solo para el staff (`admin` y `superadmin`); a los demás, «Esta página no existe». Botón «Admin» en la barra inferior, solo para el staff. La seguridad la da RLS.
+- El código del panel se descarga solo al entrar en él. Sin animaciones nuevas.
+- **Inicio:** selector de temporada (`?temporada=`), avisos (partidos jugados sin terminar, empates de MVP) y las secciones.
+- **Confirmaciones:** archivar, quitar, borrar, terminar, reabrir y cambiar roles la piden en el mismo sitio («¿Seguro? Sí, archivar · Cancelar»), sin ventanas emergentes.
+- **Errores:** siempre con una frase en español.
+
+### Temporadas y competiciones
+
+- **Temporadas:** crear y editar (nombre, inicio y fin) y marcar la actual (solo una). Al editar, «Borrar» en rojo (decidido el 2026-11-23, por si hubo un error): pide confirmación, se lleva su plantilla y sus votantes, y no se puede si ya tiene partidos.
+- **Competiciones:** crear y editar (nombre y tipo: Liga, Copa o Amistoso). Al editar, «Borrar», igual: no se puede si ya tiene partidos.
+
+### Jugadores
+
+- Fichas activas y, aparte, archivadas: foto, apodo, nombre, posición, estado, correo y si tiene cuenta vinculada.
+- Crear y editar: nombre, apellidos, apodo (opcional), correo (opcional), posición y estado.
+- Archivar y recuperar. No se borran. Un archivado no entra en temporadas nuevas.
+- **Foto:** la app recorta el centro en cuadrado, la reduce a 512 × 512 y la guarda en webp (jpeg si el navegador no sabe webp), con vista previa. Se puede cambiar y quitar.
+
+### Plantilla y votantes (por temporada)
+
+- **Plantilla:** añadir fichas no archivadas con su dorsal (1-99, único en la temporada), cambiar el dorsal y quitar (solo si no fue convocado esa temporada).
+- Con la plantilla vacía, **copiar la de la temporada anterior:** los no archivados, con su dorsal.
+- **Votantes:** los viewers, cada uno con «Vota esta temporada». La plantilla vota siempre.
+
+### Partidos
+
+- **Lista** de la temporada: etiqueta (`J5`, `Copa J2`), rival, fecha, resultado y estado: por jugar, por terminar, votación abierta hasta el …, votación cerrada o empate de MVP.
+- **Crear y editar:** competición, jornada (propone la siguiente), fecha y hora, rival y resultado. Borrar, solo si no está terminado.
+- **Convocatoria,** de la plantilla: por convocado, minutos, amarilla y roja.
+- **Goles:** goleador con minutos, tipo y asistente opcional (nunca en penaltis). **Penaltis fallados:** jugador y tipo. Un gol mal apuntado se borra y se apunta otra vez.
+- **El marcador manda:** puede haber menos goles apuntados que goles a favor (un gol en propia puerta del rival no se apunta). La app avisa de los que faltan, pero deja terminar.
+- **Terminar** pide resultado, que el partido ya se haya jugado y alguien con minutos. Dice hasta cuándo estará abierta la votación, o que no habrá si ya pasaron 7 días.
+- **Reabrir,** solo si nadie ha votado.
+- **Con votos, se corrige sin tocar votos:** se pueden corregir resultado, minutos, goles, tarjetas, rival, jornada y competición; lo que afecta a los votos lo impide la base de datos (§9). La fecha se puede corregir, salvo que eso reabra una votación cerrada (las medias ya se vieron y se perdería el anonimato).
+- **Desempate de MVP:** con la votación cerrada y empate en la mejor media, el admin elige entre los empatados y puede cambiar su elección.
+
+### Usuarios (solo superadmin)
+
+- Cuentas con correo, nombre, rol y ficha vinculada.
+- «Hacer admin» y «Quitar admin» (vuelve a jugador si tiene ficha; si no, a viewer). Ni la propia cuenta ni la de otro superadmin se cambian desde la app.

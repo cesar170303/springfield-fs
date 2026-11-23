@@ -90,6 +90,8 @@
 @layer base {
   html {
     color-scheme: dark;
+    /* Lo que recibe el foco no puede quedar detrás de la barra flotante (WCAG 2.4.11): su alto más el hueco. */
+    scroll-padding-bottom: calc(5.5rem + env(safe-area-inset-bottom));
   }
 
   body {

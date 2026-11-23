@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { displayName } from './user'
+import { displayName, isStaff } from './user'
 
 describe('displayName', () => {
   it('usa el nombre completo si existe', () => {
@@ -12,5 +12,15 @@ describe('displayName', () => {
 
   it('usa el correo si el nombre está vacío', () => {
     expect(displayName({ fullName: '', email: 'jugador@example.com' })).toBe('jugador@example.com')
+  })
+})
+
+describe('isStaff', () => {
+  it.each(['admin', 'superadmin'])('%s es del staff', (role) => {
+    expect(isStaff(role)).toBe(true)
+  })
+
+  it.each(['player', 'viewer', null])('%s no es del staff', (role) => {
+    expect(isStaff(role)).toBe(false)
   })
 })
