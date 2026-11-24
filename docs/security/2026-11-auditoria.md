@@ -98,7 +98,7 @@ El analizador de seguridad del proyecto de la nube (reglas más recientes que la
 - **Aplicado en la nube (2026-11-20):** `20261119130000`. Comprobado allí: las 4 funciones están en `rls`, las políticas siguen funcionando (prueba actuando como la cuenta existente), la API responde «función no encontrada» para ellas y «esquema no expuesto» para `rls`. El analizador de la nube pasa de 8 a 4 avisos de funciones: las 4 RPC que usa la app, intencionadas. `20261119140000` (pg_net) se aplicará junto con la de notificaciones push.
 
 ## Integridad para el panel de admin (2026-11-23)
-Migración `20261123172150_admin_integrity.sql`, con el test `11_admin_integrity` en rojo antes y en verde después. **Pendiente de aplicar en la nube.**
+Migración `20261123172150_admin_integrity.sql`, con el test `11_admin_integrity` en rojo antes y en verde después. **Aplicada en la nube el 2026-11-24**: las 8 funciones son idénticas a las del repositorio, los 6 triggers están activos, las claves de `votes` en `restrict` y `players.user_id` sin permiso de escritura. El analizador solo avisa de las 6 RPC intencionadas y de las contraseñas filtradas (plan de pago).
 - **Qué pasaba:** el staff podía borrar votos sin querer. Quitar a un jugador de la convocatoria o borrar un partido los arrastraba en cascada (`on delete cascade`).
 - **Arreglo:** las dos claves foráneas de `votes` pasan a `on delete restrict` y unos triggers en `private` dan la frase de cada rechazo. Comprobado también con un voto y un borrado simultáneos.
 - **Revisión de código del 2026-11-23** (reproducido en local antes y rechazado después, misma migración):

@@ -19,7 +19,7 @@ Paso 5 de la spec, panel de admin: cimientos, temporadas y competiciones (fase 1
 ### Añadido
 - **Ruta `/admin`**, solo para el staff (a los demás, «Esta página no existe»), y botón «Admin» en la barra. El código del panel se descarga al entrar; si falla, se avisa. Inicio del panel con selector de temporada.
 - **Temporadas y competiciones** (`/admin/temporadas`): crear, editar, borrar (con confirmación y solo sin partidos) y marcar la temporada actual, con cada error en una frase (`readableError`).
-- **Integridad de los votos** (migración `20261123172150`, con su test pgTAP): un partido o un jugador con votos no se borra, y el MVP a mano solo desempata. RPC `get_mvp_ties` y `set_current_season`. **Pendiente de aplicar en la nube**; sin ella, allí no se puede marcar la temporada actual.
+- **Integridad de los votos** (migración `20261123172150`, con su test pgTAP): un partido o un jugador con votos no se borra, y el MVP a mano solo desempata. RPC `get_mvp_ties` y `set_current_season`. **Aplicada en la nube el 2026-11-24.**
 
 ### Corregido
 - **Un admin que juega podía votarse a sí mismo**, y el staff elegir como votante a cualquier cuenta. Ahora la cuenta de una ficha no se cambia desde la app y solo se elige a viewers.
