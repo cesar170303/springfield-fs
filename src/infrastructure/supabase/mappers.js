@@ -35,6 +35,21 @@ export function toAdminPlayer(row, email, photoUrl) {
   }
 }
 
+/** Fila de `matches` → AdminMatch, con la fecha como Date y cuántos convocados tiene. */
+export function toAdminMatch(row) {
+  return {
+    id: row.id,
+    competitionId: row.competition_id,
+    round: row.round,
+    date: new Date(row.match_date),
+    opponent: row.opponent,
+    goalsFor: row.goals_for,
+    goalsAgainst: row.goals_against,
+    isFinished: row.is_finished,
+    calledCount: row.match_squad?.[0]?.count ?? 0,
+  }
+}
+
 const numberOrNull =(value) => (value === null ? null : Number(value))
 
 /** Fila de get_squad_stats → SquadPlayer. `photoUrl` traduce la ruta del bucket a una URL pública. */

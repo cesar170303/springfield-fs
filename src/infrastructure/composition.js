@@ -1,4 +1,5 @@
 import { createAccountAdminUseCases } from '../application/use-cases/admin-accounts'
+import { createMatchAdminUseCases } from '../application/use-cases/admin-matches'
 import { createPlayerAdminUseCases } from '../application/use-cases/admin-players'
 import { createRosterAdminUseCases } from '../application/use-cases/admin-roster'
 import { createSeasonAdminUseCases } from '../application/use-cases/admin-seasons'
@@ -8,6 +9,7 @@ import { createSquadUseCases } from '../application/use-cases/squad'
 import { supabase } from './supabase/client'
 import { createSupabaseAccountAdminRepository } from './supabase/account-admin-repository'
 import { createSupabaseAuthGateway } from './supabase/auth-gateway'
+import { createSupabaseMatchAdminRepository } from './supabase/match-admin-repository'
 import { createSupabasePlayerAdminRepository } from './supabase/player-admin-repository'
 import { createSupabasePlayerRepository } from './supabase/player-repository'
 import { createSupabaseProfileRepository } from './supabase/profile-repository'
@@ -29,5 +31,10 @@ export const useCases = {
   ...createSeasonAdminUseCases({ seasonAdminRepository }),
   ...createPlayerAdminUseCases({ playerAdminRepository }),
   ...createRosterAdminUseCases({ seasonAdminRepository, playerAdminRepository }),
+  ...createMatchAdminUseCases({
+    matchAdminRepository: createSupabaseMatchAdminRepository(supabase),
+    seasonAdminRepository,
+    playerAdminRepository,
+  }),
   ...createAccountAdminUseCases({ accountAdminRepository: createSupabaseAccountAdminRepository(supabase) }),
 }

@@ -12,6 +12,16 @@ Fallos detectados que aún no están resueltos. Al arreglarlos, pasa la línea a
 
 ## [Sin publicar]
 
+## [0.14.0] - 2026-11-26
+
+Paso 5 de la spec, panel de admin: partidos (fase 3 de 4; plan en `tasks/plan.md`, spec §12). Sin migraciones nuevas: no hace falta aplicar nada en la nube.
+
+### Añadido
+- **Partidos** (`/admin/partidos?temporada=`): lista de la temporada con etiqueta (`J5`, `Copa J2`), fecha, rival, estado (por jugar, por terminar, votación abierta hasta el…, votación cerrada) y resultado; en los partidos por jugar, en su lugar, «Hacer convocatoria» o cuántos convocados tiene. Alta con la jornada siguiente propuesta y editor con «Datos del partido» (competición, jornada, rival, fecha, hora y resultado). La fecha se elige en un calendario que se abre al tocar el campo, con los atajos «Hoy» y «Próximo domingo»; la hora, en una lista cada 15 minutos que propone la del último partido. Un partido que aún no se ha jugado no puede tener resultado: los goles se desactivan y se explica. «Borrar partido», con confirmación, solo si no está terminado. Una jornada repetida y lo que impidan los triggers se explican con su frase. Tarjeta «Partidos», la primera del inicio del panel.
+- **Convocatoria, minutos y tarjetas**, en el editor del partido: de la plantilla, quién va convocado, sus minutos (0-40) y su amarilla o roja, con el recuento («7 de 8»). Se guarda en el orden que no pierde datos (primero los convocados, luego los que salen) y, como «Datos del partido», al guardar vuelve a la lista de partidos, que lo anuncia; si algo falla, se queda en el partido con el error a la vista. Quien tiene goles o penaltis apuntados no se puede quitar, y se explica antes de guardar; lo que rechace la base de datos (un jugador con votos) llega con su frase y la lista vuelve a lo guardado.
+- **Goles y penaltis fallados**, en el editor del partido y pensados para el móvil: sin desplegables, con botones grandes paso a paso («+ Gol»: quién marcó y quién asistió, dos toques; un penalti se guarda al tocarlo; «+ Penalti fallado»: quién y tipo). Goleador y asistente solo entre los convocados con minutos (el asistente nunca es el goleador y en un penalti no hay asistencia), con el recuento «3 de 4 con goleador». El marcador manda: avisa de los goles que faltan por asignar sin bloquear y, con todos apuntados, no ofrece más. Penaltis fallados con jugador y tipo. Borrar un gol o un penalti pide confirmación; lo que rechace la base de datos llega con su frase.
+- **Terminar y reabrir el partido**: el bloque «Terminar partido» explica lo que falta (resultado, que ya se haya jugado, alguien con minutos), avisa de los goles sin goleador sin bloquear y de hasta cuándo estará abierta la votación (o de que ya no habrá, si pasaron 7 días); con confirmación, termina y abre la votación. Terminado, «Reabrir partido» con confirmación (con votos lo impide la base de datos, con su frase). En el inicio del panel, el aviso «N partidos por terminar».
+
 ## [0.13.0] - 2026-11-26
 
 Paso 5 de la spec, panel de admin: jugadores, fotos, plantilla y votantes (fase 2 de 4; plan en `tasks/plan.md`, spec §12). Sin migraciones nuevas: no hace falta aplicar nada en la nube.

@@ -1,4 +1,4 @@
-import { describe, expect, it, vi } from 'vitest'
+import { afterEach, describe, expect, it, vi } from 'vitest'
 import { render, screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { Link, MemoryRouter, useLocation } from 'react-router'
@@ -19,9 +19,9 @@ function WhereAmI() {
   return <p>Estás en {pathname + search}</p>
 }
 
-function renderHome(getSquadFilters, url = '/admin') {
+function renderHome(getSquadFilters, url = '/admin', listMatches = vi.fn().mockResolvedValue({ matches: [] })) {
   render(
-    <UseCasesContext.Provider value={{ getSquadFilters }}>
+    <UseCasesContext.Provider value={{ getSquadFilters, listMatches }}>
       <MemoryRouter initialEntries={[url]}>
         <AdminHome />
         <Link to="/admin">Admin</Link>
@@ -93,6 +93,7 @@ describe('AdminHome', () => {
     const sections = await screen.findByRole('navigation', { name: 'Secciones del panel' })
     const cards = within(sections).getAllByRole('link')
     expect(cards.map((card) => card.textContent)).toEqual([
+      'Partidos Convocatoria, goles y cierre',
       'Temporadas y competiciones 2026/27 es la actual',
       'Jugadores Fichas, correos y archivados',
       'Plantilla y dorsales Quién juega en 2026/27',
@@ -123,6 +124,15 @@ describe('AdminHome', () => {
     )
   })
 
+  it('enlaza a los partidos de la temporada elegida', async () => {
+    renderHome(vi.fn().mockResolvedValue(FILTERS), '/admin?temporada=1')
+
+    expect(await screen.findByRole('link', { name: /^Partidos/ })).toHaveAttribute(
+      'href',
+      '/admin/partidos?temporada=1',
+    )
+  })
+
   it('si no se puede cargar, lo dice', async () => {
     renderHome(vi.fn().mockRejectedValue(new Error('x')))
 
@@ -136,5 +146,48 @@ describe('AdminHome', () => {
 
     expect(await screen.findByLabelText('Temporada')).toBeInTheDocument()
     expect(screen.queryByRole('alert')).not.toBeInTheDocument()
+  })
+})
+
+describe('partidos por terminar', () => {
+  afterEach(() => vi.useRealTimers())
+  // Partidos ya jugados (antes del 26 nov) sin terminar; uno por jugar y uno terminado no cuentan.
+  const match = (id, date, isFinished = false) => ({ id, date, isFinished })
+  const MATCHES = [
+    match(1, new Date(2026, 10, 22, 18, 30)),
+    match(2, new Date(2026, 10, 15, 18, 30)),
+    match(3, new Date(2026, 10, 29, 18, 30)),
+    match(4, new Date(2026, 10, 8, 18, 30), true),
+  ]
+
+  it('avisa de los partidos jugados sin terminar de la temporada elegida y enlaza a ellos', async () => {
+    vi.useFakeTimers({ now: new Date(2026, 10, 26, 12, 0), toFake: ['Date'] })
+    const listMatches = vi.fn().mockResolvedValue({ matches: MATCHES })
+    renderHome(vi.fn().mockResolvedValue(FILTERS), '/admin?temporada=2', listMatches)
+
+    const pending = await screen.findByRole('region', { name: 'Pendiente' })
+    expect(within(pending).getByRole('link', { name: '2 partidos por terminar' })).toHaveAttribute(
+      'href',
+      '/admin/partidos?temporada=2',
+    )
+    expect(listMatches).toHaveBeenCalledWith(2)
+  })
+
+  it('con uno, en singular', async () => {
+    vi.useFakeTimers({ now: new Date(2026, 10, 26, 12, 0), toFake: ['Date'] })
+    renderHome(
+      vi.fn().mockResolvedValue(FILTERS),
+      '/admin?temporada=2',
+      vi.fn().mockResolvedValue({ matches: [MATCHES[0]] }),
+    )
+
+    expect(await screen.findByRole('link', { name: '1 partido por terminar' })).toBeInTheDocument()
+  })
+
+  it('sin partidos pendientes (o si no se pueden cargar), no hay aviso', async () => {
+    renderHome(vi.fn().mockResolvedValue(FILTERS), '/admin?temporada=2', vi.fn().mockRejectedValue(new Error('x')))
+
+    expect(await screen.findByRole('navigation', { name: 'Secciones del panel' })).toBeInTheDocument()
+    expect(screen.queryByRole('region', { name: 'Pendiente' })).not.toBeInTheDocument()
   })
 })

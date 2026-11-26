@@ -5,7 +5,14 @@ import { primaryButton, secondaryButton } from './styles'
  * Botón que pregunta en el sitio antes de actuar (docs/SPEC.md §12): «¿Seguro? Sí, archivar · Cancelar», sin ventanas
  * emergentes. Si `onConfirm` falla, enseña la frase del error.
  */
-export default function ConfirmButton({ label, question, confirmLabel, onConfirm, className = secondaryButton }) {
+export default function ConfirmButton({
+  label,
+  ariaLabel, // nombre propio cuando hay varios botones iguales («Borrar el gol de Navi»)
+  question,
+  confirmLabel,
+  onConfirm,
+  className = secondaryButton,
+}) {
   const [asking, setAsking] = useState(false)
   const [asked, setAsked] = useState(false) // al volver de la pregunta, el foco va al botón
   const [busy, setBusy] = useState(false)
@@ -48,6 +55,7 @@ export default function ConfirmButton({ label, question, confirmLabel, onConfirm
       <button
         type="button"
         autoFocus={asked}
+        aria-label={ariaLabel}
         onClick={() => {
           setError('')
           setAsking(true)
