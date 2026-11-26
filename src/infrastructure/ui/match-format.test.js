@@ -3,7 +3,7 @@ import {
   formatDateTime,
   fromLocalParts,
   matchStateText,
-  nextSaturday,
+  nextSunday,
   scoreText,
   timeOptions,
   toLocalDay,
@@ -41,10 +41,10 @@ describe('fecha y hora del partido', () => {
     expect(options.slice(options.indexOf('18:30'), options.indexOf('18:30') + 3)).toEqual(['18:30', '18:40', '18:45'])
   })
 
-  it('el próximo sábado (hoy, si hoy es sábado)', () => {
-    expect(toLocalDay(nextSaturday(new Date(2026, 10, 26, 12)))).toBe('2026-11-28') // jueves
-    expect(toLocalDay(nextSaturday(new Date(2026, 10, 28, 9)))).toBe('2026-11-28') // sábado
-    expect(toLocalDay(nextSaturday(new Date(2026, 10, 29, 9)))).toBe('2026-12-05') // domingo
+  it('el próximo domingo (hoy, si hoy es domingo)', () => {
+    expect(toLocalDay(nextSunday(new Date(2026, 10, 26, 12)))).toBe('2026-11-29') // jueves
+    expect(toLocalDay(nextSunday(new Date(2026, 10, 29, 9)))).toBe('2026-11-29') // domingo
+    expect(toLocalDay(nextSunday(new Date(2026, 10, 30, 9)))).toBe('2026-12-06') // lunes
   })
 
   it('la escribe como «22 nov 18:30»', () => {

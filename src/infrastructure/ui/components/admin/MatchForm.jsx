@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { canHaveResult, nextRound } from '../../../../domain/match'
-import { fromLocalParts, nextSaturday, timeOptions, toLocalDay, toLocalTime } from '../../match-format'
+import { fromLocalParts, nextSunday, timeOptions, toLocalDay, toLocalTime } from '../../match-format'
 import AdminForm from './AdminForm'
 import { field, input } from './styles'
 
@@ -102,8 +102,8 @@ export default function MatchForm({ match, competitions, matches, defaultTime = 
         <button type="button" onClick={() => change({ day: toLocalDay(new Date()) })} className={chip}>
           Hoy
         </button>
-        <button type="button" onClick={() => change({ day: toLocalDay(nextSaturday()) })} className={chip}>
-          Próximo sábado
+        <button type="button" onClick={() => change({ day: toLocalDay(nextSunday()) })} className={chip}>
+          Próximo domingo
         </button>
       </div>
       <div className="grid grid-cols-2 gap-3">

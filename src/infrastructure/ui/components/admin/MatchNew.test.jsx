@@ -84,11 +84,11 @@ describe('MatchNew', () => {
     expect(await screen.findByText('Editor en /admin/partidos/9?temporada=2: Partido creado.')).toBeInTheDocument()
   })
 
-  it('«Hoy» y «Próximo sábado» ponen la fecha con un toque', async () => {
+  it('«Hoy» y «Próximo domingo» ponen la fecha con un toque', async () => {
     renderNew()
 
-    await userEvent.click(await screen.findByRole('button', { name: 'Próximo sábado' }))
-    expect(screen.getByLabelText('Fecha')).toHaveValue('2026-11-28')
+    await userEvent.click(await screen.findByRole('button', { name: 'Próximo domingo' }))
+    expect(screen.getByLabelText('Fecha')).toHaveValue('2026-11-29')
     await userEvent.click(screen.getByRole('button', { name: 'Hoy' }))
     expect(screen.getByLabelText('Fecha')).toHaveValue('2026-11-26')
   })
@@ -105,7 +105,7 @@ describe('MatchNew', () => {
     await userEvent.type(await screen.findByLabelText('Fecha'), '2026-11-22')
     await userEvent.type(screen.getByLabelText('Goles a favor'), '3')
     await userEvent.type(screen.getByLabelText('Goles en contra'), '1')
-    await userEvent.click(screen.getByRole('button', { name: 'Próximo sábado' }))
+    await userEvent.click(screen.getByRole('button', { name: 'Próximo domingo' }))
 
     expect(screen.getByLabelText('Goles a favor')).toBeDisabled()
     expect(screen.getByLabelText('Goles a favor')).toHaveValue(null)

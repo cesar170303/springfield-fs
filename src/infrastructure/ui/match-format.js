@@ -17,11 +17,11 @@ const TIMES = Array.from({ length: 60 }, (_, i) => `${pad(9 + Math.floor(i / 4))
 /** Horas para elegir. Si `current` (la del partido) no está en la lista, se añade en su sitio. */
 export const timeOptions = (current) => (!current || TIMES.includes(current) ? TIMES : [...TIMES, current].sort())
 
-/** El sábado próximo, en hora local (hoy, si hoy es sábado). */
-export function nextSaturday(now = new Date()) {
-  const saturday = new Date(now.getFullYear(), now.getMonth(), now.getDate())
-  saturday.setDate(saturday.getDate() + ((6 - saturday.getDay() + 7) % 7))
-  return saturday
+/** El domingo próximo, en hora local (hoy, si hoy es domingo): el equipo suele jugar los domingos. */
+export function nextSunday(now = new Date()) {
+  const sunday = new Date(now.getFullYear(), now.getMonth(), now.getDate())
+  sunday.setDate(sunday.getDate() + ((7 - sunday.getDay()) % 7))
+  return sunday
 }
 
 /** «22 nov 18:30», en hora local. */
