@@ -47,4 +47,14 @@
  * @property {(path: string) => Promise<void>} deletePhoto borra un archivo del almacén de fotos
  */
 
+/**
+ * @typedef {{ id: string, fullName: string | null, email: string }} ViewerAccount una cuenta con rol viewer
+ *
+ * @typedef {object} AccountAdminRepository
+ * @property {() => Promise<ViewerAccount[]>} getViewers
+ * @property {(seasonId: number) => Promise<string[]>} getSeasonVoters ids de las cuentas que votan esa temporada
+ * @property {(seasonId: number, userId: string) => Promise<void>} addSeasonVoter solo un viewer (lo comprueba RLS)
+ * @property {(seasonId: number, userId: string) => Promise<void>} removeSeasonVoter
+ */
+
 export {}

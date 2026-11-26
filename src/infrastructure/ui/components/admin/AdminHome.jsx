@@ -25,6 +25,12 @@ export default function AdminHome() {
       name: 'Plantilla y dorsales',
       note: selected ? `Quién juega en ${selected.name}` : 'Primero, crea una temporada',
     },
+    {
+      to: '/admin/votantes',
+      icon: 'vote',
+      name: 'Votantes',
+      note: selected ? `Viewers que votan en ${selected.name}` : 'Primero, crea una temporada',
+    },
   ]
 
   return (

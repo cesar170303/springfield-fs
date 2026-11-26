@@ -40,7 +40,7 @@ Detalle, decisiones y riesgos: [`tasks/plan.md`](plan.md).
   - Si algo falla, se avisa y la ficha no apunta a un archivo inexistente
 - [x] **T9.** Plantilla, dorsales y copiar plantilla
   - Dorsal repetido, con frase; quitar a un convocado lo impide la BD; con la plantilla vacía, copiar la anterior
-- [ ] **T10.** Votantes de la temporada (viewers con interruptor)
+- [x] **T10.** Votantes de la temporada (viewers con interruptor)
   - Marcar/desmarcar un viewer cambia `season_voters`; los jugadores no salen en la lista
 - [ ] **Checkpoint 2 (PR 2):** como el 1, `CHANGELOG` 0.13.0. **PARADA.**
 

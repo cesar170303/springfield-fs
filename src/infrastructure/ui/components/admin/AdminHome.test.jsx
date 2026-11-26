@@ -96,6 +96,7 @@ describe('AdminHome', () => {
       'Temporadas y competiciones 2026/27 es la actual',
       'Jugadores Fichas, correos y archivados',
       'Plantilla y dorsales Quién juega en 2026/27',
+      'Votantes Viewers que votan en 2026/27',
     ])
     for (const card of cards) {
       const icon = card.querySelector('svg')
@@ -110,6 +111,15 @@ describe('AdminHome', () => {
     expect(await screen.findByRole('link', { name: 'Plantilla y dorsales Quién juega en 2025/26' })).toHaveAttribute(
       'href',
       '/admin/plantilla?temporada=1',
+    )
+  })
+
+  it('enlaza a los votantes de la temporada elegida', async () => {
+    renderHome(vi.fn().mockResolvedValue(FILTERS), '/admin?temporada=1')
+
+    expect(await screen.findByRole('link', { name: 'Votantes Viewers que votan en 2025/26' })).toHaveAttribute(
+      'href',
+      '/admin/votantes?temporada=1',
     )
   })
 
