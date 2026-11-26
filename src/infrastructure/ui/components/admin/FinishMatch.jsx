@@ -9,13 +9,14 @@ import { primaryButton, secondaryButton } from './styles'
 /**
  * Terminar el partido (abre la votación) o reabrirlo (docs/SPEC.md §12). Explica lo que falta para poder terminarlo,
  * avisa de los goles sin goleador (sin bloquear: el marcador manda) y de hasta cuándo se podrá votar. Lo que impida la
- * base de datos (reabrir con votos, terminar con fecha futura) se explica con su frase. `onDone(mensaje)` al acabar.
+ * base de datos (reabrir con votos, terminar con fecha futura) se explica con su frase. `onDone(mensaje)` al acabar;
+ * `version` cambia cuando se apunta o borra un gol, y entonces se recargan los datos.
  */
-export default function FinishMatch({ match, seasonId, onDone }) {
+export default function FinishMatch({ match, seasonId, onDone, version = 0 }) {
   const { getMatchGoals, finishMatch, reopenMatch } = useUseCases()
   const { data, error, reload } = useAsync(
     () => getMatchGoals({ matchId: match.id, seasonId }),
-    `${match.id}-${seasonId}`,
+    `${match.id}-${seasonId}-${version}`,
   )
 
   if (match.isFinished) {

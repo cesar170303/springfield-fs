@@ -12,7 +12,7 @@ import { primaryButton, secondaryButton, textButton } from './styles'
  * grandes. Un gol normal son dos toques (quién marcó y quién asistió); un penalti se guarda al tocarlo. Goleador y
  * asistente, solo convocados con minutos. El marcador manda: avisa de los goles sin goleador, pero no bloquea.
  */
-export default function GoalsEditor({ matchId, seasonId, goalsFor }) {
+export default function GoalsEditor({ matchId, seasonId, goalsFor, onChanged }) {
   const { getMatchGoals, addGoal, deleteGoal, addMissedPenalty, deleteMissedPenalty } = useUseCases()
   const { data, error, reload } = useAsync(() => getMatchGoals({ matchId, seasonId }), `${matchId}-${seasonId}`)
   const [adding, setAdding] = useState(null) // null | 'goal' | 'missed': qué panel está abierto
@@ -38,6 +38,7 @@ export default function GoalsEditor({ matchId, seasonId, goalsFor }) {
       await action()
       setResult({ where, ok, error: '' })
       setAdding(null)
+      onChanged?.() // p. ej. «Terminar partido» vuelve a contar los goles que faltan
     } catch (e) {
       setResult({ where, ok: '', error: e.message })
     }

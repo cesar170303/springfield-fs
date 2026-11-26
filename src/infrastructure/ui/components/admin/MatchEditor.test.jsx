@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
-import { render, screen } from '@testing-library/react'
+import { render, screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { MemoryRouter, Route, Routes, useLocation } from 'react-router'
 import MatchEditor from './MatchEditor'
@@ -158,6 +158,32 @@ describe('MatchEditor', () => {
         'Lista en /admin/partidos: Partido terminado. La votación está abierta hasta el 29 nov 18:30.',
       ),
     ).toBeInTheDocument()
+  })
+
+  it('al apuntar el último gol, «Terminar partido» deja de avisar de goles por asignar', async () => {
+    const players = [
+      { playerId: 3, name: 'Checo' },
+      { playerId: 4, name: 'Navi' },
+    ]
+    const goal = (id) => ({ id, scorerId: 3, scorer: 'Checo', detail: 'Sin asistencia' })
+    renderEditor(undefined, {
+      getMatchGoals: vi
+        .fn()
+        .mockResolvedValueOnce({ players, goals: [goal(1), goal(2), goal(3)], missedPenalties: [] })
+        .mockResolvedValueOnce({ players, goals: [goal(1), goal(2), goal(3)], missedPenalties: [] })
+        .mockResolvedValue({ players, goals: [goal(1), goal(2), goal(3), goal(4)], missedPenalties: [] }),
+      addGoal: vi.fn().mockResolvedValue(),
+    })
+    const finish = await screen.findByRole('region', { name: 'Terminar partido' })
+    expect(await within(finish).findByText(/Falta 1 gol por asignar/)).toBeInTheDocument()
+
+    await userEvent.click(screen.getByRole('button', { name: '+ Gol' }))
+    await userEvent.click(
+      within(screen.getByRole('group', { name: '¿Quién marcó?' })).getByRole('button', { name: 'Navi' }),
+    )
+    await userEvent.click(screen.getByRole('button', { name: 'Sin asistencia' }))
+
+    await vi.waitFor(() => expect(within(finish).queryByText(/Falta 1 gol por asignar/)).not.toBeInTheDocument())
   })
 
   it('un partido terminado se puede reabrir', async () => {

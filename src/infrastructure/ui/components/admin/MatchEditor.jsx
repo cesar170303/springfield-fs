@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import { useLocation, useNavigate, useParams } from 'react-router'
 import { matchState } from '../../../../domain/match'
 import { formatDateTime, matchStateText, scoreText } from '../../match-format'
@@ -29,6 +30,7 @@ export default function MatchEditor() {
   const navigate = useNavigate()
   const ok = state?.ok ?? '' // lo que llega de la pantalla anterior (partido recién creado)
   const match = data?.matches.find((m) => String(m.id) === matchId)
+  const [goalsVersion, setGoalsVersion] = useState(0) // sube al apuntar o borrar un gol: «Terminar» vuelve a contar
   const backToList = (message) => navigate({ pathname: MATCHES.to, search }, { state: { ok: message } })
 
   if (!match) {
@@ -68,8 +70,13 @@ export default function MatchEditor() {
         />
       </section>
       <SquadEditor matchId={match.id} seasonId={seasonId} onSaved={() => backToList('Convocatoria guardada.')} />
-      <GoalsEditor matchId={match.id} seasonId={seasonId} goalsFor={match.goalsFor} />
-      <FinishMatch match={match} seasonId={seasonId} onDone={backToList} />
+      <GoalsEditor
+        matchId={match.id}
+        seasonId={seasonId}
+        goalsFor={match.goalsFor}
+        onChanged={() => setGoalsVersion((v) => v + 1)}
+      />
+      <FinishMatch match={match} seasonId={seasonId} onDone={backToList} version={goalsVersion} />
       {/* Terminado no se borra (se reabre antes); con votos, la base de datos tampoco lo deja. */}
       {!match.isFinished && (
         <ConfirmButton
