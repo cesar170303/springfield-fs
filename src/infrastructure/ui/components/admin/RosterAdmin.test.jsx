@@ -175,3 +175,12 @@ describe('RosterAdmin', () => {
     expect(useCases.getRosterSheet).toHaveBeenCalledTimes(2)
   })
 })
+
+it('si se pulsa «Añadir jugador» antes de que cargue la plantilla, no dice que no hay fichas', async () => {
+  const getRosterSheet = vi.fn(() => new Promise(() => {}))
+  renderRoster({ getRosterSheet })
+
+  await userEvent.click(await screen.findByRole('button', { name: 'Añadir jugador' }))
+
+  expect(screen.queryByText('Todas las fichas activas ya están en la plantilla.')).not.toBeInTheDocument()
+})

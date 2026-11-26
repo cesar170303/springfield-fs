@@ -39,7 +39,8 @@ export default function RosterAdmin() {
           onRetry={reload}
         >
           {editor.editing === 'new' &&
-            (sheet?.available.length ? (
+            sheet && // hasta que cargue no se sabe qué fichas quedan libres
+            (sheet.available.length ? (
               <AddForm
                 players={sheet.available}
                 onSave={(values) => editor.save(() => addToRoster({ seasonId, ...values }), 'Jugador añadido.')}

@@ -63,3 +63,15 @@ describe('squarePhoto', () => {
     await expect(squarePhoto(file)).rejects.toThrow('No se pudo leer esa imagen. Prueba con una foto JPG o PNG.')
   })
 })
+
+it('si falla al dibujar, libera igual la foto decodificada', async () => {
+  const { bitmap, drawImage } = setup({ width: 800, height: 800 })
+  drawImage.mockImplementation(() => {
+    throw new Error('sin memoria')
+  })
+
+  await expect(squarePhoto(file)).rejects.toThrow('sin memoria')
+  expect(bitmap.close).toHaveBeenCalled()
+  vi.unstubAllGlobals()
+  vi.restoreAllMocks()
+})

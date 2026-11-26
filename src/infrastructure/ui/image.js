@@ -20,10 +20,13 @@ export async function squarePhoto(file) {
   const canvas = document.createElement('canvas')
   canvas.width = SIZE
   canvas.height = SIZE
-  canvas
-    .getContext('2d')
-    .drawImage(bitmap, (bitmap.width - side) / 2, (bitmap.height - side) / 2, side, side, 0, 0, SIZE, SIZE)
-  bitmap.close()
+  try {
+    canvas
+      .getContext('2d')
+      .drawImage(bitmap, (bitmap.width - side) / 2, (bitmap.height - side) / 2, side, side, 0, 0, SIZE, SIZE)
+  } finally {
+    bitmap.close() // la foto decodificada ocupa mucha memoria: se libera pase lo que pase
+  }
 
   // Un navegador que no sabe webp devuelve otro tipo (png): entonces, jpeg.
   const webp = await encode(canvas, 'image/webp')
