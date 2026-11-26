@@ -1,4 +1,5 @@
 import { createPlayerAdminUseCases } from '../application/use-cases/admin-players'
+import { createRosterAdminUseCases } from '../application/use-cases/admin-roster'
 import { createSeasonAdminUseCases } from '../application/use-cases/admin-seasons'
 import { createAuthUseCases } from '../application/use-cases/auth'
 import { createPlayerUseCases } from '../application/use-cases/player'
@@ -12,6 +13,8 @@ import { createSupabaseSeasonAdminRepository } from './supabase/season-admin-rep
 import { createSupabaseSquadRepository } from './supabase/squad-repository'
 
 const squadRepository = createSupabaseSquadRepository(supabase)
+const seasonAdminRepository = createSupabaseSeasonAdminRepository(supabase)
+const playerAdminRepository = createSupabasePlayerAdminRepository(supabase)
 
 // Raíz de composición: el único sitio donde se decide qué implementación real recibe cada caso de uso.
 export const useCases = {
@@ -21,6 +24,7 @@ export const useCases = {
   }),
   ...createSquadUseCases({ squadRepository }),
   ...createPlayerUseCases({ squadRepository, playerRepository: createSupabasePlayerRepository(supabase) }),
-  ...createSeasonAdminUseCases({ seasonAdminRepository: createSupabaseSeasonAdminRepository(supabase) }),
-  ...createPlayerAdminUseCases({ playerAdminRepository: createSupabasePlayerAdminRepository(supabase) }),
+  ...createSeasonAdminUseCases({ seasonAdminRepository }),
+  ...createPlayerAdminUseCases({ playerAdminRepository }),
+  ...createRosterAdminUseCases({ seasonAdminRepository, playerAdminRepository }),
 }

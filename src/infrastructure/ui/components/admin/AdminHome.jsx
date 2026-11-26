@@ -9,6 +9,8 @@ export default function AdminHome() {
   const season = useSeasonFilters()
   const { search } = useLocation()
   const current = season.filters?.seasons.find((s) => s.isCurrent)
+  // Mientras la URL aún no trae temporada, la inicial (la que va a poner).
+  const selected = season.filters?.seasons.find((s) => s.id === (season.seasonId ?? season.filters.initialSeasonId))
   const sections = [
     {
       to: '/admin/temporadas',
@@ -17,6 +19,12 @@ export default function AdminHome() {
       note: current ? `${current.name} es la actual` : 'Ninguna marcada como actual',
     },
     { to: '/admin/jugadores', icon: 'players', name: 'Jugadores', note: 'Fichas, correos y archivados' },
+    {
+      to: '/admin/plantilla',
+      icon: 'shirt',
+      name: 'Plantilla y dorsales',
+      note: selected ? `Quién juega en ${selected.name}` : 'Primero, crea una temporada',
+    },
   ]
 
   return (

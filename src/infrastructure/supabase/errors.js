@@ -7,6 +7,9 @@ const CONSTRAINTS = {
   matches_season_id_fkey: HAS_MATCHES,
   matches_competition_id_fkey: HAS_MATCHES,
   players_email_key: 'Ya hay una ficha con ese correo.',
+  player_seasons_season_id_shirt_number_key: 'Ese dorsal ya lo lleva otro jugador esta temporada.',
+  player_seasons_pkey: 'Ese jugador ya está en la plantilla.',
+  player_seasons_shirt_number_check: 'El dorsal tiene que ser un número del 1 al 99.',
   seasons_check:'La fecha de fin tiene que ser posterior a la de inicio.',
 }
 

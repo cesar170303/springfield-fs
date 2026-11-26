@@ -162,3 +162,98 @@ describe('repositorio de temporadas del panel', () => {
     )
   })
 })
+
+describe('plantilla de la temporada', () => {
+  it('da la plantilla de una temporada (jugador y dorsal)', async () => {
+    const { calls, repository } = setup({ data: [{ player_id: 3, shirt_number: 7 }], error: null })
+
+    expect(await repository.getRoster(2)).toEqual([{ playerId: 3, shirtNumber: 7 }])
+    expect(calls).toEqual([
+      [
+        ['from', 'player_seasons'],
+        ['select', 'player_id, shirt_number'],
+        ['eq', 'season_id', 2],
+      ],
+    ])
+  })
+
+  it('añade uno o varios jugadores en una sola petición', async () => {
+    const { calls, repository } = setup()
+
+    await repository.addToRoster(2, [
+      { playerId: 3, shirtNumber: 7 },
+      { playerId: 4, shirtNumber: 9 },
+    ])
+
+    expect(calls).toEqual([
+      [
+        ['from', 'player_seasons'],
+        [
+          'insert',
+          [
+            { season_id: 2, player_id: 3, shirt_number: 7 },
+            { season_id: 2, player_id: 4, shirt_number: 9 },
+          ],
+        ],
+      ],
+    ])
+  })
+
+  it('cambia el dorsal y quita de la plantilla, pidiendo la fila de vuelta', async () => {
+    const { calls, repository } = setup()
+
+    await repository.changeShirtNumber(2, 3, 10)
+    await repository.removeFromRoster(2, 3)
+
+    expect(calls).toEqual([
+      [
+        ['from', 'player_seasons'],
+        ['update', { shirt_number: 10 }],
+        ['eq', 'season_id', 2],
+        ['eq', 'player_id', 3],
+        ['select', 'player_id'],
+        ['single'],
+      ],
+      [['from', 'player_seasons'], ['delete'], ['eq', 'season_id', 2], ['eq', 'player_id', 3], ['select', 'player_id'], ['single']],
+    ])
+  })
+
+  it('un dorsal repetido se explica, al añadir y al cambiarlo', async () => {
+    const repeated = {
+      data: null,
+      error: { code: '23505', message: 'unique constraint "player_seasons_season_id_shirt_number_key"' },
+    }
+    const phrase = 'Ese dorsal ya lo lleva otro jugador esta temporada.'
+
+    await expect(setup(repeated).repository.addToRoster(2, [{ playerId: 3, shirtNumber: 7 }])).rejects.toThrow(phrase)
+    await expect(setup(repeated).repository.changeShirtNumber(2, 3, 7)).rejects.toThrow(phrase)
+  })
+
+  it('un jugador que ya está en la plantilla se explica', async () => {
+    const twice = { data: null, error: { code: '23505', message: 'unique constraint "player_seasons_pkey"' } }
+
+    await expect(setup(twice).repository.addToRoster(2, [{ playerId: 3, shirtNumber: 7 }])).rejects.toThrow(
+      'Ese jugador ya está en la plantilla.',
+    )
+  })
+
+  it('quitar a un convocado lo impide la base de datos, con su frase', async () => {
+    const called = {
+      data: null,
+      error: { code: 'P0001', message: 'Checo ya fue convocado esta temporada: no se puede quitar de la plantilla' },
+    }
+
+    await expect(setup(called).repository.removeFromRoster(2, 3)).rejects.toThrow(
+      'Checo ya fue convocado esta temporada: no se puede quitar de la plantilla.',
+    )
+  })
+
+  it('si falla otra cosa, lo dice', async () => {
+    const { repository } = setup(FAILED, FAILED, FAILED, FAILED)
+
+    await expect(repository.getRoster(2)).rejects.toThrow('No se pudo cargar la plantilla.')
+    await expect(repository.addToRoster(2, [])).rejects.toThrow('No se pudo guardar la plantilla.')
+    await expect(repository.changeShirtNumber(2, 3, 7)).rejects.toThrow('No se pudo cambiar el dorsal.')
+    await expect(repository.removeFromRoster(2, 3)).rejects.toThrow('No se pudo quitar de la plantilla.')
+  })
+})

@@ -18,8 +18,8 @@ describe('Icon', () => {
     expect(container.querySelector('svg').children.length).toBeGreaterThan(0)
   })
 
-  it('tiene el icono de jugadores', () => {
-    const { container } = render(<Icon name="players" />)
+  it.each(['players', 'shirt'])('tiene el icono %s', (name) => {
+    const { container } = render(<Icon name={name} />)
 
     expect(container.querySelector('svg').children.length).toBeGreaterThan(0)
   })

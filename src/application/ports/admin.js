@@ -19,6 +19,12 @@
  * @property {(competition: CompetitionData) => Promise<void>} createCompetition
  * @property {(id: number, competition: CompetitionData) => Promise<void>} updateCompetition
  * @property {(id: number) => Promise<void>} deleteCompetition falla si tiene partidos
+ * @property {(seasonId: number) => Promise<RosterEntry[]>} getRoster
+ * @property {(seasonId: number, entries: RosterEntry[]) => Promise<void>} addToRoster todos o ninguno
+ * @property {(seasonId: number, playerId: number, shirtNumber: number) => Promise<void>} changeShirtNumber
+ * @property {(seasonId: number, playerId: number) => Promise<void>} removeFromRoster falla si ya fue convocado
+ *
+ * @typedef {{ playerId: number, shirtNumber: number }} RosterEntry un jugador de la plantilla, con su dorsal
  */
 
 /**
