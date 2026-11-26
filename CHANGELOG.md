@@ -12,7 +12,9 @@ Fallos detectados que aún no están resueltos. Al arreglarlos, pasa la línea a
 
 ## [Sin publicar]
 
-Panel de admin, fase 2 (jugadores, fotos, plantilla y votantes), en curso.
+## [0.13.0] - 2026-11-26
+
+Paso 5 de la spec, panel de admin: jugadores, fotos, plantilla y votantes (fase 2 de 4; plan en `tasks/plan.md`, spec §12). Sin migraciones nuevas: no hace falta aplicar nada en la nube.
 
 ### Añadido
 - **Fichas de jugadores** (`/admin/jugadores`): activas y archivadas aparte, con posición, correo (de `get_player_emails`, nunca de `players`), estado y si tienen cuenta. Alta y edición en su propia pantalla; archivar con confirmación en el sitio (`ConfirmButton`) y recuperar. Un correo repetido se explica.
