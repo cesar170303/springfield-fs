@@ -77,6 +77,7 @@
  * @property {(id: number) => Promise<void>} deleteGoal
  * @property {(matchId: number, penalty: { playerId: number, type: 'penalty' | 'double_penalty' }) => Promise<void>} addMissedPenalty
  * @property {(id: number) => Promise<void>} deleteMissedPenalty
+ * @property {(id: number, finished: boolean) => Promise<void>} setFinished terminar (abre la votación) o reabrir
  *
  * @typedef {{ playerId: number, minutes: number, yellow: boolean, red: boolean }} SquadEntry un convocado
  * @typedef {'regular' | 'penalty' | 'double_penalty'} GoalType

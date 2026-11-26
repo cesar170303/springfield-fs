@@ -50,6 +50,7 @@ function setup() {
     deleteGoal: vi.fn().mockResolvedValue(),
     addMissedPenalty: vi.fn().mockResolvedValue(),
     deleteMissedPenalty: vi.fn().mockResolvedValue(),
+    setFinished: vi.fn().mockResolvedValue(),
     saveSquad: vi.fn().mockResolvedValue(),
     removeFromSquad: vi.fn().mockResolvedValue(),
   }
@@ -320,5 +321,19 @@ describe('goles y penaltis fallados', () => {
       'Elige quién falló el penalti.',
     )
     expect(matchAdminRepository.addMissedPenalty).not.toHaveBeenCalled()
+  })
+})
+
+describe('terminar y reabrir', () => {
+  it('termina y reabre un partido', async () => {
+    const { matchAdminRepository, useCases } = setup()
+
+    await useCases.finishMatch(6)
+    await useCases.reopenMatch(6)
+
+    expect(matchAdminRepository.setFinished.mock.calls).toEqual([
+      [6, true],
+      [6, false],
+    ])
   })
 })

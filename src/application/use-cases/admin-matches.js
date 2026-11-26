@@ -147,6 +147,12 @@ export function createMatchAdminUseCases({ matchAdminRepository, seasonAdminRepo
 
     deleteMissedPenalty: (id) => matchAdminRepository.deleteMissedPenalty(id),
 
+    /** Terminar abre la votación (7 días desde el partido). Sin resultado o con fecha futura, la base de datos lo impide. */
+    finishMatch: (id) => matchAdminRepository.setFinished(id, true),
+
+    /** Solo si nadie ha votado: con votos, la base de datos lo impide con su frase. */
+    reopenMatch: (id) => matchAdminRepository.setFinished(id, false),
+
     /**
      * Guarda la convocatoria en el orden que no pierde datos si falla a medias: primero los convocados (alta o cambio
      * de minutos y tarjetas) y después quita a los que ya no lo están. Lo que proteja la base de datos (votos, goles)

@@ -52,7 +52,7 @@ Detalle, decisiones y riesgos: [`tasks/plan.md`](plan.md).
   - Se guarda y al reabrir sigue igual; no se desconvoca a quien tiene goles o penaltis; los rechazos de la BD, como frase
 - [x] **T13.** Goles y penaltis fallados
   - Solo convocados con minutos; en un penalti no hay asistente; con menos goles que el resultado, avisa sin bloquear
-- [ ] **T14.** Terminar y reabrir
+- [x] **T14.** Terminar y reabrir
   - Explica qué falta; avisa hasta cuándo estará abierta la votación; reabrir con votos lo impide la BD
 - [ ] **Checkpoint 3 (PR 3):** como el 1, `CHANGELOG` 0.14.0. La migración de T3 ya está en la nube (2026-11-24). **PARADA.**
 

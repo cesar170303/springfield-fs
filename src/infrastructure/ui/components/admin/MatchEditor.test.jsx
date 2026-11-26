@@ -45,6 +45,8 @@ function renderEditor(entry = '/admin/partidos/6?temporada=2', overrides = {}) {
     deleteMatch: vi.fn().mockResolvedValue(),
     getMatchSquad: vi.fn().mockResolvedValue([]),
     getMatchGoals: vi.fn().mockResolvedValue({ players: [], goals: [], missedPenalties: [] }),
+    finishMatch: vi.fn().mockResolvedValue(),
+    reopenMatch: vi.fn().mockResolvedValue(),
     ...overrides,
   }
   render(
@@ -136,6 +138,32 @@ describe('MatchEditor', () => {
     await userEvent.click(await screen.findByRole('button', { name: 'Guardar convocatoria' }))
 
     expect(await screen.findByText('Lista en /admin/partidos: Convocatoria guardada.')).toBeInTheDocument()
+  })
+
+  it('al final, «Terminar partido»; al terminarlo, vuelve a la lista, que lo anuncia', async () => {
+    const useCases = renderEditor(undefined, {
+      getMatchGoals: vi.fn().mockResolvedValue({
+        players: [{ playerId: 3, name: 'Checo' }],
+        goals: [{ id: 1 }, { id: 2 }, { id: 3 }, { id: 4 }],
+        missedPenalties: [],
+      }),
+    })
+
+    await userEvent.click(await screen.findByRole('button', { name: 'Terminar y abrir la votación' }))
+    await userEvent.click(screen.getByRole('button', { name: 'Sí, terminar' }))
+
+    expect(useCases.finishMatch).toHaveBeenCalledWith(6)
+    expect(
+      await screen.findByText(
+        'Lista en /admin/partidos: Partido terminado. La votación está abierta hasta el 29 nov 18:30.',
+      ),
+    ).toBeInTheDocument()
+  })
+
+  it('un partido terminado se puede reabrir', async () => {
+    renderEditor('/admin/partidos/5?temporada=2')
+
+    expect(await screen.findByRole('button', { name: 'Reabrir partido' })).toBeInTheDocument()
   })
 
   it('lo que rechace la base de datos se explica con su frase, y se queda en el partido', async () => {

@@ -111,6 +111,13 @@ export function createSupabaseMatchAdminRepository(client) {
       if (error) throw readableError(error, 'No se pudo apuntar el penalti fallado. Inténtalo de nuevo.')
     },
 
+    async setFinished(id, finished) {
+      const { error } = await one(client.from('matches').update({ is_finished: finished }), id)
+      if (error) {
+        throw readableError(error, `No se pudo ${finished ? 'terminar' : 'reabrir'} el partido. Inténtalo de nuevo.`)
+      }
+    },
+
     async deleteMissedPenalty(id) {
       const { error } = await client.from('missed_penalties').delete().eq('id', id).select('id').single()
       if (error) throw readableError(error, 'No se pudo borrar el penalti fallado. Inténtalo de nuevo.')

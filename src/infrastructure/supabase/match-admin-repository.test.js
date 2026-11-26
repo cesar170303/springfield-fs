@@ -295,3 +295,32 @@ describe('goles y penaltis fallados', () => {
     await expect(repository.deleteMissedPenalty(9)).rejects.toThrow('No se pudo borrar el penalti fallado.')
   })
 })
+
+describe('terminar y reabrir', () => {
+  it('marca el partido como terminado (o no) y pide la fila de vuelta', async () => {
+    const { calls, repository } = setup()
+
+    await repository.setFinished(6, true)
+    await repository.setFinished(6, false)
+
+    expect(calls).toEqual([
+      [['from', 'matches'], ['update', { is_finished: true }], ['eq', 'id', 6], ['select', 'id'], ['single']],
+      [['from', 'matches'], ['update', { is_finished: false }], ['eq', 'id', 6], ['select', 'id'], ['single']],
+    ])
+  })
+
+  it('reabrir con votos (o terminar con fecha futura) lo impide la base de datos, con su frase', async () => {
+    const voted = { data: null, error: { code: 'P0001', message: 'No se puede reabrir un partido que ya tiene votos' } }
+
+    await expect(setup(voted).repository.setFinished(6, false)).rejects.toThrow(
+      'No se puede reabrir un partido que ya tiene votos.',
+    )
+  })
+
+  it('si algo falla, lo dice', async () => {
+    const { repository } = setup(FAILED, FAILED)
+
+    await expect(repository.setFinished(6, true)).rejects.toThrow('No se pudo terminar el partido.')
+    await expect(repository.setFinished(6, false)).rejects.toThrow('No se pudo reabrir el partido.')
+  })
+})

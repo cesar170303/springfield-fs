@@ -76,3 +76,22 @@ export function goalDetail({ type, assistId }, nameOf) {
   if (type !== 'regular') return GOAL_TYPES.find((t) => t.value === type).label
   return assistId ? `Asistencia de ${nameOf(assistId)}` : 'Sin asistencia'
 }
+
+/**
+ * Lo que falta para poder terminar un partido (§12): resultado, que ya se haya jugado y alguien con minutos. Vacío si
+ * se puede terminar. (Los goles sin goleador no bloquean: el marcador manda.)
+ */
+export function finishBlockers({ date, goalsFor, playersWithMinutes }, now = new Date()) {
+  const blockers = []
+  if (goalsFor === null) blockers.push('Falta el resultado (en «Datos del partido»).')
+  if (!canHaveResult(date, now)) blockers.push('El partido aún no se ha jugado.')
+  if (playersWithMinutes === 0)
+    blockers.push('Nadie tiene minutos: guarda la convocatoria con los minutos de cada uno.')
+  return blockers
+}
+
+/** Al terminar el partido: hasta cuándo estará abierta la votación (7 días desde el partido) o si ya no habrá. */
+export function votingAfterFinish(date, now = new Date()) {
+  const closesAt = votingClosesAt(date)
+  return closesAt > now ? { open: true, closesAt } : { open: false }
+}

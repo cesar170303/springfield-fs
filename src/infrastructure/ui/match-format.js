@@ -35,3 +35,7 @@ export const matchStateText = (state) =>
 
 /** Resultado «4–2», o una raya si aún no hay. */
 export const scoreText = ({ goalsFor, goalsAgainst }) => (goalsFor === null ? '–' : `${goalsFor}–${goalsAgainst}`)
+
+/** Aviso de goles a favor sin goleador (el marcador manda: avisa, no bloquea). */
+export const missingGoalsText = (n) =>
+  `${n === 1 ? 'Falta 1 gol' : `Faltan ${n} goles`} por asignar. Si fue en propia puerta del rival, déjalo así.`

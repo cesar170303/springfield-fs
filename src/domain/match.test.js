@@ -3,6 +3,8 @@ import {
   COMPETITION_TYPES,
   canHaveResult,
   canLeaveSquad,
+  finishBlockers,
+  votingAfterFinish,
   GOAL_TYPES,
   PENALTY_TYPES,
   assistOptions,
@@ -154,5 +156,32 @@ describe('goles', () => {
     expect(goalDetail({ type: 'regular', assistId: null }, nameOf)).toBe('Sin asistencia')
     expect(goalDetail({ type: 'penalty', assistId: null }, nameOf)).toBe('Penalti')
     expect(goalDetail({ type: 'double_penalty', assistId: null }, nameOf)).toBe('Doble penalti')
+  })
+})
+
+describe('terminar el partido', () => {
+  const now = new Date('2026-11-26T12:00:00Z')
+  const played = { date: new Date('2026-11-25T17:30:00Z'), goalsFor: 4, playersWithMinutes: 8 }
+
+  it('con resultado, ya jugado y alguien con minutos, se puede terminar', () => {
+    expect(finishBlockers(played, now)).toEqual([])
+  })
+
+  it('explica todo lo que falta', () => {
+    expect(
+      finishBlockers({ date: new Date('2026-11-29T17:30:00Z'), goalsFor: null, playersWithMinutes: 0 }, now),
+    ).toEqual([
+      'Falta el resultado (en «Datos del partido»).',
+      'El partido aún no se ha jugado.',
+      'Nadie tiene minutos: guarda la convocatoria con los minutos de cada uno.',
+    ])
+  })
+
+  it('al terminar, la votación queda abierta hasta 7 días después del partido', () => {
+    expect(votingAfterFinish(played.date, now)).toEqual({ open: true, closesAt: new Date('2026-12-02T17:30:00Z') })
+  })
+
+  it('si ya pasaron 7 días, no habrá votación', () => {
+    expect(votingAfterFinish(new Date('2026-11-15T17:30:00Z'), now)).toEqual({ open: false })
   })
 })

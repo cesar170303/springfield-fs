@@ -3,6 +3,7 @@ import {
   formatDateTime,
   fromLocalParts,
   matchStateText,
+  missingGoalsText,
   nextSunday,
   scoreText,
   timeOptions,
@@ -66,4 +67,9 @@ describe('matchStateText', () => {
 it('el resultado, «4–2», o una raya si aún no hay', () => {
   expect(scoreText({ goalsFor: 4, goalsAgainst: 2 })).toBe('4–2')
   expect(scoreText({ goalsFor: null, goalsAgainst: null })).toBe('–')
+})
+
+it('avisa de los goles sin goleador, en singular o plural', () => {
+  expect(missingGoalsText(1)).toBe('Falta 1 gol por asignar. Si fue en propia puerta del rival, déjalo así.')
+  expect(missingGoalsText(2)).toBe('Faltan 2 goles por asignar. Si fue en propia puerta del rival, déjalo así.')
 })

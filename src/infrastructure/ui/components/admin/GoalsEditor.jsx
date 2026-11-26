@@ -1,13 +1,11 @@
 import { useId, useState } from 'react'
 import { GOAL_TYPES, PENALTY_TYPES, missingGoals } from '../../../../domain/match'
+import { missingGoalsText } from '../../match-format'
 import { useAsync } from '../../use-async'
 import { useUseCases } from '../../use-cases-context'
 import ConfirmButton from './ConfirmButton'
 import LoadError from './LoadError'
 import { primaryButton, secondaryButton, textButton } from './styles'
-
-const missingText = (n) =>
-  `${n === 1 ? 'Falta 1 gol' : `Faltan ${n} goles`} por asignar. Si fue en propia puerta del rival, déjalo así.`
 
 /**
  * Goles y penaltis fallados del partido (docs/SPEC.md §12), pensado para el móvil: sin desplegables, con botones
@@ -87,7 +85,7 @@ export default function GoalsEditor({ matchId, seasonId, goalsFor }) {
               </p>
             )}
             {missing > 0 && data.players.length > 0 && (
-              <p className="type-small text-accent-text">{missingText(missing)}</p>
+              <p className="type-small text-accent-text">{missingGoalsText(missing)}</p>
             )}
             {goalsFor !== null && goalsFor > 0 && missing === 0 && (
               <p className="type-small text-text-muted">Todos los goles a favor tienen goleador.</p>

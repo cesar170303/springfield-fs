@@ -6,6 +6,7 @@ import { useSeasonFilters } from '../../use-season-filters'
 import { useUseCases } from '../../use-cases-context'
 import AdminPage from './AdminPage'
 import ConfirmButton from './ConfirmButton'
+import FinishMatch from './FinishMatch'
 import GoalsEditor from './GoalsEditor'
 import LoadError from './LoadError'
 import MatchForm from './MatchForm'
@@ -16,8 +17,8 @@ const MATCHES = { to: '/admin/partidos', label: 'Partidos', name: 'Volver a part
 const pending = () => new Promise(() => {}) // hasta que la URL tenga temporada, no se pide nada
 
 /**
- * Editor de un partido (docs/SPEC.md §12): cabecera, «Datos del partido», convocatoria, goles y penaltis fallados, y
- * borrar (solo sin terminar). Terminar llega en la tarea siguiente.
+ * Editor de un partido (docs/SPEC.md §12): cabecera, «Datos del partido», convocatoria, goles y penaltis fallados,
+ * terminar o reabrir, y borrar (solo sin terminar).
  */
 export default function MatchEditor() {
   const { matchId } = useParams()
@@ -68,7 +69,8 @@ export default function MatchEditor() {
       </section>
       <SquadEditor matchId={match.id} seasonId={seasonId} onSaved={() => backToList('Convocatoria guardada.')} />
       <GoalsEditor matchId={match.id} seasonId={seasonId} goalsFor={match.goalsFor} />
-      {/* Con votos, la base de datos tampoco deja borrarlo; terminado, se reabre antes (T14). */}
+      <FinishMatch match={match} seasonId={seasonId} onDone={backToList} />
+      {/* Terminado no se borra (se reabre antes); con votos, la base de datos tampoco lo deja. */}
       {!match.isFinished && (
         <ConfirmButton
           label="Borrar partido"
