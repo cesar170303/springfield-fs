@@ -92,5 +92,28 @@ export function createSupabaseMatchAdminRepository(client) {
       const { error } = await client.from('match_squad').delete().eq('match_id', matchId).in('player_id', playerIds)
       if (error) throw readableError(error, SQUAD_NOT_SAVED)
     },
+
+    // El trigger exige goleador y asistente con minutos y no más goles que los goles a favor (P0001, con su frase).
+    async addGoal(matchId, { scorerId, assistId, type }) {
+      const { error } = await client
+        .from('goals')
+        .insert({ match_id: matchId, scorer_id: scorerId, assist_id: assistId, type })
+      if (error) throw readableError(error, 'No se pudo apuntar el gol. Inténtalo de nuevo.')
+    },
+
+    async deleteGoal(id) {
+      const { error } = await client.from('goals').delete().eq('id', id).select('id').single()
+      if (error) throw readableError(error, 'No se pudo borrar el gol. Inténtalo de nuevo.')
+    },
+
+    async addMissedPenalty(matchId, { playerId, type }) {
+      const { error } = await client.from('missed_penalties').insert({ match_id: matchId, player_id: playerId, type })
+      if (error) throw readableError(error, 'No se pudo apuntar el penalti fallado. Inténtalo de nuevo.')
+    },
+
+    async deleteMissedPenalty(id) {
+      const { error } = await client.from('missed_penalties').delete().eq('id', id).select('id').single()
+      if (error) throw readableError(error, 'No se pudo borrar el penalti fallado. Inténtalo de nuevo.')
+    },
   }
 }

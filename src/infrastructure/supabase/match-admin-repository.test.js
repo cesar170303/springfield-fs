@@ -239,3 +239,59 @@ describe('convocatoria del partido', () => {
     await expect(repository.removeFromSquad(6, [4])).rejects.toThrow('No se pudo guardar la convocatoria.')
   })
 })
+
+describe('goles y penaltis fallados', () => {
+  it('apunta un gol y uno fallado', async () => {
+    const { calls, repository } = setup({ data: null, error: null }, { data: null, error: null })
+
+    await repository.addGoal(6, { scorerId: 3, assistId: 4, type: 'regular' })
+    await repository.addMissedPenalty(6, { playerId: 3, type: 'double_penalty' })
+
+    expect(calls).toEqual([
+      [
+        ['from', 'goals'],
+        ['insert', { match_id: 6, scorer_id: 3, assist_id: 4, type: 'regular' }],
+      ],
+      [
+        ['from', 'missed_penalties'],
+        ['insert', { match_id: 6, player_id: 3, type: 'double_penalty' }],
+      ],
+    ])
+  })
+
+  it('los borra pidiendo la fila de vuelta', async () => {
+    const { calls, repository } = setup()
+
+    await repository.deleteGoal(1)
+    await repository.deleteMissedPenalty(9)
+
+    expect(calls).toEqual([
+      [['from', 'goals'], ['delete'], ['eq', 'id', 1], ['select', 'id'], ['single']],
+      [['from', 'missed_penalties'], ['delete'], ['eq', 'id', 9], ['select', 'id'], ['single']],
+    ])
+  })
+
+  it('más goles que el resultado, o un goleador sin minutos, llegan con la frase de la base de datos', async () => {
+    const tooMany = {
+      data: null,
+      error: { code: 'P0001', message: 'Habría 5 goles registrados y el partido tiene 4 a favor' },
+    }
+
+    await expect(setup(tooMany).repository.addGoal(6, { scorerId: 3, assistId: null, type: 'regular' })).rejects.toThrow(
+      'Habría 5 goles registrados y el partido tiene 4 a favor.',
+    )
+  })
+
+  it('si algo falla, lo dice', async () => {
+    const { repository } = setup(FAILED, FAILED, FAILED, FAILED)
+
+    await expect(repository.addGoal(6, { scorerId: 3, assistId: null, type: 'regular' })).rejects.toThrow(
+      'No se pudo apuntar el gol.',
+    )
+    await expect(repository.deleteGoal(1)).rejects.toThrow('No se pudo borrar el gol.')
+    await expect(repository.addMissedPenalty(6, { playerId: 3, type: 'penalty' })).rejects.toThrow(
+      'No se pudo apuntar el penalti fallado.',
+    )
+    await expect(repository.deleteMissedPenalty(9)).rejects.toThrow('No se pudo borrar el penalti fallado.')
+  })
+})

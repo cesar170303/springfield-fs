@@ -42,7 +42,14 @@ function setup() {
       { playerId: 3, minutes: 30, yellow: true, red: false },
       { playerId: 4, minutes: 0, yellow: false, red: false },
     ]),
-    getMatchEvents: vi.fn().mockResolvedValue({ goals: [{ id: 1, scorerId: 3, assistId: null }], missedPenalties: [] }),
+    getMatchEvents: vi.fn().mockResolvedValue({
+      goals: [{ id: 1, scorerId: 3, assistId: null, type: 'regular' }],
+      missedPenalties: [],
+    }),
+    addGoal: vi.fn().mockResolvedValue(),
+    deleteGoal: vi.fn().mockResolvedValue(),
+    addMissedPenalty: vi.fn().mockResolvedValue(),
+    deleteMissedPenalty: vi.fn().mockResolvedValue(),
     saveSquad: vi.fn().mockResolvedValue(),
     removeFromSquad: vi.fn().mockResolvedValue(),
   }
@@ -238,5 +245,80 @@ describe('convocatoria', () => {
       'Los minutos van de 0 a 40 (dos partes de 20).',
     )
     expect(matchAdminRepository.saveSquad).not.toHaveBeenCalled()
+  })
+})
+
+describe('goles y penaltis fallados', () => {
+  it('da quién puede marcar (convocados con minutos), los goles con su detalle y los penaltis fallados', async () => {
+    const { matchAdminRepository, useCases } = setup()
+    matchAdminRepository.getMatchEvents.mockResolvedValue({
+      goals: [
+        { id: 1, scorerId: 3, assistId: null, type: 'penalty' },
+        { id: 2, scorerId: 3, assistId: 4, type: 'regular' },
+      ],
+      missedPenalties: [{ id: 9, playerId: 3, type: 'double_penalty' }],
+    })
+    matchAdminRepository.getSquad.mockResolvedValue([
+      { playerId: 3, minutes: 30, yellow: false, red: false },
+      { playerId: 4, minutes: 10, yellow: false, red: false },
+    ])
+
+    expect(await useCases.getMatchGoals({ matchId: 6, seasonId: 2 })).toEqual({
+      players: [
+        { playerId: 3, name: 'Checo' },
+        { playerId: 4, name: 'Navi' },
+      ],
+      goals: [
+        { id: 1, scorerId: 3, scorer: 'Checo', detail: 'Penalti' },
+        { id: 2, scorerId: 3, scorer: 'Checo', detail: 'Asistencia de Navi' },
+      ],
+      missedPenalties: [{ id: 9, player: 'Checo', detail: 'Doble penalti' }],
+    })
+  })
+
+  it('apunta un gol con su asistente', async () => {
+    const { matchAdminRepository, useCases } = setup()
+
+    await useCases.addGoal({ matchId: 6, scorerId: 3, assistId: 4, type: 'regular' })
+
+    expect(matchAdminRepository.addGoal).toHaveBeenCalledWith(6, { scorerId: 3, assistId: 4, type: 'regular' })
+  })
+
+  it('un penalti nunca lleva asistente, aunque llegue uno', async () => {
+    const { matchAdminRepository, useCases } = setup()
+
+    await useCases.addGoal({ matchId: 6, scorerId: 3, assistId: 4, type: 'penalty' })
+
+    expect(matchAdminRepository.addGoal).toHaveBeenCalledWith(6, { scorerId: 3, assistId: null, type: 'penalty' })
+  })
+
+  it('sin goleador no apunta nada', async () => {
+    const { matchAdminRepository, useCases } = setup()
+
+    await expect(useCases.addGoal({ matchId: 6, scorerId: null, assistId: null, type: 'regular' })).rejects.toThrow(
+      'Elige quién marcó.',
+    )
+    expect(matchAdminRepository.addGoal).not.toHaveBeenCalled()
+  })
+
+  it('apunta y borra penaltis fallados, y borra goles', async () => {
+    const { matchAdminRepository, useCases } = setup()
+
+    await useCases.addMissedPenalty({ matchId: 6, playerId: 3, type: 'penalty' })
+    await useCases.deleteMissedPenalty(9)
+    await useCases.deleteGoal(1)
+
+    expect(matchAdminRepository.addMissedPenalty).toHaveBeenCalledWith(6, { playerId: 3, type: 'penalty' })
+    expect(matchAdminRepository.deleteMissedPenalty).toHaveBeenCalledWith(9)
+    expect(matchAdminRepository.deleteGoal).toHaveBeenCalledWith(1)
+  })
+
+  it('un penalti fallado necesita quién lo falló', async () => {
+    const { matchAdminRepository, useCases } = setup()
+
+    await expect(useCases.addMissedPenalty({ matchId: 6, playerId: null, type: 'penalty' })).rejects.toThrow(
+      'Elige quién falló el penalti.',
+    )
+    expect(matchAdminRepository.addMissedPenalty).not.toHaveBeenCalled()
   })
 })

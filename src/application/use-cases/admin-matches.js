@@ -1,4 +1,4 @@
-import { canHaveResult, canLeaveSquad, matchLabel } from '../../domain/match'
+import { canHaveResult, canLeaveSquad, goalDetail, matchLabel, scorerOptions } from '../../domain/match'
 import { playerName } from '../../domain/squad'
 
 const isBlank = (value) => String(value ?? '').trim() === ''
@@ -34,6 +34,34 @@ function minutes(value) {
  *   playerAdminRepository: import('../ports/admin').PlayerAdminRepository }} deps
  */
 export function createMatchAdminUseCases({ matchAdminRepository, seasonAdminRepository, playerAdminRepository }) {
+  /** La plantilla de la temporada con la convocatoria del partido, y sus goles y penaltis fallados. */
+  async function loadSquad({ matchId, seasonId }) {
+    const [roster, players, called, events] = await Promise.all([
+      seasonAdminRepository.getRoster(seasonId),
+      playerAdminRepository.getPlayers(),
+      matchAdminRepository.getSquad(matchId),
+      matchAdminRepository.getMatchEvents(matchId),
+    ])
+    const playerById = new Map(players.map((p) => [p.id, p]))
+    const calledById = new Map(called.map((s) => [s.playerId, s]))
+    const squad = roster
+      .map(({ playerId, shirtNumber }) => {
+        const entry = calledById.get(playerId)
+        return {
+          playerId,
+          name: playerName(playerById.get(playerId)),
+          shirtNumber,
+          called: Boolean(entry),
+          minutes: entry?.minutes ?? 0,
+          yellow: entry?.yellow ?? false,
+          red: entry?.red ?? false,
+          canLeave: canLeaveSquad(playerId, events),
+        }
+      })
+      .sort((a, b) => a.shirtNumber - b.shirtNumber)
+    return { squad, events }
+  }
+
   return {
     /** Partidos de la temporada, del más reciente al más antiguo, con su competición y su etiqueta (J5, Copa J2). */
     async listMatches(seasonId) {
@@ -81,31 +109,43 @@ export function createMatchAdminUseCases({ matchAdminRepository, seasonAdminRepo
      * La plantilla de la temporada, por dorsal, con la convocatoria del partido: si está convocado, minutos, tarjetas
      * y si se puede quitar (no, si tiene goles, asistencias o penaltis apuntados).
      */
-    async getMatchSquad({ matchId, seasonId }) {
-      const [roster, players, squad, events] = await Promise.all([
-        seasonAdminRepository.getRoster(seasonId),
-        playerAdminRepository.getPlayers(),
-        matchAdminRepository.getSquad(matchId),
-        matchAdminRepository.getMatchEvents(matchId),
-      ])
-      const playerById = new Map(players.map((p) => [p.id, p]))
-      const calledById = new Map(squad.map((s) => [s.playerId, s]))
-      return roster
-        .map(({ playerId, shirtNumber }) => {
-          const called = calledById.get(playerId)
-          return {
-            playerId,
-            name: playerName(playerById.get(playerId)),
-            shirtNumber,
-            called: Boolean(called),
-            minutes: called?.minutes ?? 0,
-            yellow: called?.yellow ?? false,
-            red: called?.red ?? false,
-            canLeave: canLeaveSquad(playerId, events),
-          }
-        })
-        .sort((a, b) => a.shirtNumber - b.shirtNumber)
+    getMatchSquad: async (ids) => (await loadSquad(ids)).squad,
+
+    /** Para «Goles» y «Penaltis fallados»: quién puede marcar (convocados con minutos) y lo ya apuntado. */
+    async getMatchGoals(ids) {
+      const { squad, events } = await loadSquad(ids)
+      const nameOf = (id) => squad.find((p) => p.playerId === id)?.name
+      return {
+        players: scorerOptions(squad).map(({ playerId, name }) => ({ playerId, name })),
+        goals: events.goals.map((g) => ({
+          id: g.id,
+          scorerId: g.scorerId,
+          scorer: nameOf(g.scorerId),
+          detail: goalDetail(g, nameOf),
+        })),
+        missedPenalties: events.missedPenalties.map((p) => ({
+          id: p.id,
+          player: nameOf(p.playerId),
+          detail: goalDetail({ type: p.type }, nameOf),
+        })),
+      }
     },
+
+    /** Más goles que los goles a favor, o un goleador sin minutos, lo impide la base de datos con su frase. */
+    async addGoal({ matchId, scorerId, assistId, type }) {
+      if (!scorerId) throw new Error('Elige quién marcó.')
+      // Un penalti nunca lleva asistente (la base de datos tampoco lo deja).
+      await matchAdminRepository.addGoal(matchId, { scorerId, assistId: type === 'regular' ? assistId : null, type })
+    },
+
+    deleteGoal: (id) => matchAdminRepository.deleteGoal(id),
+
+    async addMissedPenalty({ matchId, playerId, type }) {
+      if (!playerId) throw new Error('Elige quién falló el penalti.')
+      await matchAdminRepository.addMissedPenalty(matchId, { playerId, type })
+    },
+
+    deleteMissedPenalty: (id) => matchAdminRepository.deleteMissedPenalty(id),
 
     /**
      * Guarda la convocatoria en el orden que no pierde datos si falla a medias: primero los convocados (alta o cambio

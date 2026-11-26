@@ -50,7 +50,7 @@ Detalle, decisiones y riesgos: [`tasks/plan.md`](plan.md).
   - Alta con la jornada siguiente propuesta; jornada repetida, con frase; «Borrar» solo en partidos sin terminar
 - [x] **T12.** Convocatoria, minutos y tarjetas
   - Se guarda y al reabrir sigue igual; no se desconvoca a quien tiene goles o penaltis; los rechazos de la BD, como frase
-- [ ] **T13.** Goles y penaltis fallados
+- [x] **T13.** Goles y penaltis fallados
   - Solo convocados con minutos; en un penalti no hay asistente; con menos goles que el resultado, avisa sin bloquear
 - [ ] **T14.** Terminar y reabrir
   - Explica qué falta; avisa hasta cuándo estará abierta la votación; reabrir con votos lo impide la BD

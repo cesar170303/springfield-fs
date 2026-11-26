@@ -44,6 +44,7 @@ function renderEditor(entry = '/admin/partidos/6?temporada=2', overrides = {}) {
     saveMatch: vi.fn().mockResolvedValue(6),
     deleteMatch: vi.fn().mockResolvedValue(),
     getMatchSquad: vi.fn().mockResolvedValue([]),
+    getMatchGoals: vi.fn().mockResolvedValue({ players: [], goals: [], missedPenalties: [] }),
     ...overrides,
   }
   render(
@@ -107,22 +108,28 @@ describe('MatchEditor', () => {
     expect(useCases.getMatchSquad).toHaveBeenCalledWith({ matchId: 6, seasonId: 2 })
   })
 
+  it('después, los goles del partido, con su resultado para contar los que faltan', async () => {
+    const useCases = renderEditor()
+
+    expect(await screen.findByRole('region', { name: 'Goles' })).toBeInTheDocument()
+    expect(useCases.getMatchGoals).toHaveBeenCalledWith({ matchId: 6, seasonId: 2 })
+    expect(await screen.findByText('0 de 4 con goleador')).toBeInTheDocument()
+  })
+
   it('al guardar la convocatoria, vuelve a la lista, que lo anuncia', async () => {
     renderEditor(undefined, {
-      getMatchSquad: vi
-        .fn()
-        .mockResolvedValue([
-          {
-            playerId: 3,
-            name: 'Checo',
-            shirtNumber: 7,
-            called: true,
-            minutes: 30,
-            yellow: false,
-            red: false,
-            canLeave: true,
-          },
-        ]),
+      getMatchSquad: vi.fn().mockResolvedValue([
+        {
+          playerId: 3,
+          name: 'Checo',
+          shirtNumber: 7,
+          called: true,
+          minutes: 30,
+          yellow: false,
+          red: false,
+          canLeave: true,
+        },
+      ]),
       saveMatchSquad: vi.fn().mockResolvedValue(),
     })
 
@@ -166,7 +173,7 @@ describe('MatchEditor', () => {
   it('anuncia lo que llega de la pantalla anterior (partido recién creado)', async () => {
     renderEditor({ pathname: '/admin/partidos/6', search: '?temporada=2', state: { ok: 'Partido creado.' } })
 
-    expect(await screen.findByRole('status')).toHaveTextContent('Partido creado.')
+    expect(await screen.findByText('Partido creado.')).toHaveAttribute('role', 'status')
   })
 
   it('un partido que no está en la temporada lo dice', async () => {

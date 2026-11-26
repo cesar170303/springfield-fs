@@ -73,6 +73,10 @@
  * @property {(matchId: number) => Promise<MatchEvents>} getMatchEvents goles y penaltis fallados del partido
  * @property {(matchId: number, players: SquadEntry[]) => Promise<void>} saveSquad alta o cambio, en una sola petición
  * @property {(matchId: number, playerIds: number[]) => Promise<void>} removeFromSquad todos o ninguno
+ * @property {(matchId: number, goal: { scorerId: number, assistId: number | null, type: GoalType }) => Promise<void>} addGoal
+ * @property {(id: number) => Promise<void>} deleteGoal
+ * @property {(matchId: number, penalty: { playerId: number, type: 'penalty' | 'double_penalty' }) => Promise<void>} addMissedPenalty
+ * @property {(id: number) => Promise<void>} deleteMissedPenalty
  *
  * @typedef {{ playerId: number, minutes: number, yellow: boolean, red: boolean }} SquadEntry un convocado
  * @typedef {'regular' | 'penalty' | 'double_penalty'} GoalType

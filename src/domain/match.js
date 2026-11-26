@@ -48,3 +48,31 @@ export function canLeaveSquad(playerId, { goals, missedPenalties }) {
     !missedPenalties.some((p) => p.playerId === playerId)
   )
 }
+
+/** Tipos de gol, como en la base de datos. Un penalti (o doble penalti) nunca lleva asistencia. */
+export const GOAL_TYPES = [
+  { value: 'regular', label: 'Normal' },
+  { value: 'penalty', label: 'Penalti' },
+  { value: 'double_penalty', label: 'Doble penalti' },
+]
+
+/** Tipos de penalti fallado. */
+export const PENALTY_TYPES = GOAL_TYPES.filter((t) => t.value !== 'regular')
+
+/** Quién puede marcar (o fallar un penalti): los convocados que jugaron, con minutos. */
+export const scorerOptions = (squad) => squad.filter((p) => p.called && p.minutes > 0)
+
+/** Quién puede dar la asistencia: los mismos, menos el goleador. */
+export const assistOptions = (squad, scorerId) => scorerOptions(squad).filter((p) => p.playerId !== scorerId)
+
+/**
+ * El marcador manda (§12): puede haber menos goles apuntados que goles a favor (un gol en propia puerta del rival no
+ * se apunta). Devuelve cuántos faltan; sin resultado, 0.
+ */
+export const missingGoals = (goalsFor, recorded) => (goalsFor === null ? 0 : Math.max(0, goalsFor - recorded))
+
+/** Una línea por gol: «Asistencia de Checo», «Sin asistencia», «Penalti» o «Doble penalti». `nameOf(id)` da el nombre. */
+export function goalDetail({ type, assistId }, nameOf) {
+  if (type !== 'regular') return GOAL_TYPES.find((t) => t.value === type).label
+  return assistId ? `Asistencia de ${nameOf(assistId)}` : 'Sin asistencia'
+}

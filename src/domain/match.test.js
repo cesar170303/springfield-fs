@@ -3,6 +3,12 @@ import {
   COMPETITION_TYPES,
   canHaveResult,
   canLeaveSquad,
+  GOAL_TYPES,
+  PENALTY_TYPES,
+  assistOptions,
+  goalDetail,
+  missingGoals,
+  scorerOptions,
   competitionTypeLabel,
   matchLabel,
   matchState,
@@ -103,5 +109,50 @@ describe('canLeaveSquad', () => {
     expect(canLeaveSquad(3, events)).toBe(false)
     expect(canLeaveSquad(7, events)).toBe(false)
     expect(canLeaveSquad(11, events)).toBe(false)
+  })
+})
+
+describe('goles', () => {
+  const squad = [
+    { playerId: 3, name: 'Checo', called: true, minutes: 30 },
+    { playerId: 4, name: 'Navi', called: true, minutes: 0 },
+    { playerId: 5, name: 'Javi', called: false, minutes: 0 },
+    { playerId: 6, name: 'Dani', called: true, minutes: 12 },
+  ]
+
+  it('los tipos de gol y de penalti fallado, como los de la base de datos', () => {
+    expect(GOAL_TYPES).toEqual([
+      { value: 'regular', label: 'Normal' },
+      { value: 'penalty', label: 'Penalti' },
+      { value: 'double_penalty', label: 'Doble penalti' },
+    ])
+    expect(PENALTY_TYPES).toEqual([
+      { value: 'penalty', label: 'Penalti' },
+      { value: 'double_penalty', label: 'Doble penalti' },
+    ])
+  })
+
+  it('solo pueden marcar los convocados que jugaron (con minutos)', () => {
+    expect(scorerOptions(squad).map((p) => p.name)).toEqual(['Checo', 'Dani'])
+  })
+
+  it('el asistente, igual, pero nunca el propio goleador', () => {
+    expect(assistOptions(squad, 3).map((p) => p.name)).toEqual(['Dani'])
+    expect(assistOptions(squad, null).map((p) => p.name)).toEqual(['Checo', 'Dani'])
+  })
+
+  it('el marcador manda: avisa de los goles a favor que faltan por apuntar', () => {
+    expect(missingGoals(4, 3)).toBe(1)
+    expect(missingGoals(4, 4)).toBe(0)
+    expect(missingGoals(null, 2)).toBe(0) // sin resultado no hay nada que comparar
+  })
+
+  it('describe cada gol: asistencia, sin asistencia, penalti o doble penalti', () => {
+    const nameOf = (id) => ({ 3: 'Checo', 6: 'Dani' })[id]
+
+    expect(goalDetail({ type: 'regular', assistId: 3 }, nameOf)).toBe('Asistencia de Checo')
+    expect(goalDetail({ type: 'regular', assistId: null }, nameOf)).toBe('Sin asistencia')
+    expect(goalDetail({ type: 'penalty', assistId: null }, nameOf)).toBe('Penalti')
+    expect(goalDetail({ type: 'double_penalty', assistId: null }, nameOf)).toBe('Doble penalti')
   })
 })
