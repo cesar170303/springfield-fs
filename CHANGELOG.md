@@ -12,7 +12,9 @@ Fallos detectados que aún no están resueltos. Al arreglarlos, pasa la línea a
 
 ## [Sin publicar]
 
-Panel de admin, fase 3 (partidos), en curso.
+## [0.14.0] - 2026-11-26
+
+Paso 5 de la spec, panel de admin: partidos (fase 3 de 4; plan en `tasks/plan.md`, spec §12). Sin migraciones nuevas: no hace falta aplicar nada en la nube.
 
 ### Añadido
 - **Partidos** (`/admin/partidos?temporada=`): lista de la temporada con etiqueta (`J5`, `Copa J2`), fecha, rival, estado (por jugar, por terminar, votación abierta hasta el…, votación cerrada) y resultado; en los partidos por jugar, en su lugar, «Hacer convocatoria» o cuántos convocados tiene. Alta con la jornada siguiente propuesta y editor con «Datos del partido» (competición, jornada, rival, fecha, hora y resultado). La fecha se elige en un calendario que se abre al tocar el campo, con los atajos «Hoy» y «Próximo domingo»; la hora, en una lista cada 15 minutos que propone la del último partido. Un partido que aún no se ha jugado no puede tener resultado: los goles se desactivan y se explica. «Borrar partido», con confirmación, solo si no está terminado. Una jornada repetida y lo que impidan los triggers se explican con su frase. Tarjeta «Partidos», la primera del inicio del panel.
