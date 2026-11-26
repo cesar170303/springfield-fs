@@ -17,6 +17,9 @@ Panel de admin, fase 2 (jugadores, fotos, plantilla y votantes), en curso.
 ### Añadido
 - **Fichas de jugadores** (`/admin/jugadores`): activas y archivadas aparte, con posición, correo (de `get_player_emails`, nunca de `players`), estado y si tienen cuenta. Alta y edición en su propia pantalla; archivar con confirmación en el sitio (`ConfirmButton`) y recuperar. Un correo repetido se explica.
 
+### Cambiado
+- **Inicio del panel en tarjetas con icono** (dos columnas en el móvil y tres en escritorio), en lugar de una lista de texto. «Nueva ficha» ya no queda pegado al título cuando baja de línea.
+
 ## [0.12.0] - 2026-11-23
 
 Paso 5 de la spec, panel de admin: cimientos, temporadas y competiciones (fase 1 de 4; plan en `tasks/plan.md`, spec §12).

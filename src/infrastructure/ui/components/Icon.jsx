@@ -16,6 +16,19 @@ const PATHS = {
       <circle cx="14" cy="18" r="2" />
     </>
   ),
+  calendar: (
+    <>
+      <rect x="3" y="5" width="18" height="16" rx="2" />
+      <path d="M3 10h18M8 3v4M16 3v4" />
+    </>
+  ),
+  players: (
+    <>
+      <circle cx="9" cy="8" r="3.5" />
+      <path d="M2.5 20a6.5 6.5 0 0 1 13 0" />
+      <path d="M16 4.5a3.5 3.5 0 0 1 0 7M18 14.5a6.5 6.5 0 0 1 3.5 5.5" />
+    </>
+  ),
   logout: (
     <>
       <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
@@ -25,11 +38,12 @@ const PATHS = {
   ),
 }
 
-export default function Icon({ name }) {
+/** `className` cambia el tamaño (por defecto, el de la barra inferior). */
+export default function Icon({ name, className = 'size-4 shrink-0' }) {
   return (
     <svg
       aria-hidden="true"
-      className="size-4 shrink-0"
+      className={className}
       viewBox="0 0 24 24"
       fill="none"
       stroke="currentColor"

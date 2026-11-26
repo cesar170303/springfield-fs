@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest'
-import { render, screen } from '@testing-library/react'
+import { render, screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { Link, MemoryRouter, useLocation } from 'react-router'
 import AdminHome from './AdminHome'
@@ -84,6 +84,22 @@ describe('AdminHome', () => {
       'href',
       '/admin/jugadores?temporada=1',
     )
+  })
+
+  it('cada sección es una tarjeta con su icono decorativo, y se lee por su nombre y su nota', async () => {
+    renderHome(vi.fn().mockResolvedValue(FILTERS))
+
+    const sections = await screen.findByRole('navigation', { name: 'Secciones del panel' })
+    const cards = within(sections).getAllByRole('link')
+    expect(cards.map((card) => card.textContent)).toEqual([
+      'Temporadas y competiciones 2026/27 es la actual',
+      'Jugadores Fichas, correos y archivados',
+    ])
+    for (const card of cards) {
+      const icon = card.querySelector('svg')
+      expect(icon).toHaveAttribute('aria-hidden', 'true')
+      expect(icon.children.length).toBeGreaterThan(0)
+    }
   })
 
   it('si no se puede cargar, lo dice', async () => {

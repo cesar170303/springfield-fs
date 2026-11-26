@@ -17,7 +17,8 @@ export default function AdminPage({ title, action, back = PANEL, children }) {
       >
         ‹ {back.label}
       </Link>
-      <div className="flex flex-wrap items-center justify-between gap-3">
+      {/* Si el botón no cabe al lado y baja de línea, que no quede pegado al título. */}
+      <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-5">
         <h1 className="type-display">{title}</h1>
         {action}
       </div>

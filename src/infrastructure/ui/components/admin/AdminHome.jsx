@@ -1,9 +1,10 @@
 import { Link, useLocation } from 'react-router'
 import { useSeasonFilters } from '../../use-season-filters'
+import Icon from '../Icon'
 import SeasonFilters from '../SeasonFilters'
 import LoadError from './LoadError'
 
-/** Inicio del panel de admin (docs/SPEC.md §12). Cada sección que se construye añade aquí su enlace. */
+/** Inicio del panel de admin (docs/SPEC.md §12): una tarjeta con icono por sección. Cada sección nueva añade la suya. */
 export default function AdminHome() {
   const season = useSeasonFilters()
   const { search } = useLocation()
@@ -11,10 +12,11 @@ export default function AdminHome() {
   const sections = [
     {
       to: '/admin/temporadas',
+      icon: 'calendar',
       name: 'Temporadas y competiciones',
       note: current ? `${current.name} es la actual` : 'Ninguna marcada como actual',
     },
-    { to: '/admin/jugadores', name: 'Jugadores', note: 'Fichas, correos y archivados' },
+    { to: '/admin/jugadores', icon: 'players', name: 'Jugadores', note: 'Fichas, correos y archivados' },
   ]
 
   return (
@@ -26,19 +28,19 @@ export default function AdminHome() {
       {season.failed && <LoadError message="No se pudo cargar el panel." onRetry={season.retry} />}
       {season.filters?.initialSeasonId === null && <p className="text-text-muted">Aún no hay ninguna temporada.</p>}
       {season.filters && (
-        <nav aria-label="Secciones del panel" className="grid md:grid-cols-2 md:gap-x-8">
-          {sections.map(({ to, name, note }) => (
+        <nav aria-label="Secciones del panel" className="grid grid-cols-2 gap-3 md:grid-cols-3">
+          {sections.map(({ to, icon, name, note }) => (
             <Link
               key={to}
               to={{ pathname: to, search }}
-              className="flex min-h-16 items-center justify-between gap-3 border-t border-line"
+              className="flex min-h-32 flex-col justify-between gap-3 rounded-lg bg-surface p-4 hover:bg-line"
             >
-              <span className="flex flex-col">
+              <span className="text-accent-text">
+                <Icon name={icon} className="size-7" />
+              </span>
+              <span className="flex flex-col gap-0.5">
                 <span className="type-body font-semibold">{name}</span>{' '}
                 <span className="type-small text-text-muted">{note}</span>
-              </span>
-              <span aria-hidden="true" className="text-text-muted">
-                ›
               </span>
             </Link>
           ))}
