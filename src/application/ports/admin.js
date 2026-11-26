@@ -57,4 +57,17 @@
  * @property {(seasonId: number, userId: string) => Promise<void>} removeSeasonVoter
  */
 
+/**
+ * @typedef {{ id: number, competitionId: number, round: number, date: Date, opponent: string,
+ *   goalsFor: number | null, goalsAgainst: number | null, isFinished: boolean }} AdminMatch
+ * @typedef {{ competitionId: number, round: number, date: Date, opponent: string,
+ *   goalsFor: number | null, goalsAgainst: number | null }} MatchData
+ *
+ * @typedef {object} MatchAdminRepository
+ * @property {(seasonId: number) => Promise<AdminMatch[]>} getMatches
+ * @property {(seasonId: number, match: MatchData) => Promise<number>} createMatch devuelve el id del partido nuevo
+ * @property {(id: number, match: MatchData) => Promise<void>} updateMatch
+ * @property {(id: number) => Promise<void>} deleteMatch falla si tiene votos
+ */
+
 export {}

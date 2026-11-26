@@ -46,7 +46,7 @@ Detalle, decisiones y riesgos: [`tasks/plan.md`](plan.md).
 
 ## Fase 3 — Partidos → PR, 0.14.0
 
-- [ ] **T11.** Partidos: lista, alta, edición y borrado
+- [x] **T11.** Partidos: lista, alta, edición y borrado
   - Alta con la jornada siguiente propuesta; jornada repetida, con frase; «Borrar» solo en partidos sin terminar
 - [ ] **T12.** Convocatoria, minutos y tarjetas
   - Se guarda y al reabrir sigue igual; no se desconvoca a quien tiene goles o penaltis; los rechazos de la BD, como frase

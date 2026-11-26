@@ -12,6 +12,7 @@ export default function AdminHome() {
   // Mientras la URL aún no trae temporada, la inicial (la que va a poner).
   const selected = season.filters?.seasons.find((s) => s.id === (season.seasonId ?? season.filters.initialSeasonId))
   const sections = [
+    { to: '/admin/partidos', icon: 'ball', name: 'Partidos', note: 'Convocatoria, goles y cierre' },
     {
       to: '/admin/temporadas',
       icon: 'calendar',

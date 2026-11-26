@@ -93,6 +93,7 @@ describe('AdminHome', () => {
     const sections = await screen.findByRole('navigation', { name: 'Secciones del panel' })
     const cards = within(sections).getAllByRole('link')
     expect(cards.map((card) => card.textContent)).toEqual([
+      'Partidos Convocatoria, goles y cierre',
       'Temporadas y competiciones 2026/27 es la actual',
       'Jugadores Fichas, correos y archivados',
       'Plantilla y dorsales Quién juega en 2026/27',
@@ -120,6 +121,15 @@ describe('AdminHome', () => {
     expect(await screen.findByRole('link', { name: 'Votantes Viewers que votan en 2025/26' })).toHaveAttribute(
       'href',
       '/admin/votantes?temporada=1',
+    )
+  })
+
+  it('enlaza a los partidos de la temporada elegida', async () => {
+    renderHome(vi.fn().mockResolvedValue(FILTERS), '/admin?temporada=1')
+
+    expect(await screen.findByRole('link', { name: /^Partidos/ })).toHaveAttribute(
+      'href',
+      '/admin/partidos?temporada=1',
     )
   })
 
