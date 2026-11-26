@@ -16,6 +16,7 @@ Panel de admin, fase 2 (jugadores, fotos, plantilla y votantes), en curso.
 
 ### Añadido
 - **Fichas de jugadores** (`/admin/jugadores`): activas y archivadas aparte, con posición, correo (de `get_player_emails`, nunca de `players`), estado y si tienen cuenta. Alta y edición en su propia pantalla; archivar con confirmación en el sitio (`ConfirmButton`) y recuperar. Un correo repetido se explica.
+- **Fotos de los jugadores**, en la ficha: la app recorta el centro en cuadrado y la reduce a 512 × 512 en webp (jpeg si el navegador no sabe webp), con vista previa antes de subirla. Se cambia (la vieja se borra del almacén) y se quita, con confirmación. Si algo falla a medias, la ficha nunca apunta a un archivo que no existe.
 
 ### Cambiado
 - **Inicio del panel en tarjetas con icono** (dos columnas en el móvil y tres en escritorio), en lugar de una lista de texto. «Nueva ficha» ya no queda pegado al título cuando baja de línea.

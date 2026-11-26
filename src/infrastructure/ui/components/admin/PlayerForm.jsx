@@ -8,6 +8,7 @@ import AdminForm from './AdminForm'
 import AdminPage from './AdminPage'
 import ConfirmButton from './ConfirmButton'
 import LoadError from './LoadError'
+import PhotoField from './PhotoField'
 import { field, input, secondaryButton } from './styles'
 
 const PLAYERS = { to: '/admin/jugadores', label: 'Jugadores', name: 'Volver a jugadores' }
@@ -26,6 +27,7 @@ export default function PlayerForm() {
   if (!playerId) {
     return (
       <AdminPage title="Nueva ficha" back={PLAYERS}>
+        <p className="type-small text-text-muted">La foto se pone al editar la ficha, una vez guardada.</p>
         <PlayerFields
           player={EMPTY}
           onSave={async (values) => {
@@ -52,6 +54,7 @@ export default function PlayerForm() {
   const name = playerName(player)
   return (
     <AdminPage title={name} back={PLAYERS}>
+      <PhotoField player={player} onChanged={reload} />
       <PlayerFields
         player={player}
         onSave={async (values) => {

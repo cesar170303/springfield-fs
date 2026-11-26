@@ -16,7 +16,8 @@ const toRow = ({ firstName, lastName, nickname, email, position, status }) => ({
 /** @returns {import('../../application/ports/admin').PlayerAdminRepository} */
 export function createSupabasePlayerAdminRepository(client) {
   const NOT_SAVED = 'No se pudo guardar la ficha. Inténtalo de nuevo.'
-  const photoUrl = (path) => client.storage.from('player-photos').getPublicUrl(path).data.publicUrl
+  const photos = () => client.storage.from('player-photos')
+  const photoUrl = (path) => photos().getPublicUrl(path).data.publicUrl
   // select + single: si RLS ignora el cambio no hay fila de vuelta y salta un error, en vez de darlo por guardado.
   const update = (id, row) => client.from('players').update(row).eq('id', id).select('id').single()
 
@@ -48,6 +49,22 @@ export function createSupabasePlayerAdminRepository(client) {
       if (error) {
         throw readableError(error, `No se pudo ${archived ? 'archivar' : 'recuperar'} la ficha. Inténtalo de nuevo.`)
       }
+    },
+
+    async uploadPhoto(path, photo) {
+      // Cada foto tiene un nombre nuevo (ver changePhoto): se puede guardar en caché un año, y nunca se pisa otra.
+      const { error } = await photos().upload(path, photo, { contentType: photo.type, cacheControl: '31536000', upsert: false })
+      if (error) throw new Error('No se pudo subir la foto. Inténtalo de nuevo.')
+    },
+
+    async setPhotoPath(id, path) {
+      const { error } = await update(id, { photo_path: path })
+      if (error) throw readableError(error, 'No se pudo guardar la foto. Inténtalo de nuevo.')
+    },
+
+    async deletePhoto(path) {
+      const { error } = await photos().remove([path])
+      if (error) throw new Error('No se pudo borrar la foto. Inténtalo de nuevo.')
     },
   }
 }

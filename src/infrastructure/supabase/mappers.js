@@ -28,6 +28,7 @@ export function toAdminPlayer(row, email, photoUrl) {
     email,
     position: row.position,
     status: row.status,
+    photoPath: row.photo_path,
     photoUrl: row.photo_path ? photoUrl(row.photo_path) : null,
     hasAccount: row.user_id !== null,
     archived: row.archived_at !== null,

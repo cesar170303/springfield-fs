@@ -35,7 +35,7 @@ Detalle, decisiones y riesgos: [`tasks/plan.md`](plan.md).
 - [x] **T7.** Fichas de jugadores (estrena `ConfirmButton`)
   - Alta con correo: se ve con su correo y «Sin cuenta»; archivar (con confirmación) y recuperar
   - Nunca se pide `email` a `players`: sale de `get_player_emails`
-- [ ] **T8.** Fotos: recorte cuadrado, 512 px, webp o jpeg, vista previa, cambiar y quitar
+- [x] **T8.** Fotos: recorte cuadrado, 512 px, webp o jpeg, vista previa, cambiar y quitar
   - Una foto de móvil de 5 MB se sube como 512 × 512; al cambiarla, la vieja desaparece del bucket
   - Si algo falla, se avisa y la ficha no apunta a un archivo inexistente
 - [ ] **T9.** Plantilla, dorsales y copiar plantilla

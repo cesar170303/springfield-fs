@@ -36,6 +36,8 @@ function renderForm(url, overrides = {}) {
     savePlayer: vi.fn().mockResolvedValue(3),
     archivePlayer: vi.fn().mockResolvedValue(),
     restorePlayer: vi.fn().mockResolvedValue(),
+    changePhoto: vi.fn().mockResolvedValue(),
+    removePhoto: vi.fn().mockResolvedValue(),
     ...overrides,
   }
   render(
@@ -145,6 +147,19 @@ describe('PlayerForm', () => {
 
     expect(await screen.findByText(/Lista en \/admin\/jugadores\?temporada=2/)).toBeInTheDocument()
     expect(useCases.savePlayer).not.toHaveBeenCalled()
+  })
+
+  it('al editar, deja poner la foto', async () => {
+    renderForm('/admin/jugadores/3')
+    expect(await screen.findByRole('region', { name: 'Foto' })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Poner foto' })).toBeInTheDocument()
+  })
+
+  it('en una ficha nueva, explica que la foto se pone después de guardarla', () => {
+    renderForm('/admin/jugadores/nuevo')
+
+    expect(screen.queryByRole('region', { name: 'Foto' })).not.toBeInTheDocument()
+    expect(screen.getByText('La foto se pone al editar la ficha, una vez guardada.')).toBeInTheDocument()
   })
 
   it('una ficha que no existe lo dice', async () => {

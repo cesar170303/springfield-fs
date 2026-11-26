@@ -7,6 +7,9 @@ const byName = (a, b) => playerName(a).localeCompare(playerName(b), 'es')
  * @param {{ playerAdminRepository: import('../ports/admin').PlayerAdminRepository }} deps
  */
 export function createPlayerAdminUseCases({ playerAdminRepository }) {
+  // Si el archivo viejo no se puede borrar, la ficha ya está bien: sobra un archivo, no falta ninguno.
+  const deleteQuietly = (path) => playerAdminRepository.deletePhoto(path).catch(() => {})
+
   return {
     listPlayers: async () => (await playerAdminRepository.getPlayers()).sort(byName),
 
@@ -31,5 +34,28 @@ export function createPlayerAdminUseCases({ playerAdminRepository }) {
     archivePlayer: (id) => playerAdminRepository.setArchived(id, true),
 
     restorePlayer: (id) => playerAdminRepository.setArchived(id, false),
+
+    /**
+     * Pone la foto (ya recortada, ver squarePhoto) en el orden que no deja la ficha apuntando a un archivo inexistente:
+     * subir la nueva → apuntarla en la ficha → borrar la vieja. El nombre es nuevo cada vez para que la caché del
+     * navegador no siga enseñando la anterior.
+     */
+    async changePhoto({ id, photoPath }, { blob, extension }) {
+      const path = `players/${id}-${Date.now()}.${extension}`
+      await playerAdminRepository.uploadPhoto(path, blob)
+      try {
+        await playerAdminRepository.setPhotoPath(id, path)
+      } catch (error) {
+        await deleteQuietly(path)
+        throw error
+      }
+      if (photoPath) await deleteQuietly(photoPath)
+    },
+
+    /** Quita la foto de la ficha y, después, borra el archivo. */
+    async removePhoto({ id, photoPath }) {
+      await playerAdminRepository.setPhotoPath(id, null)
+      await deleteQuietly(photoPath)
+    },
   }
 }

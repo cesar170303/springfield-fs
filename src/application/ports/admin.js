@@ -26,7 +26,9 @@
  * @typedef {'available' | 'injured' | 'suspended'} PlayerStatus
  * @typedef {{ firstName: string, lastName: string, nickname: string | null, email: string | null,
  *   position: PlayerPosition, status: PlayerStatus }} PlayerData
- * @typedef {PlayerData & { id: number, photoUrl: string | null, hasAccount: boolean, archived: boolean }} AdminPlayer
+ * @typedef {PlayerData & { id: number, photoPath: string | null, photoUrl: string | null, hasAccount: boolean,
+ *   archived: boolean }} AdminPlayer
+ *   `photoPath`: ruta de la foto en el almacén; `photoUrl`, su dirección pública
  *   `hasAccount`: la ficha ya está vinculada a una cuenta (por el correo confirmado)
  *
  * @typedef {object} PlayerAdminRepository
@@ -34,6 +36,9 @@
  * @property {(player: PlayerData) => Promise<number>} createPlayer devuelve el id de la ficha nueva
  * @property {(id: number, player: PlayerData) => Promise<void>} updatePlayer
  * @property {(id: number, archived: boolean) => Promise<void>} setArchived
+ * @property {(path: string, photo: Blob) => Promise<void>} uploadPhoto sube un archivo nuevo al almacén de fotos
+ * @property {(id: number, path: string | null) => Promise<void>} setPhotoPath apunta la foto en la ficha (null: sin foto)
+ * @property {(path: string) => Promise<void>} deletePhoto borra un archivo del almacén de fotos
  */
 
 export {}

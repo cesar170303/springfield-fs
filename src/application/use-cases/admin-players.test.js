@@ -19,6 +19,9 @@ function setup() {
     createPlayer: vi.fn().mockResolvedValue(9),
     updatePlayer: vi.fn().mockResolvedValue(),
     setArchived: vi.fn().mockResolvedValue(),
+    uploadPhoto: vi.fn().mockResolvedValue(),
+    setPhotoPath: vi.fn().mockResolvedValue(),
+    deletePhoto: vi.fn().mockResolvedValue(),
   }
   return { playerAdminRepository, useCases: createPlayerAdminUseCases({ playerAdminRepository }) }
 }
@@ -74,5 +77,87 @@ describe('casos de uso de las fichas de jugadores', () => {
       [4, true],
       [4, false],
     ])
+  })
+})
+
+describe('foto de la ficha', () => {
+  const photo = { blob: new Blob(['x'], { type: 'image/webp' }), extension: 'webp' }
+  const order = (repo) =>
+    ['uploadPhoto', 'setPhotoPath', 'deletePhoto']
+      .flatMap((name) =>
+        repo[name].mock.calls.map((args, i) => [repo[name].mock.invocationCallOrder[i], name, ...args]),
+      )
+      .sort((a, b) => a[0] - b[0])
+      .map(([, ...call]) => call)
+
+  it('sube la nueva con un nombre nuevo, la apunta en la ficha y después borra la vieja', async () => {
+    vi.setSystemTime(new Date('2026-11-26T10:00:00Z'))
+    const { playerAdminRepository, useCases } = setup()
+
+    await useCases.changePhoto({ id: 3, photoPath: 'players/3-1.webp' }, photo)
+    vi.useRealTimers()
+
+    const path = `players/3-${Date.parse('2026-11-26T10:00:00Z')}.webp`
+    expect(order(playerAdminRepository)).toEqual([
+      ['uploadPhoto', path, photo.blob],
+      ['setPhotoPath', 3, path],
+      ['deletePhoto', 'players/3-1.webp'],
+    ])
+  })
+
+  it('sin foto anterior, no borra nada', async () => {
+    const { playerAdminRepository, useCases } = setup()
+
+    await useCases.changePhoto({ id: 3, photoPath: null }, photo)
+
+    expect(playerAdminRepository.deletePhoto).not.toHaveBeenCalled()
+  })
+
+  it('si no se puede subir, no toca la ficha', async () => {
+    const { playerAdminRepository, useCases } = setup()
+    playerAdminRepository.uploadPhoto.mockRejectedValue(new Error('No se pudo subir la foto.'))
+
+    await expect(useCases.changePhoto({ id: 3, photoPath: 'players/3-1.webp' }, photo)).rejects.toThrow(
+      'No se pudo subir la foto.',
+    )
+    expect(playerAdminRepository.setPhotoPath).not.toHaveBeenCalled()
+    expect(playerAdminRepository.deletePhoto).not.toHaveBeenCalled()
+  })
+
+  it('si no se puede apuntar en la ficha, borra la nueva y deja la vieja', async () => {
+    const { playerAdminRepository, useCases } = setup()
+    playerAdminRepository.setPhotoPath.mockRejectedValue(new Error('No se pudo guardar la foto.'))
+
+    await expect(useCases.changePhoto({ id: 3, photoPath: 'players/3-1.webp' }, photo)).rejects.toThrow(
+      'No se pudo guardar la foto.',
+    )
+    const uploaded = playerAdminRepository.uploadPhoto.mock.calls[0][0]
+    expect(playerAdminRepository.deletePhoto.mock.calls).toEqual([[uploaded]])
+  })
+
+  it('si no se puede borrar la vieja, la foto nueva queda puesta igual (sobra un archivo, no falta)', async () => {
+    const { playerAdminRepository, useCases } = setup()
+    playerAdminRepository.deletePhoto.mockRejectedValue(new Error('x'))
+
+    await expect(useCases.changePhoto({ id: 3, photoPath: 'players/3-1.webp' }, photo)).resolves.toBeUndefined()
+  })
+
+  it('quitar la foto la borra de la ficha y después del almacén', async () => {
+    const { playerAdminRepository, useCases } = setup()
+
+    await useCases.removePhoto({ id: 3, photoPath: 'players/3-1.webp' })
+
+    expect(order(playerAdminRepository)).toEqual([
+      ['setPhotoPath', 3, null],
+      ['deletePhoto', 'players/3-1.webp'],
+    ])
+  })
+
+  it('si no se puede quitar de la ficha, no borra el archivo', async () => {
+    const { playerAdminRepository, useCases } = setup()
+    playerAdminRepository.setPhotoPath.mockRejectedValue(new Error('No se pudo quitar la foto.'))
+
+    await expect(useCases.removePhoto({ id: 3, photoPath: 'players/3-1.webp' })).rejects.toThrow('No se pudo quitar')
+    expect(playerAdminRepository.deletePhoto).not.toHaveBeenCalled()
   })
 })
