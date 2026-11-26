@@ -21,4 +21,19 @@
  * @property {(id: number) => Promise<void>} deleteCompetition falla si tiene partidos
  */
 
+/**
+ * @typedef {'goalkeeper' | 'defender' | 'winger' | 'pivot' | 'universal'} PlayerPosition
+ * @typedef {'available' | 'injured' | 'suspended'} PlayerStatus
+ * @typedef {{ firstName: string, lastName: string, nickname: string | null, email: string | null,
+ *   position: PlayerPosition, status: PlayerStatus }} PlayerData
+ * @typedef {PlayerData & { id: number, photoUrl: string | null, hasAccount: boolean, archived: boolean }} AdminPlayer
+ *   `hasAccount`: la ficha ya está vinculada a una cuenta (por el correo confirmado)
+ *
+ * @typedef {object} PlayerAdminRepository
+ * @property {() => Promise<AdminPlayer[]>} getPlayers todas, activas y archivadas, con su correo
+ * @property {(player: PlayerData) => Promise<number>} createPlayer devuelve el id de la ficha nueva
+ * @property {(id: number, player: PlayerData) => Promise<void>} updatePlayer
+ * @property {(id: number, archived: boolean) => Promise<void>} setArchived
+ */
+
 export {}

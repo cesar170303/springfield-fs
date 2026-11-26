@@ -77,6 +77,15 @@ describe('AdminHome', () => {
     expect(link).toHaveAttribute('href', '/admin/temporadas?temporada=1')
   })
 
+  it('enlaza a los jugadores, con la temporada elegida en la URL', async () => {
+    renderHome(vi.fn().mockResolvedValue(FILTERS), '/admin?temporada=1')
+
+    expect(await screen.findByRole('link', { name: /Jugadores/ })).toHaveAttribute(
+      'href',
+      '/admin/jugadores?temporada=1',
+    )
+  })
+
   it('si no se puede cargar, lo dice', async () => {
     renderHome(vi.fn().mockRejectedValue(new Error('x')))
 

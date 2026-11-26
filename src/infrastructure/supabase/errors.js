@@ -6,7 +6,8 @@ const CONSTRAINTS = {
   competitions_name_key: 'Ya hay una competición con ese nombre.',
   matches_season_id_fkey: HAS_MATCHES,
   matches_competition_id_fkey: HAS_MATCHES,
-  seasons_check: 'La fecha de fin tiene que ser posterior a la de inicio.',
+  players_email_key: 'Ya hay una ficha con ese correo.',
+  seasons_check:'La fecha de fin tiene que ser posterior a la de inicio.',
 }
 
 /** Error de Supabase → Error con una frase para la pantalla. `fallback` es la frase si no hay una mejor. */

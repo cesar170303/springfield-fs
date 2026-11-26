@@ -14,6 +14,7 @@ export default function AdminHome() {
       name: 'Temporadas y competiciones',
       note: current ? `${current.name} es la actual` : 'Ninguna marcada como actual',
     },
+    { to: '/admin/jugadores', name: 'Jugadores', note: 'Fichas, correos y archivados' },
   ]
 
   return (

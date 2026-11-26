@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { isVotingOpen, matchSummary, ratingFraction, ratingRange, statCards, statusLabel } from './player'
+import { STATUS_OPTIONS, isVotingOpen, matchSummary, ratingFraction, ratingRange, statCards, statusLabel } from './player'
 
 // Totales de la temporada tal como llegan de get_squad_stats (ya traducidos).
 const fieldPlayer = {
@@ -137,4 +137,12 @@ describe('statusLabel', () => {
     expect(statusLabel('injured')).toBe('Lesionado')
     expect(statusLabel('suspended')).toBe('Sancionado')
   })
+})
+
+it('ofrece los estados del jugador, empezando por «Disponible»', () => {
+  expect(STATUS_OPTIONS).toEqual([
+    { value: 'available', label: 'Disponible' },
+    { value: 'injured', label: 'Lesionado' },
+    { value: 'suspended', label: 'Sancionado' },
+  ])
 })

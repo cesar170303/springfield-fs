@@ -18,7 +18,23 @@ export function toAdminSeason(row) {
   return { ...toSeason(row), startDate: row.start_date, endDate: row.end_date }
 }
 
-const numberOrNull = (value) => (value === null ? null : Number(value))
+/** Fila de `players` → AdminPlayer. El correo llega aparte (get_player_emails); `photoUrl` traduce la ruta del bucket. */
+export function toAdminPlayer(row, email, photoUrl) {
+  return {
+    id: row.id,
+    firstName: row.first_name,
+    lastName: row.last_name,
+    nickname: row.nickname,
+    email,
+    position: row.position,
+    status: row.status,
+    photoUrl: row.photo_path ? photoUrl(row.photo_path) : null,
+    hasAccount: row.user_id !== null,
+    archived: row.archived_at !== null,
+  }
+}
+
+const numberOrNull =(value) => (value === null ? null : Number(value))
 
 /** Fila de get_squad_stats → SquadPlayer. `photoUrl` traduce la ruta del bucket a una URL pública. */
 export function toSquadPlayer(row, photoUrl) {
