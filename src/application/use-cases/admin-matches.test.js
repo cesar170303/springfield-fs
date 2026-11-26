@@ -38,11 +38,33 @@ function setup() {
     createMatch: vi.fn().mockResolvedValue(9),
     updateMatch: vi.fn().mockResolvedValue(),
     deleteMatch: vi.fn().mockResolvedValue(),
+    getSquad: vi.fn().mockResolvedValue([
+      { playerId: 3, minutes: 30, yellow: true, red: false },
+      { playerId: 4, minutes: 0, yellow: false, red: false },
+    ]),
+    getMatchEvents: vi.fn().mockResolvedValue({ goals: [{ id: 1, scorerId: 3, assistId: null }], missedPenalties: [] }),
+    saveSquad: vi.fn().mockResolvedValue(),
+    removeFromSquad: vi.fn().mockResolvedValue(),
   }
-  const seasonAdminRepository = { getCompetitions: vi.fn().mockResolvedValue(COMPETITIONS) }
+  const seasonAdminRepository = {
+    getCompetitions: vi.fn().mockResolvedValue(COMPETITIONS),
+    getRoster: vi.fn().mockResolvedValue([
+      { playerId: 4, shirtNumber: 9 },
+      { playerId: 3, shirtNumber: 7 },
+      { playerId: 5, shirtNumber: 10 },
+    ]),
+  }
+  const playerAdminRepository = {
+    getPlayers: vi.fn().mockResolvedValue([
+      { id: 3, nickname: 'Checo', firstName: 'Sergio', position: 'winger', photoUrl: null },
+      { id: 4, nickname: 'Navi', firstName: 'Iván', position: 'pivot', photoUrl: null },
+      { id: 5, nickname: null, firstName: 'Javier', position: 'winger', photoUrl: null },
+    ]),
+  }
   return {
     matchAdminRepository,
-    useCases: createMatchAdminUseCases({ matchAdminRepository, seasonAdminRepository }),
+    seasonAdminRepository,
+    useCases: createMatchAdminUseCases({ matchAdminRepository, seasonAdminRepository, playerAdminRepository }),
   }
 }
 
@@ -128,5 +150,93 @@ describe('casos de uso de los partidos', () => {
     await useCases.deleteMatch(3)
 
     expect(matchAdminRepository.deleteMatch).toHaveBeenCalledWith(3)
+  })
+})
+
+describe('convocatoria', () => {
+  it('da la plantilla por dorsal con la convocatoria del partido, y quién no se puede quitar', async () => {
+    const { matchAdminRepository, seasonAdminRepository, useCases } = setup()
+
+    expect(await useCases.getMatchSquad({ matchId: 6, seasonId: 2 })).toEqual([
+      {
+        playerId: 3,
+        name: 'Checo',
+        shirtNumber: 7,
+        called: true,
+        minutes: 30,
+        yellow: true,
+        red: false,
+        canLeave: false,
+      },
+      {
+        playerId: 4,
+        name: 'Navi',
+        shirtNumber: 9,
+        called: true,
+        minutes: 0,
+        yellow: false,
+        red: false,
+        canLeave: true,
+      },
+      {
+        playerId: 5,
+        name: 'Javier',
+        shirtNumber: 10,
+        called: false,
+        minutes: 0,
+        yellow: false,
+        red: false,
+        canLeave: true,
+      },
+    ])
+    expect(matchAdminRepository.getSquad).toHaveBeenCalledWith(6)
+    expect(matchAdminRepository.getMatchEvents).toHaveBeenCalledWith(6)
+    expect(seasonAdminRepository.getRoster).toHaveBeenCalledWith(2)
+  })
+
+  const squad = [
+    { playerId: 3, called: true, minutes: '35', yellow: true, red: false },
+    { playerId: 4, called: false, minutes: '0', yellow: false, red: false },
+    { playerId: 5, called: true, minutes: '', yellow: false, red: true },
+  ]
+
+  it('guarda primero a los convocados (minutos como número; vacío = 0) y después quita a los demás', async () => {
+    const { matchAdminRepository, useCases } = setup()
+
+    await useCases.saveMatchSquad({ matchId: 6, squad })
+
+    expect(matchAdminRepository.saveSquad).toHaveBeenCalledWith(6, [
+      { playerId: 3, minutes: 35, yellow: true, red: false },
+      { playerId: 5, minutes: 0, yellow: false, red: true },
+    ])
+    expect(matchAdminRepository.removeFromSquad).toHaveBeenCalledWith(6, [4])
+    expect(matchAdminRepository.saveSquad.mock.invocationCallOrder[0]).toBeLessThan(
+      matchAdminRepository.removeFromSquad.mock.invocationCallOrder[0],
+    )
+  })
+
+  it('si falla al guardar a los convocados, no quita a nadie', async () => {
+    const { matchAdminRepository, useCases } = setup()
+    matchAdminRepository.saveSquad.mockRejectedValue(new Error('Navi ya tiene votos en este partido.'))
+
+    await expect(useCases.saveMatchSquad({ matchId: 6, squad })).rejects.toThrow('Navi ya tiene votos')
+    expect(matchAdminRepository.removeFromSquad).not.toHaveBeenCalled()
+  })
+
+  it('sin nadie a quien quitar, no lo pide', async () => {
+    const { matchAdminRepository, useCases } = setup()
+
+    await useCases.saveMatchSquad({ matchId: 6, squad: [squad[0]] })
+
+    expect(matchAdminRepository.removeFromSquad).not.toHaveBeenCalled()
+  })
+
+  it.each(['41', '-1', '12.5', 'diez'])('unos minutos «%s» no valen, y no se guarda nada', async (minutes) => {
+    const { matchAdminRepository, useCases } = setup()
+
+    await expect(useCases.saveMatchSquad({ matchId: 6, squad: [{ ...squad[0], minutes }] })).rejects.toThrow(
+      'Los minutos van de 0 a 40 (dos partes de 20).',
+    )
+    expect(matchAdminRepository.saveSquad).not.toHaveBeenCalled()
   })
 })

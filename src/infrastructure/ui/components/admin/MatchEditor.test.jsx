@@ -43,6 +43,7 @@ function renderEditor(entry = '/admin/partidos/6?temporada=2', overrides = {}) {
     listMatches: vi.fn().mockResolvedValue({ competitions: COMPETITIONS, matches: [J6, J5] }),
     saveMatch: vi.fn().mockResolvedValue(6),
     deleteMatch: vi.fn().mockResolvedValue(),
+    getMatchSquad: vi.fn().mockResolvedValue([]),
     ...overrides,
   }
   render(
@@ -83,7 +84,7 @@ describe('MatchEditor', () => {
     expect(screen.queryByText('–')).not.toBeInTheDocument()
   })
 
-  it('«Datos del partido» trae sus valores y guarda los cambios', async () => {
+  it('«Datos del partido» trae sus valores y, al guardar, vuelve a la lista, que lo anuncia', async () => {
     const useCases = renderEditor()
 
     expect(await screen.findByLabelText('Fecha')).toHaveValue('2026-11-22')
@@ -96,11 +97,41 @@ describe('MatchEditor', () => {
     expect(useCases.saveMatch).toHaveBeenCalledWith(
       expect.objectContaining({ id: 6, seasonId: 2, goalsFor: '4', goalsAgainst: '3', round: '6' }),
     )
-    expect(await screen.findByRole('status')).toHaveTextContent('Datos guardados.')
-    expect(useCases.listMatches).toHaveBeenCalledTimes(2)
+    expect(await screen.findByText('Lista en /admin/partidos: Datos guardados.')).toBeInTheDocument()
   })
 
-  it('lo que rechace la base de datos se explica con su frase', async () => {
+  it('debajo de los datos, la convocatoria del partido', async () => {
+    const useCases = renderEditor()
+
+    expect(await screen.findByRole('region', { name: 'Convocatoria' })).toBeInTheDocument()
+    expect(useCases.getMatchSquad).toHaveBeenCalledWith({ matchId: 6, seasonId: 2 })
+  })
+
+  it('al guardar la convocatoria, vuelve a la lista, que lo anuncia', async () => {
+    renderEditor(undefined, {
+      getMatchSquad: vi
+        .fn()
+        .mockResolvedValue([
+          {
+            playerId: 3,
+            name: 'Checo',
+            shirtNumber: 7,
+            called: true,
+            minutes: 30,
+            yellow: false,
+            red: false,
+            canLeave: true,
+          },
+        ]),
+      saveMatchSquad: vi.fn().mockResolvedValue(),
+    })
+
+    await userEvent.click(await screen.findByRole('button', { name: 'Guardar convocatoria' }))
+
+    expect(await screen.findByText('Lista en /admin/partidos: Convocatoria guardada.')).toBeInTheDocument()
+  })
+
+  it('lo que rechace la base de datos se explica con su frase, y se queda en el partido', async () => {
     renderEditor(undefined, {
       saveMatch: vi
         .fn()

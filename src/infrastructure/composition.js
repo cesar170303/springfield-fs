@@ -34,6 +34,7 @@ export const useCases = {
   ...createMatchAdminUseCases({
     matchAdminRepository: createSupabaseMatchAdminRepository(supabase),
     seasonAdminRepository,
+    playerAdminRepository,
   }),
   ...createAccountAdminUseCases({ accountAdminRepository: createSupabaseAccountAdminRepository(supabase) }),
 }

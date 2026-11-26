@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest'
 import {
   COMPETITION_TYPES,
   canHaveResult,
+  canLeaveSquad,
   competitionTypeLabel,
   matchLabel,
   matchState,
@@ -82,5 +83,25 @@ describe('canHaveResult', () => {
 
   it('uno que aún no se ha jugado, no', () => {
     expect(canHaveResult(new Date('2026-11-29T17:30:00Z'), now)).toBe(false)
+  })
+})
+
+describe('canLeaveSquad', () => {
+  const events = {
+    goals: [
+      { scorerId: 3, assistId: 7 },
+      { scorerId: 9, assistId: null },
+    ],
+    missedPenalties: [{ playerId: 11 }],
+  }
+
+  it('quien no tiene goles, asistencias ni penaltis apuntados se puede quitar de la convocatoria', () => {
+    expect(canLeaveSquad(4, events)).toBe(true)
+  })
+
+  it('quien marcó, asistió o falló un penalti, no (habría que borrar antes eso)', () => {
+    expect(canLeaveSquad(3, events)).toBe(false)
+    expect(canLeaveSquad(7, events)).toBe(false)
+    expect(canLeaveSquad(11, events)).toBe(false)
   })
 })

@@ -1,4 +1,3 @@
-import { useState } from 'react'
 import { useLocation, useNavigate, useParams } from 'react-router'
 import { matchState } from '../../../../domain/match'
 import { formatDateTime, matchStateText, scoreText } from '../../match-format'
@@ -9,14 +8,15 @@ import AdminPage from './AdminPage'
 import ConfirmButton from './ConfirmButton'
 import LoadError from './LoadError'
 import MatchForm from './MatchForm'
+import SquadEditor from './SquadEditor'
 import { dangerButton } from './styles'
 
 const MATCHES = { to: '/admin/partidos', label: 'Partidos', name: 'Volver a partidos' }
 const pending = () => new Promise(() => {}) // hasta que la URL tenga temporada, no se pide nada
 
 /**
- * Editor de un partido (docs/SPEC.md §12). De momento: cabecera, «Datos del partido» y borrar (solo sin terminar).
- * Convocatoria, goles y terminar llegan en las tareas siguientes.
+ * Editor de un partido (docs/SPEC.md §12): cabecera, «Datos del partido», convocatoria y borrar (solo sin
+ * terminar). Goles y terminar llegan en las tareas siguientes.
  */
 export default function MatchEditor() {
   const { matchId } = useParams()
@@ -25,7 +25,7 @@ export default function MatchEditor() {
   const { data, error, reload } = useAsync(seasonId ? () => listMatches(seasonId) : pending, seasonId)
   const { search, state } = useLocation()
   const navigate = useNavigate()
-  const [ok, setOk] = useState(state?.ok ?? '') // lo que llega de la pantalla anterior, o lo último que se guardó
+  const ok = state?.ok ?? '' // lo que llega de la pantalla anterior (partido recién creado)
   const match = data?.matches.find((m) => String(m.id) === matchId)
   const backToList = (message) => navigate({ pathname: MATCHES.to, search }, { state: { ok: message } })
 
@@ -59,14 +59,13 @@ export default function MatchEditor() {
           match={match}
           competitions={data.competitions}
           onSave={async (values) => {
-            setOk('')
             await saveMatch({ ...values, id: match.id, seasonId })
-            setOk('Datos guardados.')
-            reload()
+            backToList('Datos guardados.')
           }}
           onCancel={() => backToList()}
         />
       </section>
+      <SquadEditor matchId={match.id} seasonId={seasonId} onSaved={() => backToList('Convocatoria guardada.')} />
       {/* Con votos, la base de datos tampoco deja borrarlo; terminado, se reabre antes (T14). */}
       {!match.isFinished && (
         <ConfirmButton

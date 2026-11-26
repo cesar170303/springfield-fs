@@ -34,6 +34,7 @@ const ROW = {
   goals_for: 4,
   goals_against: 2,
   is_finished: false,
+  match_squad: [{ count: 8 }],
 }
 const DATA = {
   competitionId: 1,
@@ -67,12 +68,19 @@ describe('repositorio de partidos del panel', () => {
         goalsFor: 4,
         goalsAgainst: 2,
         isFinished: false,
+        calledCount: 8,
       },
     ])
     expect(calls).toEqual([
       [
         ['from', 'matches'],
-        ['select', 'id, competition_id, round, match_date, opponent, goals_for, goals_against, is_finished'],
+        // El recuento de convocados viene en la misma consulta, por la clave directa: con solo match_squad(count)
+        // PostgREST no sabe si ir por ella o a través de `votes` (PGRST201) y no devuelve nada.
+        [
+          'select',
+          'id, competition_id, round, match_date, opponent, goals_for, goals_against, is_finished, ' +
+            'match_squad!match_squad_match_id_fkey(count)',
+        ],
         ['eq', 'season_id', 2],
       ],
     ])
@@ -125,5 +133,109 @@ describe('repositorio de partidos del panel', () => {
     await expect(repository.createMatch(2, DATA)).rejects.toThrow('No se pudo guardar el partido.')
     await expect(repository.updateMatch(3, DATA)).rejects.toThrow('No se pudo guardar el partido.')
     await expect(repository.deleteMatch(3)).rejects.toThrow('No se pudo borrar el partido.')
+  })
+})
+
+describe('convocatoria del partido', () => {
+  it('da la convocatoria de un partido', async () => {
+    const { calls, repository } = setup({
+      data: [{ player_id: 3, minutes: 30, yellow_card: true, red_card: false }],
+      error: null,
+    })
+
+    expect(await repository.getSquad(6)).toEqual([{ playerId: 3, minutes: 30, yellow: true, red: false }])
+    expect(calls).toEqual([
+      [
+        ['from', 'match_squad'],
+        ['select', 'player_id, minutes, yellow_card, red_card'],
+        ['eq', 'match_id', 6],
+      ],
+    ])
+  })
+
+  it('da los goles y los penaltis fallados del partido', async () => {
+    const { calls, repository } = setup(
+      { data: [{ id: 1, scorer_id: 3, assist_id: 7, type: 'regular' }], error: null },
+      { data: [{ id: 2, player_id: 11, type: 'penalty' }], error: null },
+    )
+
+    expect(await repository.getMatchEvents(6)).toEqual({
+      goals: [{ id: 1, scorerId: 3, assistId: 7, type: 'regular' }],
+      missedPenalties: [{ id: 2, playerId: 11, type: 'penalty' }],
+    })
+    expect(calls).toEqual([
+      [
+        ['from', 'goals'],
+        ['select', 'id, scorer_id, assist_id, type'],
+        ['eq', 'match_id', 6],
+      ],
+      [
+        ['from', 'missed_penalties'],
+        ['select', 'id, player_id, type'],
+        ['eq', 'match_id', 6],
+      ],
+    ])
+  })
+
+  it('guarda a los convocados en una sola petición (alta o cambio)', async () => {
+    const { calls, repository } = setup({ data: null, error: null })
+
+    await repository.saveSquad(6, [{ playerId: 3, minutes: 35, yellow: true, red: false }])
+
+    expect(calls).toEqual([
+      [
+        ['from', 'match_squad'],
+        [
+          'upsert',
+          [{ match_id: 6, player_id: 3, minutes: 35, yellow_card: true, red_card: false }],
+          { onConflict: 'match_id,player_id' },
+        ],
+      ],
+    ])
+  })
+
+  it('sin convocados que guardar, no pide nada', async () => {
+    const { calls, repository } = setup()
+
+    await repository.saveSquad(6, [])
+
+    expect(calls).toEqual([])
+  })
+
+  it('quita de la convocatoria a varios en una sola petición', async () => {
+    const { calls, repository } = setup({ data: null, error: null })
+
+    await repository.removeFromSquad(6, [4, 5])
+
+    expect(calls).toEqual([
+      [
+        ['from', 'match_squad'],
+        ['delete'],
+        ['eq', 'match_id', 6],
+        ['in', 'player_id', [4, 5]],
+      ],
+    ])
+  })
+
+  it('lo que protege la base de datos (votos, goles) llega con su frase', async () => {
+    const voted = {
+      data: null,
+      error: { code: 'P0001', message: 'Navi ya tiene votos en este partido: no se puede quitar de la convocatoria' },
+    }
+
+    await expect(setup(voted).repository.removeFromSquad(6, [4])).rejects.toThrow(
+      'Navi ya tiene votos en este partido: no se puede quitar de la convocatoria.',
+    )
+  })
+
+  it('si algo falla, lo dice', async () => {
+    const { repository } = setup(FAILED, FAILED, FAILED, FAILED, FAILED)
+
+    await expect(repository.getSquad(6)).rejects.toThrow('No se pudo cargar la convocatoria.')
+    await expect(repository.getMatchEvents(6)).rejects.toThrow('No se pudieron cargar los goles.')
+    await expect(repository.saveSquad(6, [{ playerId: 3, minutes: 1, yellow: false, red: false }])).rejects.toThrow(
+      'No se pudo guardar la convocatoria.',
+    )
+    await expect(repository.removeFromSquad(6, [4])).rejects.toThrow('No se pudo guardar la convocatoria.')
   })
 })

@@ -59,7 +59,8 @@
 
 /**
  * @typedef {{ id: number, competitionId: number, round: number, date: Date, opponent: string,
- *   goalsFor: number | null, goalsAgainst: number | null, isFinished: boolean }} AdminMatch
+ *   goalsFor: number | null, goalsAgainst: number | null, isFinished: boolean, calledCount: number }} AdminMatch
+ *   `calledCount`: cuántos jugadores tiene convocados
  * @typedef {{ competitionId: number, round: number, date: Date, opponent: string,
  *   goalsFor: number | null, goalsAgainst: number | null }} MatchData
  *
@@ -68,6 +69,15 @@
  * @property {(seasonId: number, match: MatchData) => Promise<number>} createMatch devuelve el id del partido nuevo
  * @property {(id: number, match: MatchData) => Promise<void>} updateMatch
  * @property {(id: number) => Promise<void>} deleteMatch falla si tiene votos
+ * @property {(matchId: number) => Promise<SquadEntry[]>} getSquad la convocatoria del partido
+ * @property {(matchId: number) => Promise<MatchEvents>} getMatchEvents goles y penaltis fallados del partido
+ * @property {(matchId: number, players: SquadEntry[]) => Promise<void>} saveSquad alta o cambio, en una sola petición
+ * @property {(matchId: number, playerIds: number[]) => Promise<void>} removeFromSquad todos o ninguno
+ *
+ * @typedef {{ playerId: number, minutes: number, yellow: boolean, red: boolean }} SquadEntry un convocado
+ * @typedef {'regular' | 'penalty' | 'double_penalty'} GoalType
+ * @typedef {{ goals: { id: number, scorerId: number, assistId: number | null, type: GoalType }[],
+ *   missedPenalties: { id: number, playerId: number, type: 'penalty' | 'double_penalty' }[] }} MatchEvents
  */
 
 export {}

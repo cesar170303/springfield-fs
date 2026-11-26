@@ -1,7 +1,11 @@
 import { readableError } from './errors'
 import { toAdminMatch } from './mappers'
 
-const COLUMNS = 'id, competition_id, round, match_date, opponent, goals_for, goals_against, is_finished'
+// Cuántos convocados tiene cada partido, en la misma consulta. La relación va nombrada: entre matches y match_squad
+// hay otro camino (a través de `votes`) y sin nombre PostgREST no sabe cuál usar (PGRST201).
+const COLUMNS =
+  'id, competition_id, round, match_date, opponent, goals_for, goals_against, is_finished, ' +
+  'match_squad!match_squad_match_id_fkey(count)'
 
 const toRow = ({ competitionId, round, date, opponent, goalsFor, goalsAgainst }) => ({
   competition_id: competitionId,
@@ -15,6 +19,7 @@ const toRow = ({ competitionId, round, date, opponent, goalsFor, goalsAgainst })
 /** @returns {import('../../application/ports/admin').MatchAdminRepository} */
 export function createSupabaseMatchAdminRepository(client) {
   const NOT_SAVED = 'No se pudo guardar el partido. Inténtalo de nuevo.'
+  const SQUAD_NOT_SAVED = 'No se pudo guardar la convocatoria. Inténtalo de nuevo.'
   // select + single: si RLS ignora el cambio o el borrado no hay fila de vuelta y salta un error.
   const one = (query, id) => query.eq('id', id).select('id').single()
 
@@ -44,6 +49,48 @@ export function createSupabaseMatchAdminRepository(client) {
     async deleteMatch(id) {
       const { error } = await one(client.from('matches').delete(), id)
       if (error) throw readableError(error, 'No se pudo borrar el partido. Inténtalo de nuevo.')
+    },
+
+    async getSquad(matchId) {
+      const { data, error } = await client
+        .from('match_squad')
+        .select('player_id, minutes, yellow_card, red_card')
+        .eq('match_id', matchId)
+      if (error) throw readableError(error, 'No se pudo cargar la convocatoria. Inténtalo de nuevo.')
+      return data.map((row) => ({ playerId: row.player_id, minutes: row.minutes, yellow: row.yellow_card, red: row.red_card }))
+    },
+
+    async getMatchEvents(matchId) {
+      const [goals, missed] = await Promise.all([
+        client.from('goals').select('id, scorer_id, assist_id, type').eq('match_id', matchId),
+        client.from('missed_penalties').select('id, player_id, type').eq('match_id', matchId),
+      ])
+      const error = goals.error ?? missed.error
+      if (error) throw readableError(error, 'No se pudieron cargar los goles. Inténtalo de nuevo.')
+      return {
+        goals: goals.data.map((g) => ({ id: g.id, scorerId: g.scorer_id, assistId: g.assist_id, type: g.type })),
+        missedPenalties: missed.data.map((p) => ({ id: p.id, playerId: p.player_id, type: p.type })),
+      }
+    },
+
+    // Alta o cambio de minutos y tarjetas en una sola petición. Los triggers protegen a los votados y a los goleadores.
+    async saveSquad(matchId, players) {
+      if (!players.length) return
+      const rows = players.map((p) => ({
+        match_id: matchId,
+        player_id: p.playerId,
+        minutes: p.minutes,
+        yellow_card: p.yellow,
+        red_card: p.red,
+      }))
+      const { error } = await client.from('match_squad').upsert(rows, { onConflict: 'match_id,player_id' })
+      if (error) throw readableError(error, SQUAD_NOT_SAVED)
+    },
+
+    // Un solo delete: si el trigger rechaza a uno (votos, goles), no se quita a ninguno.
+    async removeFromSquad(matchId, playerIds) {
+      const { error } = await client.from('match_squad').delete().eq('match_id', matchId).in('player_id', playerIds)
+      if (error) throw readableError(error, SQUAD_NOT_SAVED)
     },
   }
 }

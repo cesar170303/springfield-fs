@@ -21,12 +21,14 @@ const match = (id, label, date, extra = {}) => ({
   goalsFor: null,
   goalsAgainst: null,
   isFinished: false,
+  calledCount: 0,
   ...extra,
 })
 // Fechas en hora local; «ahora» es el 26 nov a mediodía.
 const LIST = {
   competitions: [],
   matches: [
+    match(8, 'J8', new Date(2026, 11, 6, 18, 30), { calledCount: 3 }),
     match(7, 'J7', new Date(2026, 10, 29, 18, 30)),
     match(6, 'J6', new Date(2026, 10, 22, 18, 30), { goalsFor: 4, goalsAgainst: 2 }),
     match(5, 'J5', new Date(2026, 10, 20, 18, 30), { goalsFor: 3, goalsAgainst: 2, isFinished: true }),
@@ -59,13 +61,25 @@ describe('MatchesAdmin', () => {
 
     const rows = within(await screen.findByRole('list')).getAllByRole('link')
     expect(rows.map((row) => row.textContent)).toEqual([
-      expect.stringMatching(/J7.*29 nov.*Rival 7.*Por jugar.*–/),
+      expect.stringMatching(/J8.*6 dic.*Rival 8.*Por jugar.*3 convocados$/),
+      expect.stringMatching(/J7.*29 nov.*Rival 7.*Por jugar.*Hacer convocatoria$/),
       expect.stringMatching(/J6.*22 nov.*Rival 6.*Por terminar.*4–2/),
       expect.stringMatching(/J5.*20 nov.*Rival 5.*Votación abierta hasta el 27 nov.*3–2/),
       expect.stringMatching(/Copa J1.*8 nov.*Rival 4.*Votación cerrada.*1–4/),
     ])
-    expect(rows[1]).toHaveAttribute('href', '/admin/partidos/6?temporada=2')
+    expect(rows[2]).toHaveAttribute('href', '/admin/partidos/6?temporada=2')
     expect(useCases.listMatches).toHaveBeenCalledWith(2)
+  })
+
+  it('con un solo convocado, en singular', async () => {
+    renderList({
+      listMatches: vi.fn().mockResolvedValue({
+        competitions: [],
+        matches: [match(8, 'J8', new Date(2026, 11, 6, 18, 30), { calledCount: 1 })],
+      }),
+    })
+
+    expect(await screen.findByText('1 convocado')).toBeInTheDocument()
   })
 
   it('enlaza al partido nuevo con la temporada elegida', async () => {

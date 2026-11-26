@@ -11,6 +11,7 @@ import LoadError from './LoadError'
 import { primaryButton } from './styles'
 
 const pending = () => new Promise(() => {}) // hasta que la URL tenga temporada, no se pide nada
+const calledText = (n) => `${n} ${n === 1 ? 'convocado' : 'convocados'}`
 
 /** Partidos de la temporada (docs/SPEC.md §12): etiqueta, fecha, rival, estado y resultado. Cada uno abre su editor. */
 export default function MatchesAdmin() {
@@ -60,7 +61,16 @@ export default function MatchesAdmin() {
                     {matchStateText(status)}
                   </span>
                 </span>{' '}
-                <span className="type-name whitespace-nowrap tabular-nums">{scoreText(match)}</span>
+                {status.key === 'upcoming' ? (
+                  // Por jugar no hay resultado que enseñar: lo que toca es la convocatoria.
+                  <span
+                    className={`shrink-0 text-right type-small ${match.calledCount ? 'text-text-muted' : 'font-semibold text-accent-text'}`}
+                  >
+                    {match.calledCount ? calledText(match.calledCount) : 'Hacer convocatoria'}
+                  </span>
+                ) : (
+                  <span className="type-name whitespace-nowrap tabular-nums">{scoreText(match)}</span>
+                )}
               </Link>
             </li>
           )

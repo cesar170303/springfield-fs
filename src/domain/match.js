@@ -37,3 +37,14 @@ export function nextRound(matches, competitionId) {
   const rounds = matches.filter((m) => m.competitionId === competitionId).map((m) => m.round)
   return rounds.length ? Math.max(...rounds) + 1 : 1
 }
+
+/**
+ * Un convocado se puede quitar de la convocatoria si no tiene goles, asistencias ni penaltis fallados apuntados en el
+ * partido (si los tiene, la base de datos tampoco lo deja: hay que borrarlos antes).
+ */
+export function canLeaveSquad(playerId, { goals, missedPenalties }) {
+  return (
+    !goals.some((g) => g.scorerId === playerId || g.assistId === playerId) &&
+    !missedPenalties.some((p) => p.playerId === playerId)
+  )
+}

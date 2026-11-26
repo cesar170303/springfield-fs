@@ -1,4 +1,5 @@
-import { canHaveResult, matchLabel } from '../../domain/match'
+import { canHaveResult, canLeaveSquad, matchLabel } from '../../domain/match'
+import { playerName } from '../../domain/squad'
 
 const isBlank = (value) => String(value ?? '').trim() === ''
 
@@ -19,12 +20,20 @@ function score(goalsFor, goalsAgainst) {
   return result
 }
 
+/** Minutos jugados: de 0 a 40 (dos partes de 20, sin prórroga). Vacío cuenta como 0. */
+function minutes(value) {
+  const number = isBlank(value) ? 0 : integer(value)
+  if (number === null || number < 0 || number > 40) throw new Error('Los minutos van de 0 a 40 (dos partes de 20).')
+  return number
+}
+
 /**
  * Casos de uso de los partidos en el panel de admin (docs/SPEC.md §12).
  * @param {{ matchAdminRepository: import('../ports/admin').MatchAdminRepository,
- *   seasonAdminRepository: import('../ports/admin').SeasonAdminRepository }} deps
+ *   seasonAdminRepository: import('../ports/admin').SeasonAdminRepository,
+ *   playerAdminRepository: import('../ports/admin').PlayerAdminRepository }} deps
  */
-export function createMatchAdminUseCases({ matchAdminRepository, seasonAdminRepository }) {
+export function createMatchAdminUseCases({ matchAdminRepository, seasonAdminRepository, playerAdminRepository }) {
   return {
     /** Partidos de la temporada, del más reciente al más antiguo, con su competición y su etiqueta (J5, Copa J2). */
     async listMatches(seasonId) {
@@ -67,5 +76,49 @@ export function createMatchAdminUseCases({ matchAdminRepository, seasonAdminRepo
 
     /** Solo sin votos: con votos lo impide la base de datos, con su frase. */
     deleteMatch: (id) => matchAdminRepository.deleteMatch(id),
+
+    /**
+     * La plantilla de la temporada, por dorsal, con la convocatoria del partido: si está convocado, minutos, tarjetas
+     * y si se puede quitar (no, si tiene goles, asistencias o penaltis apuntados).
+     */
+    async getMatchSquad({ matchId, seasonId }) {
+      const [roster, players, squad, events] = await Promise.all([
+        seasonAdminRepository.getRoster(seasonId),
+        playerAdminRepository.getPlayers(),
+        matchAdminRepository.getSquad(matchId),
+        matchAdminRepository.getMatchEvents(matchId),
+      ])
+      const playerById = new Map(players.map((p) => [p.id, p]))
+      const calledById = new Map(squad.map((s) => [s.playerId, s]))
+      return roster
+        .map(({ playerId, shirtNumber }) => {
+          const called = calledById.get(playerId)
+          return {
+            playerId,
+            name: playerName(playerById.get(playerId)),
+            shirtNumber,
+            called: Boolean(called),
+            minutes: called?.minutes ?? 0,
+            yellow: called?.yellow ?? false,
+            red: called?.red ?? false,
+            canLeave: canLeaveSquad(playerId, events),
+          }
+        })
+        .sort((a, b) => a.shirtNumber - b.shirtNumber)
+    },
+
+    /**
+     * Guarda la convocatoria en el orden que no pierde datos si falla a medias: primero los convocados (alta o cambio
+     * de minutos y tarjetas) y después quita a los que ya no lo están. Lo que proteja la base de datos (votos, goles)
+     * llega con su frase.
+     */
+    async saveMatchSquad({ matchId, squad }) {
+      const called = squad
+        .filter((p) => p.called)
+        .map((p) => ({ playerId: p.playerId, minutes: minutes(p.minutes), yellow: p.yellow, red: p.red }))
+      const removed = squad.filter((p) => !p.called).map((p) => p.playerId)
+      await matchAdminRepository.saveSquad(matchId, called)
+      if (removed.length) await matchAdminRepository.removeFromSquad(matchId, removed)
+    },
   }
 }

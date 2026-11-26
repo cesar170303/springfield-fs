@@ -35,7 +35,7 @@ export function toAdminPlayer(row, email, photoUrl) {
   }
 }
 
-/** Fila de `matches` → AdminMatch, con la fecha como Date. */
+/** Fila de `matches` → AdminMatch, con la fecha como Date y cuántos convocados tiene. */
 export function toAdminMatch(row) {
   return {
     id: row.id,
@@ -46,6 +46,7 @@ export function toAdminMatch(row) {
     goalsFor: row.goals_for,
     goalsAgainst: row.goals_against,
     isFinished: row.is_finished,
+    calledCount: row.match_squad?.[0]?.count ?? 0,
   }
 }
 
