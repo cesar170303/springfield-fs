@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest'
-import { render, screen } from '@testing-library/react'
+import { render, screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { Link, MemoryRouter, useLocation } from 'react-router'
 import AdminHome from './AdminHome'
@@ -67,6 +67,7 @@ describe('AdminHome', () => {
     renderHome(vi.fn().mockResolvedValue({ seasons: [], competitions: [], initialSeasonId: null }))
 
     expect(await screen.findByText('Aún no hay ninguna temporada.')).toBeInTheDocument()
+    expect(screen.getByRole('link', { name: /Plantilla y dorsales/ })).toHaveTextContent('Primero, crea una temporada')
     expect(screen.getByRole('link', { name: /Temporadas/ })).toHaveAttribute('href', '/admin/temporadas')
   })
 
@@ -75,6 +76,51 @@ describe('AdminHome', () => {
 
     const link = await screen.findByRole('link', { name: /Temporadas y competiciones 2026\/27 es la actual/ })
     expect(link).toHaveAttribute('href', '/admin/temporadas?temporada=1')
+  })
+
+  it('enlaza a los jugadores, con la temporada elegida en la URL', async () => {
+    renderHome(vi.fn().mockResolvedValue(FILTERS), '/admin?temporada=1')
+
+    expect(await screen.findByRole('link', { name: /Jugadores/ })).toHaveAttribute(
+      'href',
+      '/admin/jugadores?temporada=1',
+    )
+  })
+
+  it('cada sección es una tarjeta con su icono decorativo, y se lee por su nombre y su nota', async () => {
+    renderHome(vi.fn().mockResolvedValue(FILTERS))
+
+    const sections = await screen.findByRole('navigation', { name: 'Secciones del panel' })
+    const cards = within(sections).getAllByRole('link')
+    expect(cards.map((card) => card.textContent)).toEqual([
+      'Temporadas y competiciones 2026/27 es la actual',
+      'Jugadores Fichas, correos y archivados',
+      'Plantilla y dorsales Quién juega en 2026/27',
+      'Votantes Viewers que votan en 2026/27',
+    ])
+    for (const card of cards) {
+      const icon = card.querySelector('svg')
+      expect(icon).toHaveAttribute('aria-hidden', 'true')
+      expect(icon.children.length).toBeGreaterThan(0)
+    }
+  })
+
+  it('enlaza a la plantilla de la temporada elegida', async () => {
+    renderHome(vi.fn().mockResolvedValue(FILTERS), '/admin?temporada=1')
+
+    expect(await screen.findByRole('link', { name: 'Plantilla y dorsales Quién juega en 2025/26' })).toHaveAttribute(
+      'href',
+      '/admin/plantilla?temporada=1',
+    )
+  })
+
+  it('enlaza a los votantes de la temporada elegida', async () => {
+    renderHome(vi.fn().mockResolvedValue(FILTERS), '/admin?temporada=1')
+
+    expect(await screen.findByRole('link', { name: 'Votantes Viewers que votan en 2025/26' })).toHaveAttribute(
+      'href',
+      '/admin/votantes?temporada=1',
+    )
   })
 
   it('si no se puede cargar, lo dice', async () => {

@@ -11,6 +11,9 @@ const STATUS = { available: 'Disponible', injured: 'Lesionado', suspended: 'Sanc
 /** Estado del jugador (lo cambia el admin), como se lee en la ficha. */
 export const statusLabel = (status) => STATUS[status]
 
+/** Estados para elegir en un formulario. */
+export const STATUS_OPTIONS = Object.entries(STATUS).map(([value, label]) => ({ value, label }))
+
 /**
  * Las seis cifras de la ficha, en el orden decidido por el propietario. Al portero, goles encajados y porterías a cero
  * en lugar de goles y asistencias. Una sola va destacada (`highlight`).

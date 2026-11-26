@@ -12,6 +12,19 @@ Fallos detectados que aún no están resueltos. Al arreglarlos, pasa la línea a
 
 ## [Sin publicar]
 
+## [0.13.0] - 2026-11-26
+
+Paso 5 de la spec, panel de admin: jugadores, fotos, plantilla y votantes (fase 2 de 4; plan en `tasks/plan.md`, spec §12). Sin migraciones nuevas: no hace falta aplicar nada en la nube.
+
+### Añadido
+- **Fichas de jugadores** (`/admin/jugadores`): activas y archivadas aparte, con posición, correo (de `get_player_emails`, nunca de `players`), estado y si tienen cuenta. Alta y edición en su propia pantalla; archivar con confirmación en el sitio (`ConfirmButton`) y recuperar. Un correo repetido se explica.
+- **Fotos de los jugadores**, en la ficha: la app recorta el centro en cuadrado y la reduce a 512 × 512 en webp (jpeg si el navegador no sabe webp), con vista previa antes de subirla. Se cambia (la vieja se borra del almacén) y se quita, con confirmación. Si algo falla a medias, la ficha nunca apunta a un archivo que no existe.
+- **Plantilla y dorsales** (`/admin/plantilla?temporada=`): añadir fichas no archivadas con su dorsal (1-99), cambiarlo y quitar con confirmación; un dorsal repetido o quitar a un convocado se explican con la frase de la base de datos. Con la plantilla vacía, «Copiar la plantilla de…» trae la anterior (sin archivados, con sus dorsales) en una sola petición.
+- **Votantes de la temporada** (`/admin/votantes?temporada=`): los viewers, cada uno con un interruptor «vota en 2026/27» (`season_voters`). La plantilla vota siempre y no sale en la lista. El interruptor se maneja con teclado y no pierde el foco mientras guarda.
+
+### Cambiado
+- **Inicio del panel en tarjetas con icono** (dos columnas en el móvil y tres en escritorio), en lugar de una lista de texto. «Nueva ficha» ya no queda pegado al título cuando baja de línea.
+
 ## [0.12.0] - 2026-11-23
 
 Paso 5 de la spec, panel de admin: cimientos, temporadas y competiciones (fase 1 de 4; plan en `tasks/plan.md`, spec §12).

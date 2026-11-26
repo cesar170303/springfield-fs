@@ -1,11 +1,14 @@
 import { useState } from 'react'
 import { dangerButton, primaryButton, secondaryButton } from './styles'
 
+const DELETE = { action: 'Borrar', confirm: 'Sí, borrar', keep: 'No borrar' }
+
 /**
  * Formulario del panel. Si `onSubmit` u `onDelete` fallan, enseña la frase del error y sigue abierto con lo escrito.
- * Con `onDelete` (al editar) lleva «Borrar», que pregunta `deleteQuestion` en el sitio antes de hacerlo.
+ * Con `onDelete` (al editar) lleva «Borrar», que pregunta `deleteQuestion` en el sitio antes de hacerlo. Los textos de
+ * ese botón cambian con `deleteLabels` (p. ej. «Quitar» en la plantilla).
  */
-export default function AdminForm({ onSubmit, onCancel, onDelete, deleteQuestion, children }) {
+export default function AdminForm({ onSubmit, onCancel, onDelete, deleteQuestion, deleteLabels = DELETE, children }) {
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState('')
   const [asking, setAsking] = useState(false)
@@ -42,7 +45,7 @@ export default function AdminForm({ onSubmit, onCancel, onDelete, deleteQuestion
           <p className="type-small">{deleteQuestion}</p>
           <div className="flex gap-2">
             <button type="button" disabled={busy} onClick={() => attempt(onDelete)} className={dangerButton}>
-              Sí, borrar
+              {deleteLabels.confirm}
             </button>
             <button
               type="button"
@@ -51,7 +54,7 @@ export default function AdminForm({ onSubmit, onCancel, onDelete, deleteQuestion
               onClick={() => setAsking(false)}
               className={secondaryButton}
             >
-              No borrar
+              {deleteLabels.keep}
             </button>
           </div>
         </>
@@ -75,7 +78,7 @@ export default function AdminForm({ onSubmit, onCancel, onDelete, deleteQuestion
               }}
               className={`ml-auto ${dangerButton}`}
             >
-              Borrar
+              {deleteLabels.action}
             </button>
           )}
         </div>

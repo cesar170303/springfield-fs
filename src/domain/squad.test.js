@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { LEADER_STATS, groupByPosition, playerName, positionLabel, sortSquad, topThree } from './squad'
+import { LEADER_STATS, POSITION_OPTIONS, groupByPosition, playerName, positionLabel, sortSquad, topThree } from './squad'
 
 // Jugador mínimo: solo lo que miran estas reglas.
 const player = (shirtNumber, stats = {}) => ({
@@ -109,4 +109,14 @@ describe('topThree', () => {
       'Tarjetas',
     ])
   })
+})
+
+it('ofrece las posiciones en el orden de la pista, para elegir en un formulario', () => {
+  expect(POSITION_OPTIONS).toEqual([
+    { value: 'goalkeeper', label: 'Portero' },
+    { value: 'defender', label: 'Cierre' },
+    { value: 'winger', label: 'Ala' },
+    { value: 'pivot', label: 'Pívot' },
+    { value: 'universal', label: 'Universal' },
+  ])
 })

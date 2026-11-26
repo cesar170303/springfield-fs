@@ -289,7 +289,7 @@ Decidido el 2026-11-22. Pensado para el móvil, a pie de pista. El diseño visua
 
 - `/admin` y sus pantallas, solo para el staff (`admin` y `superadmin`); a los demás, «Esta página no existe». Botón «Admin» en la barra inferior, solo para el staff. La seguridad la da RLS.
 - El código del panel se descarga solo al entrar en él. Sin animaciones nuevas.
-- **Inicio:** selector de temporada (`?temporada=`), avisos (partidos jugados sin terminar, empates de MVP) y las secciones.
+- **Inicio:** selector de temporada (`?temporada=`), avisos (partidos jugados sin terminar, empates de MVP) y las secciones, en tarjetas con icono: dos columnas en el móvil y tres en escritorio (decidido el 2026-11-26).
 - **Confirmaciones:** archivar, quitar, borrar, terminar, reabrir y cambiar roles la piden en el mismo sitio («¿Seguro? Sí, archivar · Cancelar»), sin ventanas emergentes.
 - **Errores:** siempre con una frase en español.
 

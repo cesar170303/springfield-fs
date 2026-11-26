@@ -16,6 +16,9 @@ const POSITIONS = [
 /** Nombre de la posición, como en la pista ('winger' → 'Ala'). */
 export const positionLabel = (position) => POSITIONS.find(([key]) => key === position)?.[1]
 
+/** Posiciones para elegir en un formulario, en el orden de la pista. */
+export const POSITION_OPTIONS = POSITIONS.map(([value, label]) => ({ value, label }))
+
 // Valor de cada estadística por la que se puede ordenar. Sin nota (null) cuenta como lo más bajo; en tarjetas, una
 // roja pesa más que cualquier número de amarillas.
 const VALUE = {

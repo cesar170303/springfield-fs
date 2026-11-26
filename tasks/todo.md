@@ -32,17 +32,17 @@ Detalle, decisiones y riesgos: [`tasks/plan.md`](plan.md).
 
 ## Fase 2 — Jugadores, fotos, plantilla y votantes → PR, 0.13.0
 
-- [ ] **T7.** Fichas de jugadores (estrena `ConfirmButton`)
+- [x] **T7.** Fichas de jugadores (estrena `ConfirmButton`)
   - Alta con correo: se ve con su correo y «Sin cuenta»; archivar (con confirmación) y recuperar
   - Nunca se pide `email` a `players`: sale de `get_player_emails`
-- [ ] **T8.** Fotos: recorte cuadrado, 512 px, webp o jpeg, vista previa, cambiar y quitar
+- [x] **T8.** Fotos: recorte cuadrado, 512 px, webp o jpeg, vista previa, cambiar y quitar
   - Una foto de móvil de 5 MB se sube como 512 × 512; al cambiarla, la vieja desaparece del bucket
   - Si algo falla, se avisa y la ficha no apunta a un archivo inexistente
-- [ ] **T9.** Plantilla, dorsales y copiar plantilla
+- [x] **T9.** Plantilla, dorsales y copiar plantilla
   - Dorsal repetido, con frase; quitar a un convocado lo impide la BD; con la plantilla vacía, copiar la anterior
-- [ ] **T10.** Votantes de la temporada (viewers con interruptor)
+- [x] **T10.** Votantes de la temporada (viewers con interruptor)
   - Marcar/desmarcar un viewer cambia `season_voters`; los jugadores no salen en la lista
-- [ ] **Checkpoint 2 (PR 2):** como el 1, `CHANGELOG` 0.13.0. **PARADA.**
+- [x] **Checkpoint 2 (PR 2):** como el 1, `CHANGELOG` 0.13.0. **PARADA.**
 
 ## Fase 3 — Partidos → PR, 0.14.0
 

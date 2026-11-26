@@ -19,6 +19,42 @@
  * @property {(competition: CompetitionData) => Promise<void>} createCompetition
  * @property {(id: number, competition: CompetitionData) => Promise<void>} updateCompetition
  * @property {(id: number) => Promise<void>} deleteCompetition falla si tiene partidos
+ * @property {(seasonId: number) => Promise<RosterEntry[]>} getRoster
+ * @property {(seasonId: number, entries: RosterEntry[]) => Promise<void>} addToRoster todos o ninguno
+ * @property {(seasonId: number, playerId: number, shirtNumber: number) => Promise<void>} changeShirtNumber
+ * @property {(seasonId: number, playerId: number) => Promise<void>} removeFromRoster falla si ya fue convocado
+ *
+ * @typedef {{ playerId: number, shirtNumber: number }} RosterEntry un jugador de la plantilla, con su dorsal
+ */
+
+/**
+ * @typedef {'goalkeeper' | 'defender' | 'winger' | 'pivot' | 'universal'} PlayerPosition
+ * @typedef {'available' | 'injured' | 'suspended'} PlayerStatus
+ * @typedef {{ firstName: string, lastName: string, nickname: string | null, email: string | null,
+ *   position: PlayerPosition, status: PlayerStatus }} PlayerData
+ * @typedef {PlayerData & { id: number, photoPath: string | null, photoUrl: string | null, hasAccount: boolean,
+ *   archived: boolean }} AdminPlayer
+ *   `photoPath`: ruta de la foto en el almacén; `photoUrl`, su dirección pública
+ *   `hasAccount`: la ficha ya está vinculada a una cuenta (por el correo confirmado)
+ *
+ * @typedef {object} PlayerAdminRepository
+ * @property {() => Promise<AdminPlayer[]>} getPlayers todas, activas y archivadas, con su correo
+ * @property {(player: PlayerData) => Promise<number>} createPlayer devuelve el id de la ficha nueva
+ * @property {(id: number, player: PlayerData) => Promise<void>} updatePlayer
+ * @property {(id: number, archived: boolean) => Promise<void>} setArchived
+ * @property {(path: string, photo: Blob) => Promise<void>} uploadPhoto sube un archivo nuevo al almacén de fotos
+ * @property {(id: number, path: string | null) => Promise<void>} setPhotoPath apunta la foto en la ficha (null: sin foto)
+ * @property {(path: string) => Promise<void>} deletePhoto borra un archivo del almacén de fotos
+ */
+
+/**
+ * @typedef {{ id: string, fullName: string | null, email: string }} ViewerAccount una cuenta con rol viewer
+ *
+ * @typedef {object} AccountAdminRepository
+ * @property {() => Promise<ViewerAccount[]>} getViewers
+ * @property {(seasonId: number) => Promise<string[]>} getSeasonVoters ids de las cuentas que votan esa temporada
+ * @property {(seasonId: number, userId: string) => Promise<void>} addSeasonVoter solo un viewer (lo comprueba RLS)
+ * @property {(seasonId: number, userId: string) => Promise<void>} removeSeasonVoter
  */
 
 export {}
