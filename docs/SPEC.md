@@ -95,13 +95,16 @@ Decidida el 2026-11-22 (ADR-0004): React Router con URLs reales (el «atrás» d
 
 ### Pantalla de votación
 
-Decidida el 2026-11-20 con un prototipo interactivo. Usa solo la paleta del modo votación (§11).
+Decidida el 2026-11-20 con un prototipo interactivo y retocada el 2026-11-27 sobre otra maqueta. Usa los colores de la app (§11).
 
 - **Cuándo se entra:** con la votación de un partido abierta y algún compañero pendiente, desde el aviso «Votación abierta» (§8) o desde el inicio de la app.
+- **Por dónde** (decidido el 2026-11-27): la sección **«Votar»** de la barra inferior (`/votar`), con un punto amarillo mientras te falte alguien, y un **aviso grande arriba de la Plantilla** («Votación abierta · Te faltan 5 compañeros») que lleva a ella. Sin nada pendiente, «Votar» dice que no tienes votaciones pendientes.
+- **Varios partidos abiertos a la vez:** uno tras otro, empezando por el que cierra antes. Al acabar uno, «Siguiente partido: Copa J2». Cada tarjeta dice de qué partido es.
 - **Una tarjeta por compañero pendiente:** jugó al menos 1 minuto, no eres tú y aún no le has votado. Salen en **orden aleatorio**, distinto cada vez que se abre la votación.
 - **Qué muestra la tarjeta:**
-  - A la izquierda: la foto (sin foto, el dorsal en grande), el apodo y la posición.
-  - **A la derecha, a la altura del apodo y en grande:** sus datos de ese partido, es decir, los minutos y, si los hay, goles y asistencias. Al portero, los goles encajados.
+  - **Arriba, la foto a sangre** (mitad superior, de borde a borde, con un degradado oscuro abajo) y encima el apodo en grande y la posición. Sin foto, el dorsal enorme en azul.
+  - **Bajo el apodo, en una franja propia y con cifras grandes** (separadas por líneas finas, la unidad debajo): sus datos de ese partido, es decir, los minutos y, si los hay, goles y asistencias. Al portero, los goles encajados.
+  - Detrás asoman las dos siguientes, más pequeñas (la pila).
 - **La nota:**
   - Barra de 1 a 10 en saltos de 0,5: control nativo, usable con teclado y lector de pantalla. Sin botones de ±0,5.
   - **Empieza sin nota** («—»): no se puede votar sin elegirla.
@@ -109,6 +112,7 @@ Decidida el 2026-11-20 con un prototipo interactivo. Usa solo la paleta del modo
 - **Votar,** con el botón «Aceptar nota» o **deslizando la tarjeta a la derecha:**
   - La tarjeta sale por la derecha y entra la siguiente.
   - Durante **5 segundos** se puede **deshacer**. Al acabar la cuenta atrás, la nota se envía y desde ese momento es definitiva.
+  - Si sales de la pantalla durante la cuenta atrás, la nota se envía en ese momento (ya la aceptaste).
   - Sin nota elegida, la tarjeta vuelve a su sitio y lo avisa.
 - **Saltar por ahora,** con el botón «Saltar por ahora» o **deslizando la tarjeta a la izquierda:** el compañero pasa al final de la fila. Si es el último, la tarjeta vuelve a su sitio y lo avisa.
 - **El gesto:**
@@ -235,7 +239,7 @@ Decidido el 2026-11-20 a partir de dos referencias: [Kopetzki](https://www.awwwa
 
 ### Color
 
-Toda la app es negra, blanca y gris, con el **azul eléctrico** como único color de datos, acciones y lo destacado, igual en todas las pantallas: la pastilla del líder, la cifra destacada de la ficha y la nota de los partidos en que fue MVP (decidido el 2026-11-23). El amarillo queda solo para las tarjetas amarillas y la votación. Los dorsales de la lista van en una pastilla azul, como la del líder.
+Toda la app es negra, blanca y gris, con el **azul eléctrico** como único color de datos, acciones y lo destacado, igual en todas las pantallas: la pastilla del líder, la cifra destacada de la ficha y la nota de los partidos en que fue MVP (decidido el 2026-11-23). El amarillo queda solo para las tarjetas amarillas. Los dorsales de la lista van en una pastilla azul, como la del líder.
 
 | Token | Color | Para qué |
 |---|---|---|
@@ -249,16 +253,7 @@ Toda la app es negra, blanca y gris, con el **azul eléctrico** como único colo
 | `danger` | `#ff4d4f` | Errores (siempre con una frase), tarjeta roja y botones de borrar |
 | `card-yellow` | `#ffd90f` | Tarjeta amarilla |
 
-**Modo votación** (paleta «Donut»): solo en la pantalla de votación.
-
-| Token | Color | Para qué |
-|---|---|---|
-| `vote-surface` | `#1e1e1e` | Tarjeta y hueco de la foto |
-| `vote-border` | `#767676` | Pista de la barra y bordes |
-| `vote-primary` | `#ffd90f` | «Aceptar nota» y la barra |
-| `vote-rating` | `#ff5fa2` | La nota que se está poniendo |
-| `vote-accent` | `#4cc3ff` | El dorsal |
-| `vote-on` | `#000000` | Texto sobre amarillo, rosa o azul cielo |
+**Votación:** con los mismos colores que el resto de la app (decidido el 2026-11-27 tras comparar una maqueta con la paleta «Donut» reducida y otra en azul; la Donut quedaba como otra app). «Aceptar nota», la barra, el progreso y el dorsal sin foto, en `accent`/`accent-text`; la tarjeta, en `surface`; la nota que se está poniendo, el aviso de deshacer y tus notas del final, en `accent-text`. Los antiguos tokens `vote-*` se borran.
 
 Todas las combinaciones de texto cumplen WCAG AA: 4,5:1, y 3:1 en texto grande, bordes y foco. Las tarjetas amarilla y roja se dibujan siempre con su forma y su número, no solo con el color.
 
@@ -268,12 +263,18 @@ Todas las combinaciones de texto cumplen WCAG AA: 4,5:1, y 3:1 en texto grande, 
 
 ### Movimiento
 
-- **Cinco animaciones, con GSAP:**
+- **Cinco animaciones base, con GSAP:**
   - en la entrada (el login), un campo de rayitas verticales que suben por curvas, al estilo de DeepBook, con destellos azules (decidido el 2026-11-21);
   - los titulares, letra a letra;
   - las cifras, que ruedan hasta su valor;
   - la ficha, que avanza con el scroll;
   - la tarjeta de votación, que sigue al dedo y sale deslizándose al votar (derecha) o al saltar (izquierda).
+- **En la votación, además** (decidido el 2026-11-27, para que sea llamativa):
+  - una portada al entrar («Jornada 5 · Vota a tus compañeros») con rayitas que suben barriendo la pantalla, grises y alguna en azul (el motivo del escudo);
+  - la pila: detrás asoman las siguientes tarjetas, y al votar la de detrás sube a su sitio;
+  - la nota rebota un poco al moverla, y la tarjeta se inclina hacia el lado al que la arrastras;
+  - al terminar, «Has votado a todos» letra a letra con la misma animación de rayitas de la portada, y tus notas aparecen una a una, en azul.
+  - Con «reducir movimiento», la tarjeta se sigue pudiendo arrastrar (la mueve el dedo), pero sin vuelos ni efectos.
 - Solo se animan la posición y la opacidad. Con «reducir movimiento» activado en el dispositivo, nada se mueve.
 - Lo que se mueva más de 5 s seguidos lleva un botón para pararlo (WCAG 2.2.2), como el campo de rayitas del login.
 

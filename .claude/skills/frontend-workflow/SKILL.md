@@ -13,7 +13,7 @@ Ordena el trabajo de UI. `CLAUDE.md` manda sobre esta skill, y `feature-tdd` man
 2. Lee `CHANGELOG.md`: la sección «[Sin publicar]» y la última versión.
 3. Comprueba la base visual, en este orden:
    1. `docs/SPEC.md` tiene el «Diseño visual» marcado como decidido (§10) y descrito (§11).
-   2. `src/index.css` tiene el bloque `@theme` con los tokens (`bg`, `accent`, `vote-*`…) y la fuente Archivo.
+   2. `src/index.css` tiene el bloque `@theme` con los tokens (`bg`, `accent`, `surface`…) y la fuente Archivo.
    3. `src/infrastructure/ui/motion.js` tiene la base de animación (`useMotion`, ADR-0003).
 
    Lo que falte **es el trabajo pendiente**, antes que cualquier pantalla.
@@ -56,14 +56,14 @@ Las skills de GSAP, `tailwind-design-system`, `supabase` y `accessibility` está
 ## 4. Sistema de diseño (decidido el 2026-11-20)
 
 - **Fuente de verdad:** los tokens de `src/index.css` (`@theme`) y `docs/SPEC.md` §11, «Diseño visual». La vista con ejemplos está en el artefacto «Springfield FS» del propietario, que es privado.
-- **Base, en toda la app:** negro, blanco y gris, con el azul eléctrico como único color de datos, acciones y lo destacado (pastilla del líder, cifra destacada de la ficha y nota de MVP). Los rellenos azules llevan texto blanco; el texto azul pequeño va en `accent-text`. El amarillo (`card-yellow`) es solo para las tarjetas amarillas; los dorsales de la lista van en pastilla azul, como la del líder; el rosa y el resto de `vote-*`, solo en la votación.
-- **Modo votación:** los tokens `vote-*` (paleta Donut: amarillo, rosa y azul cielo) se usan **solo** en la pantalla de votación, en ninguna otra.
+- **Base, en toda la app:** negro, blanco y gris, con el azul eléctrico como único color de datos, acciones y lo destacado (pastilla del líder, cifra destacada de la ficha y nota de MVP). Los rellenos azules llevan texto blanco; el texto azul pequeño va en `accent-text`. El amarillo (`card-yellow`) es solo para las tarjetas amarillas; los dorsales de la lista van en pastilla azul, como la del líder.
+- **Votación:** con los mismos colores que el resto de la app (decidido el 2026-11-27; la paleta Donut quedó descartada también ahí).
 - **Tipografía:** Archivo. Estrecha (`font-stretch: 62.5%`, peso 800) para titulares, cifras (tabulares) y apodos; a ancho normal para el resto.
 - **Motivo:** las rayas verticales del escudo.
 - **Prohibido:**
   - Colores sueltos, como `yellow-400` o un hex dentro de un componente.
   - Crear tokens nuevos sin preguntar.
-  - Volver a proponer paletas descartadas: los colores medidos del escudo, Tailwind por defecto, Rayas, Pabellón, Cromo y Donut para toda la app.
+  - Volver a proponer paletas descartadas: los colores medidos del escudo, Tailwind por defecto, Rayas, Pabellón, Cromo y Donut (ni en toda la app ni en la votación).
 
 ## 5. Movimiento
 
@@ -72,7 +72,8 @@ Las skills de GSAP, `tailwind-design-system`, `supabase` y `accessibility` está
   - los titulares, letra a letra;
   - las cifras, que ruedan hasta su valor;
   - la ficha, que avanza con el scroll;
-  - la tarjeta de votación, que sigue al dedo y sale deslizándose al votar (derecha) o al saltar (izquierda).
+  - la tarjeta de votación, que sigue al dedo y sale deslizándose al votar (derecha) o al saltar (izquierda);
+  - en la votación (2026-11-27): portada y final con rayitas que suben (grises y alguna azul), pila de tarjetas, y nota que rebota y tarjeta que se inclina (detalle en `docs/SPEC.md` §11).
   - Cualquier animación nueva → pregunta.
 - **Técnica:** GSAP siempre a través de `useMotion` (`src/infrastructure/ui/motion.js`, ADR-0003), que limpia sola al desmontar. Ningún componente importa `gsap` ni `@gsap/react`. Anima solo `transform` y `opacity`.
 - **Reducir movimiento:** `useMotion` solo crea animaciones con `(prefers-reduced-motion: no-preference)`. Con «reducir movimiento», nada se mueve y todo aparece en su estado final (las cifras, con su valor).
