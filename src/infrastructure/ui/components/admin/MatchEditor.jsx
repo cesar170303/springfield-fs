@@ -11,6 +11,7 @@ import FinishMatch from './FinishMatch'
 import GoalsEditor from './GoalsEditor'
 import LoadError from './LoadError'
 import MatchForm from './MatchForm'
+import MvpTiebreak from './MvpTiebreak'
 import SquadEditor from './SquadEditor'
 import { dangerButton } from './styles'
 
@@ -55,6 +56,8 @@ export default function MatchEditor() {
       <p role="status" className="type-small text-text-muted empty:sr-only">
         {ok}
       </p>
+      {/* Solo aparece con un empate en la mejor media y la votación cerrada. */}
+      <MvpTiebreak matchId={match.id} seasonId={seasonId} chosenId={match.mvpPlayerId} onDone={backToList} />
       <section aria-labelledby="datos-partido" className="flex flex-col gap-3">
         <h2 id="datos-partido" className="type-title">
           Datos del partido

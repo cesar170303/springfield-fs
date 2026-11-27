@@ -61,6 +61,7 @@ describe('matchStateText', () => {
       'Votación abierta hasta el 29 nov',
     )
     expect(matchStateText({ key: 'closed' })).toBe('Votación cerrada')
+    expect(matchStateText({ key: 'mvpTie' })).toBe('Empate de MVP')
   })
 })
 

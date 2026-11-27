@@ -12,6 +12,11 @@ Fallos detectados que aún no están resueltos. Al arreglarlos, pasa la línea a
 
 ## [Sin publicar]
 
+Panel de admin, fase 4 (desempate de MVP y usuarios), en curso.
+
+### Añadido
+- **Desempate de MVP**: con la votación cerrada y empate en la mejor media, el editor del partido enseña arriba a los empatados con su media («8,3») para elegir al MVP, y se puede cambiar después. La lista de partidos marca «Empate de MVP» y el inicio del panel avisa de los empates sin resolver. Con la votación abierta no aparece nada: la base de datos solo da empates de partidos ya cerrados. La plantilla cuenta el MVP elegido (vía `get_season_mvps`).
+
 ## [0.14.0] - 2026-11-26
 
 Paso 5 de la spec, panel de admin: partidos (fase 3 de 4; plan en `tasks/plan.md`, spec §12). Sin migraciones nuevas: no hace falta aplicar nada en la nube.

@@ -65,17 +65,25 @@ export function createMatchAdminUseCases({ matchAdminRepository, seasonAdminRepo
   return {
     /** Partidos de la temporada, del más reciente al más antiguo, con su competición y su etiqueta (J5, Copa J2). */
     async listMatches(seasonId) {
-      const [matches, competitions] = await Promise.all([
+      const [matches, competitions, ties] = await Promise.all([
         matchAdminRepository.getMatches(seasonId),
         seasonAdminRepository.getCompetitions(),
+        matchAdminRepository.getMvpTies(seasonId),
       ])
       const byId = new Map(competitions.map((c) => [c.id, c]))
+      const tied = new Set(ties.map((t) => t.matchId))
       return {
         competitions,
         matches: matches
           .map((m) => {
             const competition = byId.get(m.competitionId)
-            return { ...m, competition, label: matchLabel(competition?.type, m.round) }
+            return {
+              ...m,
+              competition,
+              label: matchLabel(competition?.type, m.round),
+              // Empate en la mejor media que el admin aún no ha resuelto («Empate de MVP»).
+              mvpTiePending: tied.has(m.id) && m.mvpPlayerId === null,
+            }
           })
           .sort((a, b) => b.date - a.date),
       }
@@ -146,6 +154,24 @@ export function createMatchAdminUseCases({ matchAdminRepository, seasonAdminRepo
     },
 
     deleteMissedPenalty: (id) => matchAdminRepository.deleteMissedPenalty(id),
+
+    /** Los empatados en la mejor media de un partido (votación cerrada), con su nombre y su media. Vacío si no hay empate. */
+    async getMvpTie({ matchId, seasonId }) {
+      const [ties, players] = await Promise.all([
+        matchAdminRepository.getMvpTies(seasonId),
+        playerAdminRepository.getPlayers(),
+      ])
+      const byId = new Map(players.map((p) => [p.id, p]))
+      return ties
+        .filter((t) => t.matchId === matchId)
+        .map((t) => ({ playerId: t.playerId, name: playerName(byId.get(t.playerId)), rating: t.rating }))
+    },
+
+    /** Elegir a alguien que no empata en cabeza lo impide la base de datos, con su frase. */
+    async saveMvp({ matchId, playerId }) {
+      if (!playerId) throw new Error('Elige quién es el MVP.')
+      await matchAdminRepository.setMvp(matchId, playerId)
+    },
 
     /** Terminar abre la votación (7 días desde el partido). Sin resultado o con fecha futura, la base de datos lo impide. */
     finishMatch: (id) => matchAdminRepository.setFinished(id, true),

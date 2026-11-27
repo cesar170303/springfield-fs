@@ -184,6 +184,19 @@ describe('partidos por terminar', () => {
     expect(await screen.findByRole('link', { name: '1 partido por terminar' })).toBeInTheDocument()
   })
 
+  it('avisa también de los empates de MVP sin resolver', async () => {
+    vi.useFakeTimers({ now: new Date(2026, 10, 26, 12, 0), toFake: ['Date'] })
+    const tied = { id: 5, date: new Date(2026, 10, 1, 18, 30), isFinished: true, mvpTiePending: true }
+    renderHome(vi.fn().mockResolvedValue(FILTERS), '/admin?temporada=2', vi.fn().mockResolvedValue({ matches: [tied] }))
+
+    const pending = await screen.findByRole('region', { name: 'Pendiente' })
+    expect(within(pending).getByRole('link', { name: '1 empate de MVP' })).toHaveAttribute(
+      'href',
+      '/admin/partidos?temporada=2',
+    )
+    expect(within(pending).queryByText(/por terminar/)).not.toBeInTheDocument()
+  })
+
   it('sin partidos pendientes (o si no se pueden cargar), no hay aviso', async () => {
     renderHome(vi.fn().mockResolvedValue(FILTERS), '/admin?temporada=2', vi.fn().mockRejectedValue(new Error('x')))
 

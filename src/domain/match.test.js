@@ -62,6 +62,14 @@ describe('matchState', () => {
     })
     expect(matchState(match('2026-11-15T17:30:00Z', true), now)).toEqual({ key: 'closed' })
   })
+
+  it('con la votación cerrada y un empate en cabeza sin resolver, «Empate de MVP»', () => {
+    const tied = { ...match('2026-11-15T17:30:00Z', true), mvpTiePending: true }
+
+    expect(matchState(tied, now)).toEqual({ key: 'mvpTie' })
+    // Con la votación abierta no se sabe si hay empate (las medias aún no se ven).
+    expect(matchState({ ...tied, date: new Date('2026-11-22T17:30:00Z') }, now).key).toBe('voting')
+  })
 })
 
 describe('nextRound', () => {

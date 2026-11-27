@@ -56,7 +56,7 @@ export default function MatchesAdmin() {
                 <span className="flex min-w-0 flex-1 flex-col">
                   <span className="truncate type-body font-semibold">{match.opponent}</span>{' '}
                   <span
-                    className={`type-small ${status.key === 'unfinished' ? 'text-accent-text' : 'text-text-muted'}`}
+                    className={`type-small ${status.key === 'unfinished' || status.key === 'mvpTie' ? 'text-accent-text' : 'text-text-muted'}`}
                   >
                     {matchStateText(status)}
                   </span>

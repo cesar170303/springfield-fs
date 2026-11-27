@@ -21,12 +21,14 @@ export const votingClosesAt = (date) => new Date(date.getTime() + VOTING_DAYS * 
 
 /**
  * Estado de un partido en el panel: 'upcoming' (por jugar), 'unfinished' (jugado y sin terminar), 'voting' (terminado,
- * con la votación abierta hasta `closesAt`) o 'closed' (votación cerrada).
+ * con la votación abierta hasta `closesAt`), 'closed' (votación cerrada) o 'mvpTie' (cerrada, con un empate en la
+ * mejor media que el admin aún no ha resuelto).
  */
-export function matchState({ date, isFinished }, now = new Date()) {
+export function matchState({ date, isFinished, mvpTiePending = false }, now = new Date()) {
   if (!isFinished) return { key: date > now ? 'upcoming' : 'unfinished' }
   const closesAt = votingClosesAt(date)
-  return closesAt > now ? { key: 'voting', closesAt } : { key: 'closed' }
+  if (closesAt > now) return { key: 'voting', closesAt }
+  return { key: mvpTiePending ? 'mvpTie' : 'closed' }
 }
 
 /** Solo un partido que ya se ha jugado (o que empieza ahora) puede tener resultado. */

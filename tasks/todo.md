@@ -58,7 +58,7 @@ Detalle, decisiones y riesgos: [`tasks/plan.md`](plan.md).
 
 ## Fase 4 — Desempate de MVP y usuarios → PR, 0.15.0
 
-- [ ] **T15.** Desempate de MVP
+- [x] **T15.** Desempate de MVP
   - Salen solo los empatados con su media; se puede cambiar la elección; con la votación abierta no aparece nada
 - [ ] **T16.** Usuarios y roles (solo superadmin)
   - Hacer/quitar admin con confirmación; su propia fila y la de otro superadmin, sin botones
