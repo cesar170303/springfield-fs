@@ -13,6 +13,7 @@ const CONSTRAINTS = {
   matches_check: 'Un partido terminado necesita el resultado.',
   season_voters_pkey: 'Ya vota esta temporada.',
   player_seasons_shirt_number_check: 'El dorsal tiene que ser un número del 1 al 99.',
+  votes_pkey: 'Ya le habías votado.',
   seasons_check:'La fecha de fin tiene que ser posterior a la de inicio.',
 }
 

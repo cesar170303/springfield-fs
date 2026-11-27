@@ -108,3 +108,28 @@ export function toMatchLogEntry(row) {
     votingClosesAt: new Date(row.voting_closes_at),
   }
 }
+
+/** Fila de get_my_open_votes → OpenVote. `photoUrl` traduce la ruta del bucket a una URL pública. */
+export function toOpenVote(row, photoUrl) {
+  return {
+    matchId: row.match_id,
+    matchDate: new Date(row.match_date),
+    label: row.label,
+    opponent: row.opponent,
+    goalsFor: row.goals_for,
+    goalsAgainst: row.goals_against,
+    votingClosesAt: new Date(row.voting_closes_at),
+    player: {
+      id: row.player_id,
+      name: playerName({ nickname: row.nickname, firstName: row.first_name }),
+      position: row.player_position,
+      photoUrl: row.photo_path ? photoUrl(row.photo_path) : null,
+      shirtNumber: row.shirt_number,
+    },
+    minutes: Number(row.minutes),
+    goals: Number(row.goals),
+    assists: Number(row.assists),
+    goalsConceded: numberOrNull(row.goals_conceded),
+    myScore: numberOrNull(row.my_score),
+  }
+}
