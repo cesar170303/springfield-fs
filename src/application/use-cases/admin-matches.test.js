@@ -51,6 +51,8 @@ function setup() {
     addMissedPenalty: vi.fn().mockResolvedValue(),
     deleteMissedPenalty: vi.fn().mockResolvedValue(),
     setFinished: vi.fn().mockResolvedValue(),
+    getMvpTies: vi.fn().mockResolvedValue([]),
+    setMvp: vi.fn().mockResolvedValue(),
     saveSquad: vi.fn().mockResolvedValue(),
     removeFromSquad: vi.fn().mockResolvedValue(),
   }
@@ -335,5 +337,60 @@ describe('terminar y reabrir', () => {
       [6, true],
       [6, false],
     ])
+  })
+})
+
+describe('desempate de MVP', () => {
+  it('marca los partidos con un empate en cabeza que el admin aún no ha resuelto', async () => {
+    const { matchAdminRepository, useCases } = setup()
+    matchAdminRepository.getMatches.mockResolvedValue([
+      match(1, 1, 5, '2026-11-08T17:30:00Z', { isFinished: true, mvpPlayerId: null }),
+      match(2, 1, 4, '2026-11-01T17:30:00Z', { isFinished: true, mvpPlayerId: 9 }),
+      match(3, 1, 3, '2026-10-25T17:30:00Z', { isFinished: true, mvpPlayerId: null }),
+    ])
+    matchAdminRepository.getMvpTies.mockResolvedValue([
+      { matchId: 1, playerId: 3, rating: 8.3 },
+      { matchId: 1, playerId: 4, rating: 8.3 },
+      { matchId: 2, playerId: 9, rating: 7.5 },
+      { matchId: 2, playerId: 3, rating: 7.5 },
+    ])
+
+    const { matches } = await useCases.listMatches(2)
+
+    expect(matches.map((m) => [m.id, m.mvpTiePending])).toEqual([
+      [1, true],
+      [2, false], // ya elegido
+      [3, false], // sin empate
+    ])
+    expect(matchAdminRepository.getMvpTies).toHaveBeenCalledWith(2)
+  })
+
+  it('da los empatados de un partido con su nombre y su media', async () => {
+    const { matchAdminRepository, useCases } = setup()
+    matchAdminRepository.getMvpTies.mockResolvedValue([
+      { matchId: 1, playerId: 3, rating: 8.33 },
+      { matchId: 1, playerId: 4, rating: 8.33 },
+      { matchId: 2, playerId: 5, rating: 9 },
+    ])
+
+    expect(await useCases.getMvpTie({ matchId: 1, seasonId: 2 })).toEqual([
+      { playerId: 3, name: 'Checo', rating: 8.33 },
+      { playerId: 4, name: 'Navi', rating: 8.33 },
+    ])
+  })
+
+  it('sin empate en ese partido, no hay nadie que elegir', async () => {
+    const { useCases } = setup()
+
+    expect(await useCases.getMvpTie({ matchId: 1, seasonId: 2 })).toEqual([])
+  })
+
+  it('guarda el MVP elegido; sin elegir, lo explica', async () => {
+    const { matchAdminRepository, useCases } = setup()
+
+    await useCases.saveMvp({ matchId: 1, playerId: 4 })
+    await expect(useCases.saveMvp({ matchId: 1, playerId: null })).rejects.toThrow('Elige quién es el MVP.')
+
+    expect(matchAdminRepository.setMvp).toHaveBeenCalledExactlyOnceWith(1, 4)
   })
 })

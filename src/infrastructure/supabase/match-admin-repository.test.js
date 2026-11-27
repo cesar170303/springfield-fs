@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest'
+import { describe, expect, it, vi } from 'vitest'
 import { createSupabaseMatchAdminRepository } from './match-admin-repository'
 
 // Cliente falso: apunta los pasos de cada consulta ([['from', 'matches'], ['select', …], …]) y responde por orden.
@@ -22,7 +22,8 @@ function setup(...results) {
     )
     return query
   }
-  return { calls, repository: createSupabaseMatchAdminRepository({ from }) }
+  const rpc = vi.fn().mockResolvedValue(results[0] ?? { data: [], error: null })
+  return { calls, rpc, repository: createSupabaseMatchAdminRepository({ from, rpc }) }
 }
 
 const ROW = {
@@ -34,6 +35,7 @@ const ROW = {
   goals_for: 4,
   goals_against: 2,
   is_finished: false,
+  mvp_override_player_id: null,
   match_squad: [{ count: 8 }],
 }
 const DATA = {
@@ -69,6 +71,7 @@ describe('repositorio de partidos del panel', () => {
         goalsAgainst: 2,
         isFinished: false,
         calledCount: 8,
+        mvpPlayerId: null,
       },
     ])
     expect(calls).toEqual([
@@ -78,7 +81,7 @@ describe('repositorio de partidos del panel', () => {
         // PostgREST no sabe si ir por ella o a través de `votes` (PGRST201) y no devuelve nada.
         [
           'select',
-          'id, competition_id, round, match_date, opponent, goals_for, goals_against, is_finished, ' +
+          'id, competition_id, round, match_date, opponent, goals_for, goals_against, is_finished, mvp_override_player_id, ' +
             'match_squad!match_squad_match_id_fkey(count)',
         ],
         ['eq', 'season_id', 2],
@@ -322,5 +325,52 @@ describe('terminar y reabrir', () => {
 
     await expect(repository.setFinished(6, true)).rejects.toThrow('No se pudo terminar el partido.')
     await expect(repository.setFinished(6, false)).rejects.toThrow('No se pudo reabrir el partido.')
+  })
+})
+
+describe('desempate de MVP', () => {
+  it('da los empatados en cabeza de cada partido de la temporada, con su media', async () => {
+    const { rpc, repository } = setup({
+      data: [
+        { match_id: 3, player_id: 7, rating: '8.33' },
+        { match_id: 3, player_id: 9, rating: '8.33' },
+      ],
+      error: null,
+    })
+
+    expect(await repository.getMvpTies(2)).toEqual([
+      { matchId: 3, playerId: 7, rating: 8.33 },
+      { matchId: 3, playerId: 9, rating: 8.33 },
+    ])
+    expect(rpc).toHaveBeenCalledWith('get_mvp_ties', { p_season_id: 2 })
+  })
+
+  it('guarda el MVP elegido y pide la fila de vuelta', async () => {
+    const { calls, repository } = setup()
+
+    await repository.setMvp(3, 7)
+
+    expect(calls).toEqual([
+      [['from', 'matches'], ['update', { mvp_override_player_id: 7 }], ['eq', 'id', 3], ['select', 'id'], ['single']],
+    ])
+  })
+
+  it('elegir a alguien que no empata lo impide la base de datos, con su frase', async () => {
+    const wrong = {
+      data: null,
+      error: {
+        code: 'P0001',
+        message: 'El MVP tiene que ser uno de los jugadores con la mejor media, con la votación cerrada',
+      },
+    }
+
+    await expect(setup(wrong).repository.setMvp(3, 1)).rejects.toThrow(
+      'El MVP tiene que ser uno de los jugadores con la mejor media, con la votación cerrada.',
+    )
+  })
+
+  it('si algo falla, lo dice', async () => {
+    await expect(setup(FAILED).repository.getMvpTies(2)).rejects.toThrow('No se pudieron cargar los empates de MVP.')
+    await expect(setup(FAILED).repository.setMvp(3, 7)).rejects.toThrow('No se pudo guardar el MVP.')
   })
 })

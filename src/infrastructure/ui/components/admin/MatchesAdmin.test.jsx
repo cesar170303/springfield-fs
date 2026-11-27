@@ -71,6 +71,24 @@ describe('MatchesAdmin', () => {
     expect(useCases.listMatches).toHaveBeenCalledWith(2)
   })
 
+  it('un empate de MVP sin resolver se ve en el estado, resaltado', async () => {
+    renderList({
+      listMatches: vi.fn().mockResolvedValue({
+        competitions: [],
+        matches: [
+          match(3, 'J3', new Date(2026, 10, 1, 18, 30), {
+            goalsFor: 2,
+            goalsAgainst: 0,
+            isFinished: true,
+            mvpTiePending: true,
+          }),
+        ],
+      }),
+    })
+
+    expect(await screen.findByText('Empate de MVP')).toHaveClass('text-accent-text')
+  })
+
   it('con un solo convocado, en singular', async () => {
     renderList({
       listMatches: vi.fn().mockResolvedValue({

@@ -27,7 +27,12 @@ export function nextSunday(now = new Date()) {
 /** «22 nov 18:30», en hora local. */
 export const formatDateTime = (date) => `${formatShortDate(date)} ${toLocalTime(date)}`
 
-const STATE_TEXT = { upcoming: 'Por jugar', unfinished: 'Por terminar', closed: 'Votación cerrada' }
+const STATE_TEXT = {
+  upcoming: 'Por jugar',
+  unfinished: 'Por terminar',
+  closed: 'Votación cerrada',
+  mvpTie: 'Empate de MVP',
+}
 
 /** Estado de matchState en palabras: «Por jugar», «Votación abierta hasta el 29 nov»… */
 export const matchStateText = (state) =>

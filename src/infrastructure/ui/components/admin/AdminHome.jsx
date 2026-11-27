@@ -8,7 +8,7 @@ import SeasonFilters from '../SeasonFilters'
 import LoadError from './LoadError'
 
 /** Inicio del panel de admin (docs/SPEC.md §12): una tarjeta con icono por sección. Cada sección nueva añade la suya. */
-export default function AdminHome() {
+export default function AdminHome({ superadmin = false }) {
   const season = useSeasonFilters()
   const { listMatches } = useUseCases()
   // Avisos: partidos ya jugados sin terminar. Si no se pueden cargar, simplemente no hay aviso.
@@ -16,7 +16,12 @@ export default function AdminHome() {
     season.seasonId ? () => listMatches(season.seasonId) : () => new Promise(() => {}),
     season.seasonId,
   )
-  const unfinished = matches?.matches.filter((m) => matchState(m).key === 'unfinished').length ?? 0
+  const count = (key) => matches?.matches.filter((m) => matchState(m).key === key).length ?? 0
+  // Avisos del inicio: lo que falta por hacer en los partidos de la temporada.
+  const pending = [
+    { n: count('unfinished'), one: 'partido por terminar', many: 'partidos por terminar' },
+    { n: count('mvpTie'), one: 'empate de MVP', many: 'empates de MVP' },
+  ].filter((p) => p.n > 0)
   const { search } = useLocation()
   const current = season.filters?.seasons.find((s) => s.isCurrent)
   // Mientras la URL aún no trae temporada, la inicial (la que va a poner).
@@ -42,6 +47,8 @@ export default function AdminHome() {
       name: 'Votantes',
       note: selected ? `Viewers que votan en ${selected.name}` : 'Primero, crea una temporada',
     },
+    // Solo el superadmin gestiona usuarios y roles.
+    ...(superadmin ? [{ to: '/admin/usuarios', icon: 'admin', name: 'Usuarios', note: 'Quién es admin' }] : []),
   ]
 
   return (
@@ -52,23 +59,26 @@ export default function AdminHome() {
       </header>
       {season.failed && <LoadError message="No se pudo cargar el panel." onRetry={season.retry} />}
       {season.filters?.initialSeasonId === null && <p className="text-text-muted">Aún no hay ninguna temporada.</p>}
-      {unfinished > 0 && (
+      {pending.length > 0 && (
         <section aria-labelledby="pendiente" className="rounded-lg bg-surface px-4 py-1">
           <h2 id="pendiente" className="sr-only">
             Pendiente
           </h2>
-          <Link
-            to={{ pathname: '/admin/partidos', search }}
-            className="flex min-h-14 items-center justify-between gap-3"
-          >
-            <span className="flex items-baseline gap-3">
-              <span className="type-name text-accent-text tabular-nums">{unfinished}</span>{' '}
-              <span className="type-body">{unfinished === 1 ? 'partido por terminar' : 'partidos por terminar'}</span>
-            </span>
-            <span aria-hidden="true" className="text-text-muted">
-              ›
-            </span>
-          </Link>
+          {pending.map(({ n, one, many }) => (
+            <Link
+              key={one}
+              to={{ pathname: '/admin/partidos', search }}
+              className="flex min-h-14 items-center justify-between gap-3 border-line not-first:border-t"
+            >
+              <span className="flex items-baseline gap-3">
+                <span className="type-name text-accent-text tabular-nums">{n}</span>{' '}
+                <span className="type-body">{n === 1 ? one : many}</span>
+              </span>
+              <span aria-hidden="true" className="text-text-muted">
+                ›
+              </span>
+            </Link>
+          ))}
         </section>
       )}
       {season.filters && (

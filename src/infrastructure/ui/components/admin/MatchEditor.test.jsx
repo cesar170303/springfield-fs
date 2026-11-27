@@ -47,6 +47,7 @@ function renderEditor(entry = '/admin/partidos/6?temporada=2', overrides = {}) {
     getMatchGoals: vi.fn().mockResolvedValue({ players: [], goals: [], missedPenalties: [] }),
     finishMatch: vi.fn().mockResolvedValue(),
     reopenMatch: vi.fn().mockResolvedValue(),
+    getMvpTie: vi.fn().mockResolvedValue([]),
     ...overrides,
   }
   render(
@@ -184,6 +185,24 @@ describe('MatchEditor', () => {
     await userEvent.click(screen.getByRole('button', { name: 'Sin asistencia' }))
 
     await vi.waitFor(() => expect(within(finish).queryByText(/Falta 1 gol por asignar/)).not.toBeInTheDocument())
+  })
+
+  it('con un empate de MVP, arriba, elegir al MVP; al guardarlo, vuelve a la lista', async () => {
+    const useCases = renderEditor('/admin/partidos/5?temporada=2', {
+      getMvpTie: vi.fn().mockResolvedValue([
+        { playerId: 3, name: 'Checo', rating: 8.33 },
+        { playerId: 4, name: 'Navi', rating: 8.33 },
+      ]),
+      saveMvp: vi.fn().mockResolvedValue(),
+    })
+
+    const tie = await screen.findByRole('region', { name: 'Empate de MVP' })
+    await userEvent.click(within(tie).getByRole('radio', { name: /Navi/ }))
+    await userEvent.click(within(tie).getByRole('button', { name: 'Guardar MVP' }))
+
+    expect(useCases.getMvpTie).toHaveBeenCalledWith({ matchId: 5, seasonId: 2 })
+    expect(useCases.saveMvp).toHaveBeenCalledWith({ matchId: 5, playerId: 4 })
+    expect(await screen.findByText('Lista en /admin/partidos: MVP guardado: Navi.')).toBeInTheDocument()
   })
 
   it('un partido terminado se puede reabrir', async () => {

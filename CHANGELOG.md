@@ -10,7 +10,15 @@ Fallos detectados que aún no están resueltos. Al arreglarlos, pasa la línea a
 
 - Sin red, la app abre con la letra de reserva y sin el icono de Google: el service worker no precarga las fuentes (`woff2`) ni los `svg` (Workbox solo incluye `js`, `css` y `html` por defecto).
 
-## [Sin publicar]
+## [0.15.0] - 2026-11-27
+
+Paso 5 de la spec, panel de admin: desempate de MVP y usuarios (fase 4 de 4; con ella, el panel queda completo). Sin migraciones nuevas: no hace falta aplicar nada en la nube.
+
+**Nota de seguridad:** que ni la propia cuenta ni la de otro superadmin se puedan cambiar lo aplica la interfaz. RLS deja al superadmin editar cualquier perfil (también el suyo); blindarlo en la base de datos pediría una migración.
+
+### Añadido
+- **Desempate de MVP**: con la votación cerrada y empate en la mejor media, el editor del partido enseña arriba a los empatados con su media («8,3») para elegir al MVP, y se puede cambiar después. La lista de partidos marca «Empate de MVP» y el inicio del panel avisa de los empates sin resolver. Con la votación abierta no aparece nada: la base de datos solo da empates de partidos ya cerrados. La plantilla cuenta el MVP elegido (vía `get_season_mvps`).
+- **Usuarios y roles** (`/admin/usuarios`), solo para el superadmin: cada cuenta con su correo, su rol en una pastilla de color (Superadmin y Admin en azul, Jugador y Viewer en gris) y su ficha con el icono de camiseta; «Hacer admin» (azul) y «Quitar admin» (rojo) con confirmación (al quitarlo, vuelve a jugador si tiene ficha y a viewer si no). Ni la propia cuenta ni la de otro superadmin tienen botones. Un admin no ve la sección y en `/admin/usuarios` lee «Esta página no existe». El rol y la cuenta llegan al panel desde `App`, como el rol a la barra.
 
 ## [0.14.0] - 2026-11-26
 

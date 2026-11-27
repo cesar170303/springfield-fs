@@ -19,11 +19,16 @@ function WhereAmI() {
   return <p>Estás en {pathname + search}</p>
 }
 
-function renderHome(getSquadFilters, url = '/admin', listMatches = vi.fn().mockResolvedValue({ matches: [] })) {
+function renderHome(
+  getSquadFilters,
+  url = '/admin',
+  listMatches = vi.fn().mockResolvedValue({ matches: [] }),
+  superadmin = false,
+) {
   render(
     <UseCasesContext.Provider value={{ getSquadFilters, listMatches }}>
       <MemoryRouter initialEntries={[url]}>
-        <AdminHome />
+        <AdminHome superadmin={superadmin} />
         <Link to="/admin">Admin</Link>
         <WhereAmI />
       </MemoryRouter>
@@ -133,6 +138,22 @@ describe('AdminHome', () => {
     )
   })
 
+  it('solo el superadmin ve la tarjeta «Usuarios»', async () => {
+    renderHome(vi.fn().mockResolvedValue(FILTERS), '/admin?temporada=2', undefined, true)
+
+    expect(await screen.findByRole('link', { name: /^Usuarios/ })).toHaveAttribute(
+      'href',
+      '/admin/usuarios?temporada=2',
+    )
+  })
+
+  it('un admin no ve «Usuarios»', async () => {
+    renderHome(vi.fn().mockResolvedValue(FILTERS), '/admin?temporada=2')
+
+    await screen.findByRole('navigation', { name: 'Secciones del panel' })
+    expect(screen.queryByRole('link', { name: /^Usuarios/ })).not.toBeInTheDocument()
+  })
+
   it('si no se puede cargar, lo dice', async () => {
     renderHome(vi.fn().mockRejectedValue(new Error('x')))
 
@@ -182,6 +203,19 @@ describe('partidos por terminar', () => {
     )
 
     expect(await screen.findByRole('link', { name: '1 partido por terminar' })).toBeInTheDocument()
+  })
+
+  it('avisa también de los empates de MVP sin resolver', async () => {
+    vi.useFakeTimers({ now: new Date(2026, 10, 26, 12, 0), toFake: ['Date'] })
+    const tied = { id: 5, date: new Date(2026, 10, 1, 18, 30), isFinished: true, mvpTiePending: true }
+    renderHome(vi.fn().mockResolvedValue(FILTERS), '/admin?temporada=2', vi.fn().mockResolvedValue({ matches: [tied] }))
+
+    const pending = await screen.findByRole('region', { name: 'Pendiente' })
+    expect(within(pending).getByRole('link', { name: '1 empate de MVP' })).toHaveAttribute(
+      'href',
+      '/admin/partidos?temporada=2',
+    )
+    expect(within(pending).queryByText(/por terminar/)).not.toBeInTheDocument()
   })
 
   it('sin partidos pendientes (o si no se pueden cargar), no hay aviso', async () => {

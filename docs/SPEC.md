@@ -220,7 +220,7 @@ supabase.rpc('set_current_season', { p_season_id }) // panel de admin: la actual
 2. Cliente de Supabase, login (email + Google) y contexto de sesión con el rol del usuario.
 3. Lista de la plantilla (`get_squad_stats`) con selector de temporada y filtro de competición (ver §5, «Pantalla de la plantilla»).
 4. Ficha del jugador: estadísticas grandes y ordenadas, más la gráfica (SVG propio, sin librería; decidido el 2026-11-22). Hecha en 0.11.0 (§7), tras la navegación entre pantallas (0.10.0, ADR-0004).
-5. Panel de admin: temporadas, jugadores (con foto), plantilla y dorsales, partidos, convocatoria y minutos, goles, tarjetas, penaltis fallados, cerrar partido y desempatar MVP. También competiciones, viewers votantes, copiar la plantilla anterior y usuarios y roles (ver §12; tareas en `tasks/todo.md`).
+5. Panel de admin: temporadas, jugadores (con foto), plantilla y dorsales, partidos, convocatoria y minutos, goles, tarjetas, penaltis fallados, cerrar partido y desempatar MVP. También competiciones, viewers votantes, copiar la plantilla anterior y usuarios y roles (ver §12; tareas en `tasks/todo.md`). Hecho en 0.12.0-0.15.0.
 6. Pantalla de votación para jugadores (ver §6, «Pantalla de votación»).
 7. Rankings.
 8. Notificaciones push.

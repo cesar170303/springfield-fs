@@ -4,7 +4,7 @@ import { toAdminMatch } from './mappers'
 // Cuántos convocados tiene cada partido, en la misma consulta. La relación va nombrada: entre matches y match_squad
 // hay otro camino (a través de `votes`) y sin nombre PostgREST no sabe cuál usar (PGRST201).
 const COLUMNS =
-  'id, competition_id, round, match_date, opponent, goals_for, goals_against, is_finished, ' +
+  'id, competition_id, round, match_date, opponent, goals_for, goals_against, is_finished, mvp_override_player_id, ' +
   'match_squad!match_squad_match_id_fkey(count)'
 
 const toRow = ({ competitionId, round, date, opponent, goalsFor, goalsAgainst }) => ({
@@ -109,6 +109,19 @@ export function createSupabaseMatchAdminRepository(client) {
     async addMissedPenalty(matchId, { playerId, type }) {
       const { error } = await client.from('missed_penalties').insert({ match_id: matchId, player_id: playerId, type })
       if (error) throw readableError(error, 'No se pudo apuntar el penalti fallado. Inténtalo de nuevo.')
+    },
+
+    // Solo staff, y solo partidos con la votación cerrada: las medias no se ven mientras se vota (private.match_ratings).
+    async getMvpTies(seasonId) {
+      const { data, error } = await client.rpc('get_mvp_ties', { p_season_id: seasonId })
+      if (error) throw readableError(error, 'No se pudieron cargar los empates de MVP. Inténtalo de nuevo.')
+      return data.map((row) => ({ matchId: row.match_id, playerId: row.player_id, rating: Number(row.rating) }))
+    },
+
+    // El trigger solo deja elegir a uno de los empatados en la mejor media, con la votación cerrada (P0001).
+    async setMvp(matchId, playerId) {
+      const { error } = await one(client.from('matches').update({ mvp_override_player_id: playerId }), matchId)
+      if (error) throw readableError(error, 'No se pudo guardar el MVP. Inténtalo de nuevo.')
     },
 
     async setFinished(id, finished) {

@@ -47,6 +47,7 @@ export function toAdminMatch(row) {
     goalsAgainst: row.goals_against,
     isFinished: row.is_finished,
     calledCount: row.match_squad?.[0]?.count ?? 0,
+    mvpPlayerId: row.mvp_override_player_id,
   }
 }
 

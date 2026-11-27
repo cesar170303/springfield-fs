@@ -55,12 +55,16 @@
  * @property {(seasonId: number) => Promise<string[]>} getSeasonVoters ids de las cuentas que votan esa temporada
  * @property {(seasonId: number, userId: string) => Promise<void>} addSeasonVoter solo un viewer (lo comprueba RLS)
  * @property {(seasonId: number, userId: string) => Promise<void>} removeSeasonVoter
+ * @property {() => Promise<{ id: string, fullName: string | null, email: string, role: string }[]>} getAccounts
+ * @property {() => Promise<{ userId: string, nickname: string | null, firstName: string }[]>} getLinkedPlayers fichas con cuenta
+ * @property {(userId: string, role: string) => Promise<void>} setRole solo el superadmin (RLS)
  */
 
 /**
  * @typedef {{ id: number, competitionId: number, round: number, date: Date, opponent: string,
- *   goalsFor: number | null, goalsAgainst: number | null, isFinished: boolean, calledCount: number }} AdminMatch
- *   `calledCount`: cuántos jugadores tiene convocados
+ *   goalsFor: number | null, goalsAgainst: number | null, isFinished: boolean, calledCount: number,
+ *   mvpPlayerId: number | null }} AdminMatch
+ *   `calledCount`: cuántos jugadores tiene convocados; `mvpPlayerId`: el MVP elegido por el admin en un empate
  * @typedef {{ competitionId: number, round: number, date: Date, opponent: string,
  *   goalsFor: number | null, goalsAgainst: number | null }} MatchData
  *
@@ -78,6 +82,8 @@
  * @property {(matchId: number, penalty: { playerId: number, type: 'penalty' | 'double_penalty' }) => Promise<void>} addMissedPenalty
  * @property {(id: number) => Promise<void>} deleteMissedPenalty
  * @property {(id: number, finished: boolean) => Promise<void>} setFinished terminar (abre la votación) o reabrir
+ * @property {(seasonId: number) => Promise<{ matchId: number, playerId: number, rating: number }[]>} getMvpTies empatados en cabeza, con la votación cerrada
+ * @property {(matchId: number, playerId: number) => Promise<void>} setMvp desempate: uno de los empatados
  *
  * @typedef {{ playerId: number, minutes: number, yellow: boolean, red: boolean }} SquadEntry un convocado
  * @typedef {'regular' | 'penalty' | 'double_penalty'} GoalType

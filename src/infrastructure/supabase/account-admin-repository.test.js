@@ -94,3 +94,58 @@ describe('repositorio de cuentas del panel', () => {
     await expect(repository.removeSeasonVoter(2, 'u-1')).rejects.toThrow('No se pudo quitar el votante.')
   })
 })
+
+describe('usuarios y roles', () => {
+  it('da todas las cuentas con su nombre, correo y rol', async () => {
+    const { calls, repository } = setup({
+      data: [{ id: 'u-1', full_name: 'Rosa Ejemplo', email: 'rosa@example.com', role: 'viewer' }],
+      error: null,
+    })
+
+    expect(await repository.getAccounts()).toEqual([
+      { id: 'u-1', fullName: 'Rosa Ejemplo', email: 'rosa@example.com', role: 'viewer' },
+    ])
+    expect(calls).toEqual([
+      [
+        ['from', 'profiles'],
+        ['select', 'id, full_name, email, role'],
+      ],
+    ])
+  })
+
+  it('da qué ficha tiene vinculada cada cuenta (columnas concretas: el correo de players no se lee)', async () => {
+    const { calls, repository } = setup({
+      data: [{ user_id: 'u-2', nickname: 'Checo', first_name: 'Sergio' }],
+      error: null,
+    })
+
+    expect(await repository.getLinkedPlayers()).toEqual([{ userId: 'u-2', nickname: 'Checo', firstName: 'Sergio' }])
+    expect(calls).toEqual([
+      [
+        ['from', 'players'],
+        ['select', 'user_id, nickname, first_name'],
+        ['not', 'user_id', 'is', null],
+      ],
+    ])
+  })
+
+  it('cambia el rol de una cuenta y pide la fila de vuelta', async () => {
+    const { calls, repository } = setup()
+
+    await repository.setRole('u-1', 'admin')
+
+    expect(calls).toEqual([[['from', 'profiles'], ['update', { role: 'admin' }], ['eq', 'id', 'u-1'], ['select', 'id'], ['single']]])
+  })
+
+  it('si algo falla (o RLS lo ignora), lo dice', async () => {
+    const { repository } = setup(FAILED, FAILED, FAILED)
+
+    await expect(repository.getAccounts()).rejects.toThrow('No se pudieron cargar los usuarios.')
+    await expect(repository.getLinkedPlayers()).rejects.toThrow('No se pudieron cargar los usuarios.')
+    await expect(repository.setRole('u-1', 'admin')).rejects.toThrow('No se pudo cambiar el rol.')
+    const ignored = { data: null, error: { code: 'PGRST116', message: 'x' } }
+    await expect(setup(ignored).repository.setRole('u-1', 'admin')).rejects.toThrow(
+      'No tienes permiso para hacer esto, o ya no existe.',
+    )
+  })
+})

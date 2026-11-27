@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { displayName, isStaff } from './user'
+import { displayName, isStaff, isSuperadmin, roleWithoutAdmin } from './user'
 
 describe('displayName', () => {
   it('usa el nombre completo si existe', () => {
@@ -22,5 +22,19 @@ describe('isStaff', () => {
 
   it.each(['player', 'viewer', null])('%s no es del staff', (role) => {
     expect(isStaff(role)).toBe(false)
+  })
+})
+
+describe('isSuperadmin', () => {
+  it('solo el superadmin', () => {
+    expect(isSuperadmin('superadmin')).toBe(true)
+    expect(['admin', 'player', 'viewer', null].map(isSuperadmin)).toEqual([false, false, false, false])
+  })
+})
+
+describe('roleWithoutAdmin', () => {
+  it('al quitar el admin, vuelve a jugador si tiene ficha; si no, a viewer', () => {
+    expect(roleWithoutAdmin({ hasPlayer: true })).toBe('player')
+    expect(roleWithoutAdmin({ hasPlayer: false })).toBe('viewer')
   })
 })
