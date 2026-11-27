@@ -1,21 +1,133 @@
-import { useState } from 'react'
+import { useEffect, useLayoutEffect, useRef, useState } from 'react'
 import { formatScore, voteStats } from '../../../domain/vote'
 import { positionLabel } from '../../../domain/squad'
+import { Draggable, gsap, motionAllowed, useMotion } from '../motion'
+import { swipeDecision, swipeProgress } from '../swipe'
 
 /**
  * Tarjeta de un compañero (docs/SPEC.md §6): foto a sangre (sin foto, el dorsal), apodo, franja con sus datos del
- * partido y la barra de la nota, que empieza sin nota. «Aceptar nota» llama a `onAccept` con la nota o null.
+ * partido y la barra de la nota, que empieza sin nota. Se vota con «Aceptar nota» o deslizando a la derecha y se salta
+ * con «Saltar por ahora» o deslizando a la izquierda. `onAccept` recibe la nota (o null, para que la pantalla avise).
+ * Con «reducir movimiento» la tarjeta se sigue arrastrando (la mueve el dedo), pero sin vuelos ni efectos.
  */
-export default function VoteCard({ vote, matchLabel, opponent, onAccept, onSkip }) {
+export default function VoteCard({ vote, matchLabel, opponent, canSkip, onAccept, onSkip }) {
   const [score, setScore] = useState(null)
+  const card = useRef(null)
+  const scoreText = useRef(null)
+  const stamps = useRef({})
+  const leaving = useRef(false)
+  const actions = useRef({})
   const { player } = vote
   const text = score === null ? 'sin nota' : formatScore(score)
 
+  // Entra desde su sitio en la pila: un poco más pequeña y más arriba.
+  useMotion(() => {
+    gsap.from(card.current, { scale: 0.94, y: -16, duration: 0.35, ease: 'power2.out' })
+  }, card)
+
+  function showStamps(progress) {
+    gsap.set(stamps.current.yes, { opacity: Math.max(0, progress) })
+    gsap.set(stamps.current.no, { opacity: Math.max(0, -progress) })
+  }
+
+  function backToPlace() {
+    showStamps(0)
+    if (motionAllowed()) gsap.to(card.current, { x: 0, rotation: 0, duration: 0.5, ease: 'elastic.out(1, 0.6)' })
+    else gsap.set(card.current, { x: 0, rotation: 0 })
+  }
+
+  // Sale por un lado (1 derecha, -1 izquierda) y después avisa a la pantalla, que monta la siguiente.
+  function leave(direction, then) {
+    if (leaving.current) return
+    leaving.current = true
+    if (!motionAllowed()) return then()
+    gsap.to(card.current, {
+      x: direction * window.innerWidth,
+      rotation: direction * 22,
+      opacity: 0,
+      duration: 0.35,
+      ease: 'power2.in',
+      onComplete: then,
+    })
+  }
+
+  function accept() {
+    if (score === null) {
+      backToPlace()
+      return onAccept(null)
+    }
+    leave(1, () => onAccept(score))
+  }
+
+  function skip() {
+    if (!canSkip) {
+      backToPlace()
+      return onSkip()
+    }
+    leave(-1, onSkip)
+  }
+
+  // El gesto se crea una vez; lee siempre la nota y las acciones del último render.
+  useLayoutEffect(() => {
+    actions.current = { accept, skip }
+  })
+
+  useEffect(() => {
+    const el = card.current
+    const [drag] = Draggable.create(el, {
+      type: 'x',
+      dragClickables: false, // sobre la barra y los botones no empieza el gesto (SPEC §6)
+      zIndexBoost: false,
+      onDrag() {
+        const width = el.offsetWidth
+        if (motionAllowed()) gsap.set(el, { rotation: (this.x / width) * 14 })
+        showStamps(swipeProgress(this.x, width))
+      },
+      onRelease() {
+        const decision = swipeDecision(this.x, el.offsetWidth)
+        if (decision === 'vote') actions.current.accept()
+        else if (decision === 'skip') actions.current.skip()
+        else backToPlace()
+      },
+    })
+    return () => drag.kill()
+  }, [])
+
+  function changeScore(value) {
+    setScore(value)
+    if (motionAllowed()) {
+      gsap.fromTo(
+        scoreText.current,
+        { scale: 1.22 },
+        { scale: 1, duration: 0.45, ease: 'elastic.out(1, 0.45)', overwrite: true },
+      )
+    }
+  }
+
   return (
-    <article aria-labelledby="vote-name" className="flex flex-col overflow-hidden rounded-3xl bg-surface">
-      <div className="relative h-60 shrink-0 overflow-hidden bg-line">
+    <article
+      ref={card}
+      aria-labelledby="vote-name"
+      className="relative flex touch-pan-y flex-col overflow-hidden rounded-3xl bg-surface shadow-2xl select-none"
+    >
+      <span
+        ref={(el) => (stamps.current.yes = el)}
+        aria-hidden="true"
+        className="absolute top-5 left-4 z-10 -rotate-10 rounded-lg border-3 border-accent-text px-3 pt-1.5 pb-1 type-name text-[2rem] text-accent-text uppercase opacity-0"
+      >
+        Votar {formatScore(score)}
+      </span>
+      <span
+        ref={(el) => (stamps.current.no = el)}
+        aria-hidden="true"
+        className="absolute top-5 right-4 z-10 rotate-10 rounded-lg border-3 border-text px-3 pt-1.5 pb-1 type-name text-[2rem] uppercase opacity-0"
+      >
+        Saltar
+      </span>
+
+      <div className="relative h-52 shrink-0 overflow-hidden bg-line">
         {player.photoUrl ? (
-          <img src={player.photoUrl} alt="" className="absolute inset-0 size-full object-cover" />
+          <img src={player.photoUrl} alt="" draggable="false" className="absolute inset-0 size-full object-cover" />
         ) : (
           <span
             aria-hidden="true"
@@ -55,7 +167,11 @@ export default function VoteCard({ vote, matchLabel, opponent, onAccept, onSkip 
             Tu nota
           </label>
           {/* Lo que lee el lector de pantalla es aria-valuetext de la barra; esto es solo visual. */}
-          <span aria-hidden="true" className="type-display text-accent-text tabular-nums">
+          <span
+            ref={scoreText}
+            aria-hidden="true"
+            className="origin-bottom-right type-display text-accent-text tabular-nums"
+          >
             {formatScore(score)}
           </span>
         </div>
@@ -67,7 +183,7 @@ export default function VoteCard({ vote, matchLabel, opponent, onAccept, onSkip 
           step="0.5"
           value={score ?? 5.5}
           aria-valuetext={text}
-          onChange={(e) => setScore(Number(e.target.value))}
+          onChange={(e) => changeScore(Number(e.target.value))}
           className="w-full accent-accent"
         />
         <div aria-hidden="true" className="flex justify-between type-label text-text-muted">
@@ -77,14 +193,17 @@ export default function VoteCard({ vote, matchLabel, opponent, onAccept, onSkip 
         </div>
         <button
           type="button"
-          onClick={() => onAccept(score)}
+          onClick={accept}
           className="mt-2 min-h-12 rounded-md bg-accent px-4 type-body font-bold text-on-accent"
         >
           Aceptar nota
         </button>
-        <button type="button" onClick={onSkip} className="min-h-11 self-center px-3 type-small underline">
+        <button type="button" onClick={skip} className="min-h-11 self-center px-3 type-small underline">
           Saltar por ahora
         </button>
+        <p className="text-center type-label text-text-muted">
+          Desliza a la derecha para votar y a la izquierda para saltar.
+        </p>
       </div>
     </article>
   )

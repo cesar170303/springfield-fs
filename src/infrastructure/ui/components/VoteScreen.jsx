@@ -5,7 +5,9 @@ import { formatShortDate } from '../format'
 import { scoreText } from '../match-format'
 import { useAsync } from '../use-async'
 import { useUseCases } from '../use-cases-context'
+import { gsap, SplitText, useMotion } from '../motion'
 import LoadError from './admin/LoadError'
+import StripeSweep from './StripeSweep'
 import VoteCard from './VoteCard'
 
 const UNDO_MS = 5000
@@ -141,10 +143,8 @@ export default function VoteScreen() {
   if (phase === 'cover') {
     const [first, ...rest] = matches
     return (
-      <Page>
-        <Eyebrow>Votación abierta</Eyebrow>
-        <h1 className="type-display text-[3.75rem] leading-[0.95] uppercase">Vota a tus compañeros</h1>
-        <p className="type-small text-text-muted">
+      <Stage key="cover" title="Vota a tus compañeros" eyebrow="Votación abierta">
+        <p data-reveal className="type-small text-text-muted">
           <span className="font-semibold text-text">{matchLine(first)}</span>
           <br />
           {plural(first.pending.length, 'compañero', 'compañeros')} · cierra el {formatShortDate(first.votingClosesAt)}
@@ -155,36 +155,33 @@ export default function VoteScreen() {
             </>
           )}
         </p>
-        <button type="button" onClick={() => startMatch(0)} className={primary}>
+        <button data-reveal type="button" onClick={() => startMatch(0)} className={primary}>
           Empezar
         </button>
-      </Page>
+      </Stage>
     )
   }
 
   if (phase === 'between') {
     const next = matches[index + 1]
     return (
-      <Page>
-        <Eyebrow>{match.label} hecha</Eyebrow>
-        <h1 className="type-display text-[3.75rem] leading-[0.95] uppercase">Siguiente partido</h1>
-        <p className="type-small text-text-muted">
+      <Stage key={`between-${index}`} title="Siguiente partido" eyebrow={`${match.label} hecha`} sweep={false}>
+        <p data-reveal className="type-small text-text-muted">
           <span className="font-semibold text-text">{matchLine(next)}</span>
           <br />
           {plural(next.pending.length, 'compañero', 'compañeros')} · cierra el {formatShortDate(next.votingClosesAt)}
         </p>
-        <button type="button" onClick={() => startMatch(index + 1)} className={primary}>
+        <button data-reveal type="button" onClick={() => startMatch(index + 1)} className={primary}>
           Seguir votando
         </button>
-      </Page>
+      </Stage>
     )
   }
 
   if (phase === 'done') {
     return (
-      <Page>
-        <h1 className="type-display text-[3.5rem] leading-[0.95] uppercase">Has votado a todos</h1>
-        <p className="type-small text-text-muted">
+      <Stage key="done" title="Has votado a todos" top>
+        <p data-reveal className="type-small text-text-muted">
           Las medias se publican al cerrarse cada votación. Estas notas solo las ves tú.
         </p>
         {matches.map((m) => {
@@ -198,7 +195,11 @@ export default function VoteScreen() {
                 {m.label} · {m.opponent} · medias el {formatShortDate(m.votingClosesAt)}
               </h2>
               {notes.map(([player, score]) => (
-                <p key={player.id} className="flex items-baseline justify-between border-b border-line py-2">
+                <p
+                  key={player.id}
+                  data-reveal
+                  className="flex items-baseline justify-between border-b border-line py-2"
+                >
                   <span className="type-name uppercase">{player.name}</span>
                   <span className="type-name text-[1.75rem] text-accent-text tabular-nums">{formatScore(score)}</span>
                 </p>
@@ -206,10 +207,10 @@ export default function VoteScreen() {
             </section>
           )
         })}
-        <Link to="/" className={`${primary} grid place-items-center`}>
+        <Link data-reveal to="/" className={`${primary} grid place-items-center`}>
           Volver a la plantilla
         </Link>
-      </Page>
+      </Stage>
     )
   }
 
@@ -236,14 +237,33 @@ export default function VoteScreen() {
       </div>
 
       {queue.length > 0 ? (
-        <VoteCard
-          key={`${queue[0].matchId}-${queue[0].player.id}`}
-          vote={queue[0]}
-          matchLabel={match.label}
-          opponent={match.opponent}
-          onAccept={accept}
-          onSkip={skip}
-        />
+        <div className="relative mt-6">
+          {/* La pila: detrás asoman las dos siguientes, más pequeñas (la de más atrás, primero). */}
+          {queue
+            .slice(1, 3)
+            .map((v, i) => ({ v, depth: i + 1 }))
+            .reverse()
+            .map(({ v, depth }) => (
+              <div
+                key={`${v.matchId}-${v.player.id}`}
+                aria-hidden="true"
+                className="absolute inset-0 origin-top rounded-3xl border border-line bg-surface"
+                style={{
+                  transform: `translateY(${-14 * depth}px) scale(${1 - 0.05 * depth})`,
+                  opacity: 1 - 0.3 * depth,
+                }}
+              />
+            ))}
+          <VoteCard
+            key={`${queue[0].matchId}-${queue[0].player.id}`}
+            vote={queue[0]}
+            matchLabel={match.label}
+            opponent={match.opponent}
+            canSkip={queue.length > 1}
+            onAccept={accept}
+            onSkip={skip}
+          />
+        </div>
       ) : (
         <p className="py-16 text-center text-text-muted">
           Enviando tu última nota en unos segundos…
@@ -278,11 +298,49 @@ function Page({ children }) {
   return <main className="mx-auto flex w-full max-w-md flex-col gap-4 px-4 py-4">{children}</main>
 }
 
-function Eyebrow({ children }) {
+/**
+ * Portada, cambio de partido y final: titular que entra letra a letra y lo demás (`data-reveal`) que sube después.
+ * Con `sweep`, las rayitas barren el fondo al entrar. Con `top`, el contenido empieza arriba (el final puede ser largo).
+ */
+function Stage({ title, eyebrow, sweep = true, top = false, children }) {
+  const root = useRef(null)
+
+  useMotion(() => {
+    const split = SplitText.create(root.current.querySelector('[data-split]'), { type: 'words,chars' })
+    gsap.from(split.chars, {
+      yPercent: 110,
+      autoAlpha: 0,
+      stagger: 0.025,
+      duration: 0.6,
+      ease: 'power3.out',
+      delay: 0.3,
+    })
+    gsap.from(root.current.querySelectorAll('[data-reveal]'), {
+      y: 16,
+      autoAlpha: 0,
+      stagger: 0.07,
+      duration: 0.45,
+      ease: 'power2.out',
+      delay: 0.8,
+    })
+  }, root)
+
   return (
-    <span className="flex items-center gap-2 type-label font-semibold tracking-widest text-accent-text uppercase">
-      <span aria-hidden="true" className="size-2 rounded-full bg-accent" />
-      {children}
-    </span>
+    <main
+      ref={root}
+      className={`relative mx-auto flex min-h-[calc(100dvh-9.5rem)] w-full max-w-md flex-col gap-4 px-4 py-4 ${top ? '' : 'justify-end'}`}
+    >
+      {sweep && <StripeSweep />}
+      {eyebrow && (
+        <span className="relative flex items-center gap-2 type-label font-semibold tracking-widest text-accent-text uppercase">
+          <span aria-hidden="true" className="size-2 rounded-full bg-accent" />
+          {eyebrow}
+        </span>
+      )}
+      <h1 data-split className="relative type-display text-[3.75rem] leading-[0.95] uppercase">
+        {title}
+      </h1>
+      <div className="relative flex flex-col gap-4">{children}</div>
+    </main>
   )
 }
