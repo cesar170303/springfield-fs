@@ -2,7 +2,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest'
 import { render, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { gsap } from 'gsap'
-import { Link, MemoryRouter, Route, Routes, useLocation } from 'react-router'
+import { Link, MemoryRouter, Outlet, Route, Routes, useLocation } from 'react-router'
 import SquadScreen from './SquadScreen'
 import { UseCasesContext } from '../use-cases-context'
 
@@ -82,6 +82,40 @@ const listedNames = () =>
     .map((cell) => cell.textContent)
 
 afterEach(() => vi.unstubAllGlobals())
+
+// La cuenta de votos pendientes llega del marco de la app (AppShell), por el contexto de la ruta.
+function renderInShell(pendingVotes) {
+  render(
+    <UseCasesContext.Provider
+      value={{ getSquadFilters: vi.fn().mockResolvedValue(FILTERS), getSquadStats: vi.fn().mockResolvedValue(SQUAD) }}
+    >
+      <MemoryRouter>
+        <Routes>
+          <Route element={<Outlet context={{ pendingVotes }} />}>
+            <Route index element={<SquadScreen />} />
+          </Route>
+        </Routes>
+      </MemoryRouter>
+    </UseCasesContext.Provider>,
+  )
+}
+
+describe('aviso de votación en la plantilla', () => {
+  it('con votos pendientes, un aviso grande lleva a la votación', async () => {
+    renderInShell(5)
+
+    const link = await screen.findByRole('link', { name: /Votación abierta/ })
+    expect(link).toHaveTextContent('Te faltan 5 compañeros')
+    expect(link).toHaveAttribute('href', '/votar')
+  })
+
+  it('sin pendientes, no hay aviso', async () => {
+    renderInShell(0)
+
+    await screen.findByRole('region', { name: 'Goleadores' })
+    expect(screen.queryByRole('link', { name: /Votación abierta/ })).not.toBeInTheDocument()
+  })
+})
 
 describe('SquadScreen', () => {
   it('al entrar pide la temporada actual en todas las competiciones y enseña los líderes', async () => {

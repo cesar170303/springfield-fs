@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { Link, useOutletContext } from 'react-router'
 import { useUseCases } from '../use-cases-context'
 import { useSeasonFilters } from '../use-season-filters'
 import LeaderCards from './LeaderCards'
@@ -8,6 +9,8 @@ import SquadTable from './SquadTable'
 /** Pantalla de la plantilla (docs/SPEC.md §5): tarjetas de líderes o lista, por temporada y competición. */
 export default function SquadScreen() {
   const { getSquadStats } = useUseCases()
+  // Del marco de la app (AppShell); sin marco (tests, o fuera de la app), sin aviso.
+  const { pendingVotes = 0 } = useOutletContext() ?? {}
   const season = useSeasonFilters()
   const { filters, seasonId, competitionId } = season
   // Cada respuesta se guarda con los filtros que la pidieron: si no son los de ahora, está cargando.
@@ -60,6 +63,23 @@ export default function SquadScreen() {
           </button>
         )}
       </header>
+
+      {pendingVotes > 0 && (
+        <Link
+          to="/votar"
+          className="flex items-center justify-between gap-3 rounded-lg bg-accent px-4 py-3 text-on-accent"
+        >
+          <span className="flex flex-col">
+            <span className="type-label font-semibold tracking-widest uppercase">Votación abierta</span>
+            <span className="type-title">
+              Te faltan {pendingVotes} {pendingVotes === 1 ? 'compañero' : 'compañeros'}
+            </span>
+          </span>
+          <span aria-hidden="true" className="type-name">
+            →
+          </span>
+        </Link>
+      )}
 
       <SeasonFilters {...season} />
 

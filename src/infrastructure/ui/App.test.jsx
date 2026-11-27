@@ -6,7 +6,7 @@ import App from './App'
 import { AuthContext } from './auth/auth-context'
 import { UseCasesContext } from './use-cases-context'
 
-function renderApp(auth = {}, url = '/') {
+function renderApp(auth = {}, url = '/', overrides = {}) {
   const value = {
     user: null,
     profile: null,
@@ -21,6 +21,8 @@ function renderApp(auth = {}, url = '/') {
     getSquadStats: vi.fn(),
     getPlayerSheet: vi.fn().mockResolvedValue({ player: null, timeline: [], matches: [] }),
     listAccounts: vi.fn().mockResolvedValue([]),
+    getVoteSession: vi.fn().mockResolvedValue([]),
+    ...overrides,
   }
   render(
     <UseCasesContext.Provider value={useCases}>
@@ -67,6 +69,22 @@ describe('App', () => {
     await userEvent.click(screen.getByRole('button', { name: 'Salir' }))
 
     expect(auth.signOut).toHaveBeenCalledTimes(1)
+  })
+
+  it('en /votar enseña la votación', async () => {
+    renderApp({ user: { email: 'jugador@example.com' }, role: 'player' }, '/votar')
+
+    expect(await screen.findByText('No tienes votaciones pendientes.')).toBeInTheDocument()
+  })
+
+  it('con votos pendientes, la barra lo marca y la plantilla avisa', async () => {
+    const pending = [{ player: { id: 1 } }, { player: { id: 2 } }]
+    renderApp({ user: { email: 'jugador@example.com' }, role: 'player' }, '/', {
+      getVoteSession: vi.fn().mockResolvedValue([{ matchId: 1, pending }]),
+    })
+
+    expect(await screen.findByRole('link', { name: 'Votar (tienes votos pendientes)' })).toBeInTheDocument()
+    expect(screen.getByRole('link', { name: /Votación abierta/ })).toHaveTextContent('Te faltan 2 compañeros')
   })
 
   it('«Salir» también está en la ficha', async () => {

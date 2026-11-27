@@ -3,6 +3,7 @@ import { render, screen } from '@testing-library/react'
 import { MemoryRouter } from 'react-router'
 import App from './App'
 import { AuthContext } from './auth/auth-context'
+import { UseCasesContext } from './use-cases-context'
 
 // Aparte de App.test.jsx: aquí la descarga del panel falla, como sin red o tras un despliegue nuevo.
 vi.mock('./components/admin/AdminRoutes', () => {
@@ -11,11 +12,13 @@ vi.mock('./components/admin/AdminRoutes', () => {
 
 it('si el panel no se puede descargar, lo dice y la barra sigue en su sitio', async () => {
   render(
-    <AuthContext.Provider value={{ user: { email: 'staff@example.com' }, role: 'admin', loading: false }}>
-      <MemoryRouter initialEntries={['/admin']}>
-        <App />
-      </MemoryRouter>
-    </AuthContext.Provider>,
+    <UseCasesContext.Provider value={{ getVoteSession: vi.fn().mockResolvedValue([]) }}>
+      <AuthContext.Provider value={{ user: { email: 'staff@example.com' }, role: 'admin', loading: false }}>
+        <MemoryRouter initialEntries={['/admin']}>
+          <App />
+        </MemoryRouter>
+      </AuthContext.Provider>
+    </UseCasesContext.Provider>,
   )
 
   expect(await screen.findByRole('alert')).toHaveTextContent(
