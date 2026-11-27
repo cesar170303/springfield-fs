@@ -62,4 +62,4 @@ Detalle, decisiones y riesgos: [`tasks/plan.md`](plan.md).
   - Salen solo los empatados con su media; se puede cambiar la elección; con la votación abierta no aparece nada
 - [x] **T16.** Usuarios y roles (solo superadmin)
   - Hacer/quitar admin con confirmación; su propia fila y la de otro superadmin, sin botones
-- [ ] **Checkpoint final (PR 4):** como el 1, `CHANGELOG` 0.15.0, recorrido completo de `plan.md`. `docs/SPEC.md` §10 con el paso 5 hecho y `CLAUDE.md` al día. **PARADA.**
+- [x] **Checkpoint final (PR 4):** como el 1, `CHANGELOG` 0.15.0, recorrido completo de `plan.md`. `docs/SPEC.md` §10 con el paso 5 hecho y `CLAUDE.md` al día. **PARADA.**
