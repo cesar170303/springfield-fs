@@ -62,7 +62,7 @@ function App() {
             path="admin/*"
             element={
               <Suspense fallback={<p className="px-4 py-6 text-center text-text-muted">Cargando…</p>}>
-                <AdminRoutes />
+                <AdminRoutes role={role} userId={user.id} />
               </Suspense>
             }
           />

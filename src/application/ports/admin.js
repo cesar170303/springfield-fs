@@ -55,6 +55,9 @@
  * @property {(seasonId: number) => Promise<string[]>} getSeasonVoters ids de las cuentas que votan esa temporada
  * @property {(seasonId: number, userId: string) => Promise<void>} addSeasonVoter solo un viewer (lo comprueba RLS)
  * @property {(seasonId: number, userId: string) => Promise<void>} removeSeasonVoter
+ * @property {() => Promise<{ id: string, fullName: string | null, email: string, role: string }[]>} getAccounts
+ * @property {() => Promise<{ userId: string, nickname: string | null, firstName: string }[]>} getLinkedPlayers fichas con cuenta
+ * @property {(userId: string, role: string) => Promise<void>} setRole solo el superadmin (RLS)
  */
 
 /**

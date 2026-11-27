@@ -5,3 +5,9 @@ export function displayName({ fullName, email }) {
 
 /** El staff gestiona el equipo desde el panel de admin. Solo decide qué se enseña: los permisos los da RLS. */
 export const isStaff = (role) => role === 'admin' || role === 'superadmin'
+
+/** Solo el superadmin gestiona usuarios y roles. Como isStaff, decide qué se enseña: los permisos los da RLS. */
+export const isSuperadmin = (role) => role === 'superadmin'
+
+/** Rol al quitar el admin (§12): jugador si tiene ficha vinculada; si no, viewer. */
+export const roleWithoutAdmin = ({ hasPlayer }) => (hasPlayer ? 'player' : 'viewer')

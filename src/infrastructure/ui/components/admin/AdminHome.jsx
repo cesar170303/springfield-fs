@@ -8,7 +8,7 @@ import SeasonFilters from '../SeasonFilters'
 import LoadError from './LoadError'
 
 /** Inicio del panel de admin (docs/SPEC.md §12): una tarjeta con icono por sección. Cada sección nueva añade la suya. */
-export default function AdminHome() {
+export default function AdminHome({ superadmin = false }) {
   const season = useSeasonFilters()
   const { listMatches } = useUseCases()
   // Avisos: partidos ya jugados sin terminar. Si no se pueden cargar, simplemente no hay aviso.
@@ -47,6 +47,8 @@ export default function AdminHome() {
       name: 'Votantes',
       note: selected ? `Viewers que votan en ${selected.name}` : 'Primero, crea una temporada',
     },
+    // Solo el superadmin gestiona usuarios y roles.
+    ...(superadmin ? [{ to: '/admin/usuarios', icon: 'admin', name: 'Usuarios', note: 'Quién es admin' }] : []),
   ]
 
   return (

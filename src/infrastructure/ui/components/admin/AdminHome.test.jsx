@@ -19,11 +19,16 @@ function WhereAmI() {
   return <p>Estás en {pathname + search}</p>
 }
 
-function renderHome(getSquadFilters, url = '/admin', listMatches = vi.fn().mockResolvedValue({ matches: [] })) {
+function renderHome(
+  getSquadFilters,
+  url = '/admin',
+  listMatches = vi.fn().mockResolvedValue({ matches: [] }),
+  superadmin = false,
+) {
   render(
     <UseCasesContext.Provider value={{ getSquadFilters, listMatches }}>
       <MemoryRouter initialEntries={[url]}>
-        <AdminHome />
+        <AdminHome superadmin={superadmin} />
         <Link to="/admin">Admin</Link>
         <WhereAmI />
       </MemoryRouter>
@@ -131,6 +136,22 @@ describe('AdminHome', () => {
       'href',
       '/admin/partidos?temporada=1',
     )
+  })
+
+  it('solo el superadmin ve la tarjeta «Usuarios»', async () => {
+    renderHome(vi.fn().mockResolvedValue(FILTERS), '/admin?temporada=2', undefined, true)
+
+    expect(await screen.findByRole('link', { name: /^Usuarios/ })).toHaveAttribute(
+      'href',
+      '/admin/usuarios?temporada=2',
+    )
+  })
+
+  it('un admin no ve «Usuarios»', async () => {
+    renderHome(vi.fn().mockResolvedValue(FILTERS), '/admin?temporada=2')
+
+    await screen.findByRole('navigation', { name: 'Secciones del panel' })
+    expect(screen.queryByRole('link', { name: /^Usuarios/ })).not.toBeInTheDocument()
   })
 
   it('si no se puede cargar, lo dice', async () => {

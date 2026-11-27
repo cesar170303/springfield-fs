@@ -20,6 +20,7 @@ function renderApp(auth = {}, url = '/') {
     getSquadFilters: vi.fn().mockResolvedValue({ seasons: [], competitions: [], initialSeasonId: null }),
     getSquadStats: vi.fn(),
     getPlayerSheet: vi.fn().mockResolvedValue({ player: null, timeline: [], matches: [] }),
+    listAccounts: vi.fn().mockResolvedValue([]),
   }
   render(
     <UseCasesContext.Provider value={useCases}>
@@ -101,6 +102,17 @@ describe('App', () => {
 
     expect(await screen.findByRole('heading', { name: 'Esta página no existe' })).toBeInTheDocument()
     expect(screen.queryByRole('link', { name: 'Admin' })).not.toBeInTheDocument()
+  })
+
+  it('solo el superadmin entra en «Usuarios»; a un admin, esa página no existe', async () => {
+    renderApp({ user: { id: 'u-1', email: 'super@example.com' }, role: 'superadmin' }, '/admin/usuarios')
+    expect(await screen.findByRole('heading', { name: 'Usuarios' })).toBeInTheDocument()
+  })
+
+  it('a un admin, «Usuarios» no existe', async () => {
+    renderApp({ user: { id: 'u-2', email: 'staff@example.com' }, role: 'admin' }, '/admin/usuarios')
+
+    expect(await screen.findByRole('heading', { name: 'Esta página no existe' })).toBeInTheDocument()
   })
 
   it('una dirección del panel que no existe también lo dice', async () => {
