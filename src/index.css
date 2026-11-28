@@ -23,14 +23,6 @@
   --color-card-yellow: #ffd90f;
   --color-focus: var(--color-accent);
 
-  /* Modo votación (paleta Donut): solo en la pantalla de votación */
-  --color-vote-surface: #1e1e1e;
-  --color-vote-border: #767676;
-  --color-vote-primary: #ffd90f;
-  --color-vote-rating: #ff5fa2;
-  --color-vote-accent: #4cc3ff;
-  --color-vote-on: #000000;
-
   --font-sans: 'Archivo Variable', system-ui, sans-serif;
 
   /* radius-sm (4 px, campos) y rounded-full (chips) ya son los de Tailwind */

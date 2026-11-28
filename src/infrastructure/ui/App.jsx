@@ -1,5 +1,5 @@
 import { lazy, Suspense } from 'react'
-import { Outlet, Route, Routes } from 'react-router'
+import { Outlet, Route, Routes, useLocation } from 'react-router'
 import { isStaff } from '../../domain/user'
 import { useAuth } from './auth/auth-context'
 import BottomNav from './components/BottomNav'
@@ -8,6 +8,9 @@ import Login from './components/Login'
 import NotFound from './components/NotFound'
 import PlayerScreen from './components/PlayerScreen'
 import SquadScreen from './components/SquadScreen'
+import VoteScreen from './components/VoteScreen'
+import { useAsync } from './use-async'
+import { useUseCases } from './use-cases-context'
 
 // El panel se descarga solo al entrar en él. Sin red (o tras un despliegue nuevo) la descarga falla: se dice.
 const AdminRoutes = lazy(() => import('./components/admin/AdminRoutes').catch(() => ({ default: AdminUnavailable })))
@@ -22,8 +25,20 @@ function AdminUnavailable() {
   )
 }
 
+/**
+ * Cuántos compañeros te faltan por votar, para el punto de «Votar» y el aviso de la plantilla. Se vuelve a pedir al
+ * entrar en la votación, al salir de ella y con `refresh`, que la votación llama tras cada voto confirmado.
+ */
+function usePendingVotes() {
+  const { getVoteSession } = useUseCases()
+  const onVote = useLocation().pathname === '/votar'
+  const { data, reload } = useAsync(getVoteSession, onVote ? 'voting' : 'elsewhere')
+  return { count: data?.reduce((n, match) => n + match.pending.length, 0) ?? 0, refresh: reload }
+}
+
 /** Marco de las pantallas con sesión: «Salir» arriba a la derecha, la pantalla y la barra flotante (ADR-0004). */
 function AppShell({ onSignOut, staff }) {
+  const { count: pendingVotes, refresh: refreshPendingVotes } = usePendingVotes()
   return (
     // pb: hueco para que la barra flotante no tape el final de la pantalla.
     <div className="pb-[calc(5.5rem+env(safe-area-inset-bottom))]">
@@ -37,8 +52,8 @@ function AppShell({ onSignOut, staff }) {
           Salir
         </button>
       </div>
-      <Outlet />
-      <BottomNav staff={staff} />
+      <Outlet context={{ pendingVotes, refreshPendingVotes }} />
+      <BottomNav staff={staff} pendingVotes={pendingVotes} />
     </div>
   )
 }
@@ -57,6 +72,7 @@ function App() {
       <Route element={<AppShell onSignOut={signOut} staff={staff} />}>
         <Route index element={<SquadScreen />} />
         <Route path="jugador/:playerId" element={<PlayerScreen />} />
+        <Route path="votar" element={<VoteScreen />} />
         {staff && (
           <Route
             path="admin/*"

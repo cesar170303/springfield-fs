@@ -3,10 +3,10 @@ import { cleanup, render, screen, within } from '@testing-library/react'
 import { MemoryRouter } from 'react-router'
 import BottomNav from './BottomNav'
 
-function renderNav(url = '/', staff = false) {
+function renderNav(url = '/', staff = false, pendingVotes = 0) {
   render(
     <MemoryRouter initialEntries={[url]}>
-      <BottomNav staff={staff} />
+      <BottomNav staff={staff} pendingVotes={pendingVotes} />
     </MemoryRouter>,
   )
   return screen.getByRole('navigation', { name: 'Principal' })
@@ -37,6 +37,27 @@ describe('BottomNav', () => {
     const nav = renderNav()
 
     expect(within(nav).queryByRole('button')).not.toBeInTheDocument()
+  })
+
+  it('enseña «Votar» a todos, que lleva a la votación', () => {
+    renderNav('/votar')
+
+    const link = screen.getByRole('link', { name: 'Votar' })
+    expect(link).toHaveAttribute('href', '/votar')
+    expect(link).toHaveAttribute('aria-current', 'page')
+  })
+
+  it('con votos pendientes, «Votar» lleva un punto y lo dice al lector de pantalla', () => {
+    const nav = renderNav('/', false, 3)
+
+    expect(within(nav).getByRole('link', { name: 'Votar (tienes votos pendientes)' })).toBeInTheDocument()
+    expect(nav.querySelector('[data-pending-dot]')).toBeInTheDocument()
+  })
+
+  it('sin votos pendientes, no hay punto', () => {
+    const nav = renderNav('/', false, 0)
+
+    expect(nav.querySelector('[data-pending-dot]')).not.toBeInTheDocument()
   })
 
   it('enseña «Admin» solo al staff', () => {

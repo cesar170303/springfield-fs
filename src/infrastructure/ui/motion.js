@@ -2,12 +2,19 @@
 import { gsap } from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import { SplitText } from 'gsap/SplitText'
+import { Draggable } from 'gsap/Draggable'
 import { useGSAP } from '@gsap/react'
 import { formatStat } from './format'
 
-// ScrollTrigger (la ficha avanza con el scroll) y SplitText (titulares letra a letra): se registran con la ficha,
-// la primera pantalla que los usa.
-gsap.registerPlugin(useGSAP, ScrollTrigger, SplitText)
+// ScrollTrigger (la ficha avanza con el scroll), SplitText (titulares letra a letra) y Draggable (la tarjeta de
+// votación que sigue al dedo).
+gsap.registerPlugin(useGSAP, ScrollTrigger, SplitText, Draggable)
+
+/**
+ * true si el dispositivo no pide reducir movimiento. Para las animaciones que lanza un clic o un gesto, que no caben
+ * en `useMotion` (que solo se ejecuta al montar).
+ */
+export const motionAllowed = () => window.matchMedia('(prefers-reduced-motion: no-preference)').matches
 
 /**
  * Crea las animaciones de un componente solo si el dispositivo no pide reducir movimiento (docs/SPEC.md §11).
@@ -46,4 +53,4 @@ export function countUp(elements) {
   }
 }
 
-export { gsap, ScrollTrigger, SplitText }
+export { gsap, ScrollTrigger, SplitText, Draggable }
