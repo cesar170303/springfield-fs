@@ -9,6 +9,20 @@ Registro de lo que se hace en cada feature y de los fallos detectados. Formato b
 Fallos detectados que aún no están resueltos. Al arreglarlos, pasa la línea a «Corregido» de la versión correspondiente.
 
 - Sin red, la app abre con la letra de reserva y sin el icono de Google: el service worker no precarga las fuentes (`woff2`) ni los `svg` (Workbox solo incluye `js`, `css` y `html` por defecto).
+- Votación: si un voto no se puede guardar porque ya existía (votaste a ese compañero desde otro dispositivo) o porque la votación acaba de cerrarse, la tarjeta vuelve a la fila y se puede repetir sin fin. No se pierde ni se duplica ningún voto; se sale yendo a otra pantalla.
+
+## [0.16.0] - 2026-11-28
+
+Paso 6 de la spec, la votación (§6). **Migración nueva, pendiente de aplicar en la nube:** `20261127120000_my_open_votes` (RPC `get_my_open_votes`); sin ella, «Votar» no carga.
+
+### Añadido
+- **Pantalla de votación** (`/votar`): portada con rayitas que barren la pantalla y el titular letra a letra; una tarjeta por compañero pendiente en orden aleatorio, con la foto a sangre (sin foto, el dorsal enorme), el apodo, una franja con sus datos del partido (minutos y, si los hay, goles y asistencias; al portero, encajados) y la barra de la nota, que empieza sin nota y la escribe con coma. Se vota con «Aceptar nota» o deslizando a la derecha y se salta con «Saltar por ahora» o deslizando a la izquierda (no al último); al arrastrar, la tarjeta se inclina y enseña «Votar 7,5» o «Saltar», y detrás asoman las dos siguientes. Cada voto tiene 5 s para deshacerse antes de enviarse; si se sale en plena cuenta atrás, se envía en ese momento. Varios partidos abiertos se votan uno tras otro, del que cierra antes al último. Al final, «Has votado a todos» con tus notas, que solo ves tú, y cuándo se publican las medias. Con «reducir movimiento», nada vuela.
+- **Entrada:** «Votar» en la barra inferior, con un punto azul mientras te falte alguien, y en la plantilla el aviso «Votación abierta · Te faltan N compañeros».
+- **RPC `get_my_open_votes`** (`security invoker`): a quién puede votar la cuenta en los partidos abiertos, con sus datos del partido y la nota propia; usa la misma regla que el voto (`rls.can_vote`) y nunca da notas de otros.
+
+### Cambiado
+- La votación usa los colores de la app (la paleta Donut se descartó tras compararla en una maqueta); se borran los tokens `vote-*`.
+- `scripts/dev-local.mjs` usa el puerto que le asigna la vista previa si el 5175 está ocupado.
 
 ## [0.15.0] - 2026-11-27
 
