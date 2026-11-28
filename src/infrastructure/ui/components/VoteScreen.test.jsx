@@ -1,7 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { act, fireEvent, render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { MemoryRouter } from 'react-router'
+import { MemoryRouter, Outlet, Route, Routes } from 'react-router'
 import VoteScreen from './VoteScreen'
 import { UseCasesContext } from '../use-cases-context'
 
@@ -195,6 +195,31 @@ describe('VoteScreen', () => {
       expect(screen.getAllByText(name)[0].nextSibling).toHaveTextContent(score)
     }
     expect(screen.getByRole('link', { name: 'Volver a la plantilla' })).toHaveAttribute('href', '/')
+  })
+
+  it('cuando la base de datos confirma un voto, pide al marco que vuelva a contar los pendientes', async () => {
+    const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime })
+    const refreshPendingVotes = vi.fn()
+    const useCases = { getVoteSession: vi.fn().mockResolvedValue([J5]), castVote: vi.fn().mockResolvedValue(undefined) }
+    render(
+      <UseCasesContext.Provider value={useCases}>
+        <MemoryRouter>
+          <Routes>
+            <Route element={<Outlet context={{ pendingVotes: 2, refreshPendingVotes }} />}>
+              <Route index element={<VoteScreen />} />
+            </Route>
+          </Routes>
+        </MemoryRouter>
+      </UseCasesContext.Provider>,
+    )
+    await start(user)
+
+    setScore(7)
+    await user.click(screen.getByRole('button', { name: 'Aceptar nota' }))
+    expect(refreshPendingVotes).not.toHaveBeenCalled() // aún se puede deshacer
+    await act(() => vi.advanceTimersByTime(5000))
+
+    expect(refreshPendingVotes).toHaveBeenCalledTimes(1)
   })
 
   it('si sales durante la cuenta atrás, la nota se envía en ese momento', async () => {

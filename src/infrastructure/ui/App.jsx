@@ -27,18 +27,18 @@ function AdminUnavailable() {
 
 /**
  * Cuántos compañeros te faltan por votar, para el punto de «Votar» y el aviso de la plantilla. Se vuelve a pedir al
- * entrar en la votación y al salir de ella, para que el punto desaparezca cuando ya has votado a todos.
+ * entrar en la votación, al salir de ella y con `refresh`, que la votación llama tras cada voto confirmado.
  */
 function usePendingVotes() {
   const { getVoteSession } = useUseCases()
   const onVote = useLocation().pathname === '/votar'
-  const { data } = useAsync(getVoteSession, onVote ? 'voting' : 'elsewhere')
-  return data?.reduce((n, match) => n + match.pending.length, 0) ?? 0
+  const { data, reload } = useAsync(getVoteSession, onVote ? 'voting' : 'elsewhere')
+  return { count: data?.reduce((n, match) => n + match.pending.length, 0) ?? 0, refresh: reload }
 }
 
 /** Marco de las pantallas con sesión: «Salir» arriba a la derecha, la pantalla y la barra flotante (ADR-0004). */
 function AppShell({ onSignOut, staff }) {
-  const pendingVotes = usePendingVotes()
+  const { count: pendingVotes, refresh: refreshPendingVotes } = usePendingVotes()
   return (
     // pb: hueco para que la barra flotante no tape el final de la pantalla.
     <div className="pb-[calc(5.5rem+env(safe-area-inset-bottom))]">
@@ -52,7 +52,7 @@ function AppShell({ onSignOut, staff }) {
           Salir
         </button>
       </div>
-      <Outlet context={{ pendingVotes }} />
+      <Outlet context={{ pendingVotes, refreshPendingVotes }} />
       <BottomNav staff={staff} pendingVotes={pendingVotes} />
     </div>
   )

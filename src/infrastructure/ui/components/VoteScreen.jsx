@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
-import { Link } from 'react-router'
+import { Link, useOutletContext } from 'react-router'
 import { formatScore, skipFirst } from '../../../domain/vote'
 import { formatShortDate } from '../format'
 import { scoreText } from '../match-format'
@@ -21,6 +21,8 @@ const primary = 'min-h-12 rounded-md bg-accent px-4 type-body font-bold text-on-
  */
 export default function VoteScreen() {
   const { getVoteSession, castVote } = useUseCases()
+  // Del marco de la app (AppShell); sin marco (tests), no hay punto que actualizar.
+  const { refreshPendingVotes } = useOutletContext() ?? {}
   const { data: matches, error, reload } = useAsync(getVoteSession)
   const [stage, setStage] = useState('cover') // cover → cards; «between» y «done» se deducen al acabar un partido
   const [index, setIndex] = useState(0)
@@ -50,7 +52,10 @@ export default function VoteScreen() {
   function send(item) {
     setSending((n) => n + 1)
     castVote({ matchId: item.vote.matchId, playerId: item.vote.player.id, score: item.score })
-      .then(() => setSent((s) => [...s, item]))
+      .then(() => {
+        setSent((s) => [...s, item])
+        refreshPendingVotes?.() // el punto de «Votar» se apaga en cuanto no falta nadie
+      })
       .catch((e) => {
         say(e.message)
         setQueue((q) => [...q, item.vote])

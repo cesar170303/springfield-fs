@@ -17,7 +17,7 @@ Paso 6 de la spec, la votación (§6). **Migración nueva, pendiente de aplicar 
 
 ### Añadido
 - **Pantalla de votación** (`/votar`): portada con rayitas que barren la pantalla y el titular letra a letra; una tarjeta por compañero pendiente en orden aleatorio, con la foto a sangre (sin foto, el dorsal enorme), el apodo, una franja con sus datos del partido (minutos y, si los hay, goles y asistencias; al portero, encajados) y la barra de la nota, que empieza sin nota y la escribe con coma. Se vota con «Aceptar nota» o deslizando a la derecha y se salta con «Saltar por ahora» o deslizando a la izquierda (no al último); al arrastrar, la tarjeta se inclina y enseña «Votar 7,5» o «Saltar», y detrás asoman las dos siguientes. Cada voto tiene 5 s para deshacerse antes de enviarse; si se sale en plena cuenta atrás, se envía en ese momento. Varios partidos abiertos se votan uno tras otro, del que cierra antes al último. Al final, «Has votado a todos» con tus notas, que solo ves tú, y cuándo se publican las medias. Con «reducir movimiento», nada vuela.
-- **Entrada:** «Votar» en la barra inferior, con un punto azul mientras te falte alguien, y en la plantilla el aviso «Votación abierta · Te faltan N compañeros».
+- **Entrada:** «Votar» en la barra inferior, con un punto azul mientras te falte alguien (se apaga en cuanto la base de datos confirma tu último voto, sin salir de la votación), y en la plantilla el aviso «Votación abierta · Te faltan N compañeros».
 - **RPC `get_my_open_votes`** (`security invoker`): a quién puede votar la cuenta en los partidos abiertos, con sus datos del partido y la nota propia; usa la misma regla que el voto (`rls.can_vote`) y nunca da notas de otros.
 
 ### Cambiado
